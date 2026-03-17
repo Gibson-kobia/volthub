@@ -42,7 +42,7 @@ export default function SignupPage() {
     <div className="mx-auto max-w-md px-6 py-10">
       <h1 className="font-serif text-3xl mb-2">Create account</h1>
       <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">
-        Join NEEMON for faster checkout, order tracking, and wishlist sync.
+        Create a VoltHub account for faster checkout, order tracking, and wishlist sync.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4 text-sm">
         <div>
@@ -94,7 +94,7 @@ export default function SignupPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-full px-4 py-2 bg-[color:var(--champagne-gold)] text-white text-sm font-medium hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed"
+          className="w-full rounded-full px-4 py-2 bg-[color:var(--accent)] text-white text-sm font-medium hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {loading ? "Creating account..." : "Sign up"}
         </button>
@@ -108,4 +108,3 @@ export default function SignupPage() {
     </div>
   );
 }
-

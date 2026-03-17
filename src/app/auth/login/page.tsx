@@ -31,7 +31,7 @@ export default function LoginPage() {
     <div className="mx-auto max-w-md px-6 py-10">
       <h1 className="font-serif text-3xl mb-2">Log in</h1>
       <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">
-        Welcome back to NEEMON.
+        Welcome back to VoltHub.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4 text-sm">
         <div>
@@ -49,14 +49,14 @@ export default function LoginPage() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-black/10 dark:border-white/10 px-3 py-2 bg-white dark:bg_black"
+            className="w-full rounded-lg border border-black/10 dark:border-white/10 px-3 py-2 bg-white dark:bg-black"
           />
         </div>
         {error && <div className="text-sm text-red-600">{error}</div>}
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-full px-4 py-2 bg-[color:var(--champagne-gold)] text_white text-sm font-medium hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed"
+          className="w-full rounded-full px-4 py-2 bg-[color:var(--accent)] text-white text-sm font-medium hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {loading ? "Logging in..." : "Log in"}
         </button>
@@ -67,7 +67,7 @@ export default function LoginPage() {
         </Link>
       </div>
       <div className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
-        New to NEEMON?{" "}
+        New to VoltHub?{" "}
         <Link href="/auth/signup" className="underline">
           Create account
         </Link>

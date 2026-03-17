@@ -272,11 +272,11 @@ export default function AdminOrdersPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {selectedOrder.items.map((item: any, idx: number) => (
+                      {(selectedOrder.items as unknown as Array<{ name?: string; productId?: string; product_id?: string; qty: number }>).map((item, idx) => (
                         <tr key={idx}>
                           <td className="px-4 py-3 text-gray-900">
                              {/* Assuming item has name, if not we only have productId */}
-                             {item.name || `Product ID: ${item.productId}`}
+                             {item.name || `Product ID: ${item.productId || item.product_id || "—"}`}
                           </td>
                           <td className="px-4 py-3 text-center text-gray-600">
                             {item.qty}

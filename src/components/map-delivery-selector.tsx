@@ -67,7 +67,7 @@ export function MapDeliverySelector({
         maxZoom: 19,
       }).addTo(map);
       const icon = L.divIcon({
-        className: "rounded-full bg-[color:var(--champagne-gold)] text-white text-xs flex items-center justify-center",
+        className: "rounded-full bg-[color:var(--accent)] text-white text-xs flex items-center justify-center",
         html: '<div style="width:26px;height:26px;border-radius:9999px;display:flex;align-items:center;justify-content:center">◎</div>',
         iconSize: [26, 26],
         iconAnchor: [13, 13],
@@ -190,7 +190,7 @@ export function MapDeliverySelector({
         </button>
         <button
           onClick={confirm}
-          className="rounded-full px-4 py-2 bg-[color:var(--champagne-gold)] text-white"
+          className="rounded-full px-4 py-2 bg-[color:var(--accent)] text-white"
         >
           Confirm location
         </button>

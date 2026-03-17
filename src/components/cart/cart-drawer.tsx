@@ -160,7 +160,7 @@ export function CartDrawer() {
             <Link
               href="/checkout"
               onClick={() => closeDrawer()}
-              className="rounded-full px-4 py-2 bg-[color:var(--champagne-gold)] text-white text-center"
+              className="rounded-full px-4 py-2 bg-[color:var(--accent)] text-white text-center"
             >
               Checkout
             </Link>

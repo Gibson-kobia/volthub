@@ -1,9 +1,10 @@
 export type CategorySlug =
-  | "makeup"
-  | "skincare"
-  | "hair"
-  | "perfumes"
-  | "tools";
+  | "audio"
+  | "smartwatches"
+  | "chargers-cables"
+  | "power-banks"
+  | "phone-accessories"
+  | "speakers";
 
 export type Product = {
   id: string;

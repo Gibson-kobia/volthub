@@ -3,23 +3,19 @@
 :root {
   --background: #FAF7F2;
   --foreground: #0F0F0F;
-  --champagne-gold: #D6BFA4;
-  --nude-blush: #F7E9E4;
-  --ivory-white: #FAF7F2;
-  --deep-cocoa: #4a2e2a;
+  --accent: #2563eb;
+  --accent-soft: #e8f0ff;
+  --surface: #ffffff;
   --charcoal-black: #0F0F0F;
-  --deep-plum: #3A2632;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-gold: var(--champagne-gold);
-  --color-blush: var(--nude-blush);
-  --color-ivory: var(--ivory-white);
-  --color-cocoa: var(--deep-cocoa);
+  --color-accent: var(--accent);
+  --color-accentSoft: var(--accent-soft);
+  --color-surface: var(--surface);
   --color-charcoal: var(--charcoal-black);
-  --color-plum: var(--deep-plum);
   --font-serif: var(--font-heading);
   --font-sans: var(--font-body);
   --breakpoint-xs: 320px;

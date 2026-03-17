@@ -47,7 +47,7 @@ function CartButton() {
     (sum, l) => sum + (l.product?.priceKes || 0) * l.qty,
     0
   );
-  const blur = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><rect width='100%' height='100%' fill='%23f5e7c6'/></svg>";
+  const blur = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><rect width='100%' height='100%' fill='%23e8f0ff'/></svg>";
   return (
     <div className="relative">
       <button
@@ -79,7 +79,7 @@ function CartButton() {
           <span className="hidden sm:inline">Cart</span>
         </span>
         {count > 0 && (
-          <span className="absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full bg-[color:var(--champagne-gold)] text-white text-xs grid place-items-center">
+          <span className="absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full bg-[color:var(--accent)] text-white text-xs grid place-items-center">
             {count}
           </span>
         )}
@@ -166,7 +166,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const trending = ["lipstick", "niacinamide", "wig cap", "yara", "eco gel"];
+  const trending = ["earbuds", "smartwatch", "power bank", "usb-c cable", "bluetooth speaker"];
   const [hoverTimer, setHoverTimer] = useState<number | null>(null);
   const openWithDelay = (which: "shop" | "categories") => {
     if (hoverTimer) {
@@ -210,7 +210,7 @@ function Shell({ children }: { children: React.ReactNode }) {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z"/><path d="M16 11.37a4 4 0 1 1-7.87 1.16 4 4 0 0 1 7.87-1.16Z"/><path d="M17.5 6.5h.01"/></svg>
               </button>
               <a
-                href="https://wa.me/254708065140?text=Hi%20NEEMON%20Beauty,%20I%20want%20to%20be%20notified%20when%20shopping%20goes%20live."
+                href="https://wa.me/254708065140?text=Hi%20VoltHub,%20I%20need%20help%20choosing%20a%20gadget."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-6 h-6 rounded-full grid place-items-center bg-white/50 dark:bg-black/40 text-[color:var(--foreground)]"
@@ -241,8 +241,8 @@ function Shell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3 flex-shrink-0">
             <div className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10" />
             <Link href="/" className="group">
-              <span className="font-serif text-2xl tracking-[0.04em]">NEEMON</span>
-              <span className="hidden xl:block text-xs text-zinc-500">Beauty Shop & Cosmetics</span>
+              <span className="font-serif text-2xl tracking-[0.04em]">VoltHub</span>
+              <span className="hidden xl:block text-xs text-zinc-500">Gadgets & Accessories</span>
             </Link>
           </div>
           <div className="hidden lg:flex items-center gap-6 text-sm">
@@ -252,8 +252,7 @@ function Shell({ children }: { children: React.ReactNode }) {
               onFocus={() => openWithDelay("shop")}
               onMouseLeave={cancelHover}
               onClick={() => {
-                setMenuOpen(null);
-                router.push("/launch");
+                setMenuOpen((v) => (v === "shop" ? null : "shop"));
               }}
               className="inline-flex items-center gap-1 transition-opacity hover:opacity-80"
             >
@@ -265,16 +264,14 @@ function Shell({ children }: { children: React.ReactNode }) {
               onFocus={() => openWithDelay("categories")}
               onMouseLeave={cancelHover}
               onClick={() => {
-                setMenuOpen(null);
-                router.push("/launch");
+                setMenuOpen((v) => (v === "categories" ? null : "categories"));
               }}
               className="inline-flex items-center gap-1 transition-opacity hover:opacity-80"
             >
               Categories
               <span>▾</span>
             </button>
-            <Link href="/shade-quiz" className="transition-opacity hover:opacity-80">Shade Quiz</Link>
-            <Link href="/offers" className="transition-opacity hover:opacity-80">Offers</Link>
+            <Link href="/offers" className="transition-opacity hover:opacity-80">Deals</Link>
             <Link href="/about" className="transition-opacity hover:opacity-80">About</Link>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
@@ -309,18 +306,51 @@ function Shell({ children }: { children: React.ReactNode }) {
           >
             <div className="mx-auto max-w-7xl px-6 py-4">
               <div className="grid sm:grid-cols-3 gap-3 text-sm">
-                {(menuOpen === "shop" ? ["New In", "Bestsellers", "Offers"] : ["Makeup", "Skincare", "Hair", "Perfumes", "Tools"]).map((label) => (
-                  <button
-                    key={label}
-                    onClick={() => {
-                      setMenuOpen(null);
-                      router.push("/launch");
-                    }}
-                    className="text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                  >
-                    {label}
-                  </button>
-                ))}
+                {menuOpen === "shop" ? (
+                  <>
+                    <Link
+                      href="/shop"
+                      onClick={() => setMenuOpen(null)}
+                      className="text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                    >
+                      Shop all
+                    </Link>
+                    <Link
+                      href="/offers"
+                      onClick={() => setMenuOpen(null)}
+                      className="text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                    >
+                      Deals
+                    </Link>
+                    <Link
+                      href="/cart"
+                      onClick={() => setMenuOpen(null)}
+                      className="text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                    >
+                      Cart
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    {[
+                      { slug: "audio", label: "Audio" },
+                      { slug: "smartwatches", label: "Smartwatches" },
+                      { slug: "chargers-cables", label: "Chargers & Cables" },
+                      { slug: "power-banks", label: "Power Banks" },
+                      { slug: "phone-accessories", label: "Phone Accessories" },
+                      { slug: "speakers", label: "Speakers" },
+                    ].map((c) => (
+                      <Link
+                        key={c.slug}
+                        href={`/category/${c.slug}`}
+                        onClick={() => setMenuOpen(null)}
+                        className="text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                      >
+                        {c.label}
+                      </Link>
+                    ))}
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -332,7 +362,7 @@ function Shell({ children }: { children: React.ReactNode }) {
                 <input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search makeup, skincare, perfumes…"
+                  placeholder="Search earbuds, chargers, smartwatches…"
                   className="w-full rounded-xl px-4 py-3 border bg-transparent text-lg"
                 />
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -354,7 +384,7 @@ function Shell({ children }: { children: React.ReactNode }) {
                         router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
                       }
                     }}
-                    className="rounded-full px-4 py-2 bg-[color:var(--champagne-gold)] text-white"
+                    className="rounded-full px-4 py-2 bg-[color:var(--accent)] text-white"
                   >
                     Search
                   </button>
@@ -369,7 +399,7 @@ function Shell({ children }: { children: React.ReactNode }) {
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/85 dark:bg-black/70 backdrop-blur lg:hidden">
         <div className="mx-auto max-w-7xl px-6 py-2 flex items-center justify-between">
           <a
-            href="https://wa.me/254708065140?text=Hi%20NEEMON%20Beauty,%20I%20want%20to%20be%20notified%20when%20shopping%20goes%20live."
+            href="https://wa.me/254708065140?text=Hi%20VoltHub,%20I%20need%20help%20choosing%20a%20gadget."
             target="_blank"
             rel="noopener noreferrer"
             className="rounded-full px-4 py-2 border text-sm min-h-[48px] min-w-[48px] grid place-items-center"
@@ -382,15 +412,13 @@ function Shell({ children }: { children: React.ReactNode }) {
         <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm">
           <div className="absolute left-0 top-0 bottom-0 w-[80%] max-w-[340px] bg-white dark:bg-black p-6 rounded-tr-2xl rounded-br-2xl shadow-xl">
             <div className="flex items-center justify-between">
-              <div className="font-serif text-xl">NEEMON</div>
+              <div className="font-serif text-xl">VoltHub</div>
               <button onClick={() => setMobileOpen(false)} className="rounded-full px-3 py-1 border">Close</button>
             </div>
             <div className="mt-6 flex flex-col gap-3">
               <Link href="/" className="py-3" onClick={() => setMobileOpen(false)}>Home</Link>
-              <Link href="/launch" className="py-3" onClick={() => setMobileOpen(false)}>Shop</Link>
-              <Link href="/launch" className="py-3" onClick={() => setMobileOpen(false)}>Categories</Link>
-              <Link href="/shade-quiz" className="py-3" onClick={() => setMobileOpen(false)}>Shade Quiz</Link>
-              <Link href="/offers" className="py-3" onClick={() => setMobileOpen(false)}>Offers</Link>
+              <Link href="/shop" className="py-3" onClick={() => setMobileOpen(false)}>Shop</Link>
+              <Link href="/offers" className="py-3" onClick={() => setMobileOpen(false)}>Deals</Link>
               <Link href="/about" className="py-3" onClick={() => setMobileOpen(false)}>About</Link>
               <Link href="/account" className="py-3" onClick={() => setMobileOpen(false)}>Account</Link>
             </div>
@@ -400,10 +428,10 @@ function Shell({ children }: { children: React.ReactNode }) {
       <footer className="border-t border-black/10 dark:border-white/10">
         <div className="mx-auto max-w-7xl px-6 py-10 grid gap-6 sm:grid-cols-3">
           <div>
-            <div className="font-serif text-xl mb-2">NEEMON</div>
+            <div className="font-serif text-xl mb-2">VoltHub</div>
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Luxury, inclusive beauty for Kenya. Authentic brands, secure
-              payments, same‑day Nairobi delivery, nationwide courier.
+              A practical gadget store for Kenya. Audio, smartwatches, chargers,
+              power banks, and accessories with fast delivery and clear support.
             </p>
           </div>
           <div className="text-sm">
@@ -411,6 +439,12 @@ function Shell({ children }: { children: React.ReactNode }) {
             <div className="flex flex-col gap-1">
               <Link href="/" className="hover:opacity-80">
                 Home
+              </Link>
+              <Link href="/shop" className="hover:opacity-80">
+                Shop
+              </Link>
+              <Link href="/offers" className="hover:opacity-80">
+                Deals
               </Link>
               <Link href="/about" className="hover:opacity-80">
                 About
@@ -424,8 +458,8 @@ function Shell({ children }: { children: React.ReactNode }) {
             <div className="font-medium mb-2">Contact</div>
             <div className="flex flex-col gap-1">
               <span>Nairobi, Kenya</span>
-              <a href="mailto:hello@neemon.co.ke" className="hover:opacity-80">
-                hello@neemon.co.ke
+              <a href="mailto:support@volthub.co.ke" className="hover:opacity-80">
+                support@volthub.co.ke
               </a>
             </div>
           </div>

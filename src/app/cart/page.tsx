@@ -53,6 +53,10 @@ export default function CartPage() {
     .map((id) => products.find((p) => p.id === id))
     .filter((p) => p !== undefined);
 
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
   const moveToCart = (id: string) => {
     setWishlistIds((prev) => {
       const next = prev.filter((pid) => pid !== id);
@@ -212,7 +216,7 @@ export default function CartPage() {
                 <button
                   className={`px-3 py-1 rounded-full border ${
                     delivery === "nairobi"
-                      ? "bg-[color:var(--champagne-gold)] text-white"
+                      ? "bg-[color:var(--accent)] text-white"
                       : ""
                   }`}
                   onClick={() => setDelivery("nairobi")}
@@ -222,7 +226,7 @@ export default function CartPage() {
                 <button
                   className={`px-3 py-1 rounded-full border ${
                     delivery === "kenya"
-                      ? "bg-[color:var(--champagne-gold)] text-white"
+                      ? "bg-[color:var(--accent)] text-white"
                       : ""
                   }`}
                   onClick={() => setDelivery("kenya")}
@@ -236,7 +240,7 @@ export default function CartPage() {
             </div>
             <Link
               href="/checkout"
-              className="mt-4 block rounded-full px-4 py-2 bg-[color:var(--champagne-gold)] text-white text-center min-h-[48px]"
+              className="mt-4 block rounded-full px-4 py-2 bg-[color:var(--accent)] text-white text-center min-h-[48px]"
             >
               Checkout
             </Link>

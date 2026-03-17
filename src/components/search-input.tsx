@@ -46,7 +46,7 @@ export function SearchInput({ className }: { className?: string }) {
           p.category.toLowerCase().includes(q)
       )
       .slice(0, 5);
-  }, [query]);
+  }, [query, products]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,11 +67,11 @@ export function SearchInput({ className }: { className?: string }) {
           }}
           onFocus={() => setOpen(true)}
           placeholder="Search products..."
-          className="w-full rounded-full pl-4 pr-10 py-2 border border-black/10 dark:border-white/10 bg-white/70 dark:bg-black/60 focus:outline-none focus:ring-2 focus:ring-[color:var(--champagne-gold)]"
+          className="w-full rounded-full pl-4 pr-10 py-2 border border-black/10 dark:border-white/10 bg-white/70 dark:bg-black/60 focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]"
         />
         <button
           type="submit"
-          className="absolute right-1 top-1 bottom-1 px-3 rounded-full bg-[color:var(--champagne-gold)] text-white flex items-center justify-center"
+          className="absolute right-1 top-1 bottom-1 px-3 rounded-full bg-[color:var(--accent)] text-white flex items-center justify-center"
         >
           <svg
             width="16"
@@ -132,7 +132,7 @@ export function SearchInput({ className }: { className?: string }) {
                 <Link
                   href={`/search?q=${encodeURIComponent(query.trim())}`}
                   onClick={() => setOpen(false)}
-                  className="block px-3 py-2 text-sm text-center text-[color:var(--champagne-gold)] hover:underline"
+                  className="block px-3 py-2 text-sm text-center text-[color:var(--accent)] hover:underline"
                 >
                   See all results for &quot;{query}&quot;
                 </Link>

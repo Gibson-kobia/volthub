@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getSupabase } from "@/lib/supabase";
-import { Order, DBProduct } from "@/lib/types";
+import { Order } from "@/lib/types";
 
 type DashboardStats = {
   newOrders: number;

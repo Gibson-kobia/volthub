@@ -5,19 +5,18 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { getSupabase } from "@/lib/supabase";
 
+const ADMIN_EMAILS = ["virginiagatwiri7@gmail.com"];
+
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const [loading, setLoading] = useState(true);
-  const [authenticated, setAuthenticated] = useState(false);
   const [accessDenied, setAccessDenied] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const supabase = getSupabase();
-
-  const ADMIN_EMAILS = ["virginiagatwiri7@gmail.com"];
 
   useEffect(() => {
     const checkSession = async () => {
@@ -39,7 +38,6 @@ export default function AdminLayout({
         return;
       }
 
-      setAuthenticated(true);
       setLoading(false);
     };
 
@@ -97,7 +95,7 @@ export default function AdminLayout({
       <aside className="w-64 bg-white shadow-md flex flex-col fixed h-full z-10">
         <div className="p-6 border-b">
           <h1 className="text-xl font-bold font-playfair tracking-wide">
-            NEEMON <span className="text-sm font-sans font-normal text-gray-500 block">Seller Admin</span>
+            VoltHub <span className="text-sm font-sans font-normal text-gray-500 block">Admin</span>
           </h1>
         </div>
         <nav className="flex-1 p-4 space-y-2">

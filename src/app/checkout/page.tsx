@@ -21,15 +21,15 @@ export default function CheckoutPage() {
     return cartRaw ? (JSON.parse(cartRaw) as CartItem[]) : [];
   });
   const [products, setProducts] = useState<Product[]>([]);
-  const [loadingProducts, setLoadingProducts] = useState(true);
   
   const [addressText, setAddressText] = useState("");
   const [deliveryMethod, setDeliveryMethod] = useState<"bodaboda" | "courier">("bodaboda");
   const [paymentMode, setPaymentMode] = useState<"mpesa" | "delivery">("mpesa");
   const [mpesaPhone, setMpesaPhone] = useState("");
-  const [isPaying, setIsPaying] = useState(false);
-  const [stkSent, setStkSent] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  const [customerName, setCustomerName] = useState(user?.name ?? "");
+  const [customerEmail, setCustomerEmail] = useState(user?.email ?? "");
+  const [customerPhone, setCustomerPhone] = useState(user?.phone ?? "");
   const [mapSelected, setMapSelected] = useState<DeliveryLocation | null>(() => {
     const dlRaw = typeof window !== "undefined" ? localStorage.getItem("deliveryLocation") : null;
     if (dlRaw) {
@@ -43,7 +43,7 @@ export default function CheckoutPage() {
   const [placed, setPlaced] = useState(false);
   const savedAddresses = useMemo<{ id: string; label: string; addressText: string }[]>(() => {
     if (!user) return [];
-    const raw = typeof window !== "undefined" ? localStorage.getItem("neemonAddresses") : null;
+    const raw = typeof window !== "undefined" ? localStorage.getItem("volthubAddresses") : null;
     const all = raw ? (JSON.parse(raw) as { id: string; userId: string; label: string; addressText: string }[]) : [];
     return all
       .filter((a) => a.userId === user.id)
@@ -54,7 +54,6 @@ export default function CheckoutPage() {
     async function load() {
       const p = await fetchProducts();
       setProducts(p);
-      setLoadingProducts(false);
     }
     load();
   }, []);
@@ -84,7 +83,7 @@ export default function CheckoutPage() {
         return product ? { product, qty: c.qty } : null;
       })
       .filter(Boolean) as { product: (typeof products)[number]; qty: number }[];
-  }, [cart]);
+  }, [cart, products]);
 
   const total = useMemo(() => {
     return items.reduce((sum, i) => sum + i.product.priceKes * i.qty, 0);
@@ -93,6 +92,14 @@ export default function CheckoutPage() {
   const confirmLocation = (loc: DeliveryLocation) => {
     setMapSelected(loc);
     setShowMap(false);
+  };
+
+  const normalizeKenyanPhone = (input: string) => {
+    const digits = input.replace(/\D/g, "");
+    if (digits.startsWith("254") && digits.length >= 12) return digits.slice(3, 12);
+    if (digits.startsWith("0") && digits.length >= 10) return digits.slice(1, 10);
+    if (digits.length === 9) return digits;
+    return digits.slice(-9);
   };
 
   const placeOrder = async () => {
@@ -104,24 +111,28 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (paymentMode === "mpesa") {
-      const phone = mpesaPhone.replace(/\D/g, "");
-      if (phone.length !== 9) {
-        setError("Please enter a valid M-Pesa phone number (e.g. 712345678)");
-        return;
-      }
-      setIsPaying(true);
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setStkSent(true);
-      // Simulate user entering PIN
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      setIsPaying(false);
+    const name = customerName.trim();
+    const email = customerEmail.trim();
+    const phone = normalizeKenyanPhone(customerPhone);
+    if (!name) {
+      setError("Enter your full name.");
+      return;
+    }
+    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      setError("Enter a valid email address.");
+      return;
+    }
+    if (!phone || phone.length !== 9) {
+      setError("Enter a valid phone number (e.g. 712345678).");
+      return;
     }
 
-    const name = user?.name ?? "";
-    const email = user?.email ?? "";
-    const phone = paymentMode === "mpesa" ? mpesaPhone : (user?.phone || "");
+    const mpesa = normalizeKenyanPhone(mpesaPhone);
+    if (paymentMode === "mpesa" && mpesa.length !== 9) {
+      setError("Enter a valid M‑Pesa phone number (e.g. 712345678).");
+      return;
+    }
+
     const orderItems = items.map((i) => ({
       product_id: i.product.id,
       name: i.product.name,
@@ -130,9 +141,9 @@ export default function CheckoutPage() {
     }));
     const payload = {
       user_id: user ? user.id : null,
-      customer_name: name || "Guest",
-      customer_email: email || null,
-      customer_phone: phone || null,
+      customer_name: name,
+      customer_email: email,
+      customer_phone: phone,
       items: orderItems,
       total,
       delivery_method: deliveryMethod,
@@ -140,19 +151,12 @@ export default function CheckoutPage() {
       delivery_location: hasMap ? mapSelected : null,
       address_text: hasAddress ? addressText.trim() : null,
       payment_method: paymentMode,
-      mpesa_phone: paymentMode === "mpesa" ? mpesaPhone : null,
+      mpesa_phone: paymentMode === "mpesa" ? mpesa : null,
     };
 
-    console.log("CART_RAW", typeof window !== "undefined" ? localStorage.getItem("cart") : null);
-    console.log("CART_LINES", items);
-    console.log("ORDER_ITEMS", orderItems);
-    console.log("TOTAL", total);
-    console.log("PAYLOAD", payload);
-
-    const { data, error: insertError } = await getSupabase().from("orders").insert([payload]).select("*");
-    console.log("INSERT_RESULT", data, insertError);
+    const { error: insertError } = await getSupabase().from("orders").insert([payload]).select("*");
     if (insertError) {
-      setError(insertError.message);
+      setError(insertError.message || "Order could not be placed. Check your Supabase connection.");
       return;
     }
     localStorage.setItem("cart", JSON.stringify([]));
@@ -166,7 +170,7 @@ export default function CheckoutPage() {
         <div className="mt-3 text-zinc-600 dark:text-zinc-400">
           We are processing your order. You can continue shopping.
         </div>
-        <Link href="/" className="mt-6 inline-block rounded-full px-5 py-2 bg-[color:var(--champagne-gold)] text-white">
+        <Link href="/" className="mt-6 inline-block rounded-full px-5 py-2 bg-[color:var(--accent)] text-white">
           Back to home
         </Link>
       </div>
@@ -177,11 +181,48 @@ export default function CheckoutPage() {
     <div className="mx-auto max-w-6xl px-6 py-10">
       <div className="font-serif text-3xl">Checkout</div>
       <div className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-        Secure M‑Pesa and card payments coming soon.
+        Place your order and we’ll share payment and delivery confirmation details.
       </div>
 
       <div className="mt-8 grid md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
+          <div className="rounded-xl border border-black/10 dark:border-white/10 p-6 bg-white dark:bg-black">
+            <div className="font-medium">Customer Details</div>
+            <div className="mt-4 grid sm:grid-cols-2 gap-3 text-sm">
+              <div className="sm:col-span-2">
+                <label className="block mb-1">Full name</label>
+                <input
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="w-full rounded-lg border px-3 py-2 bg-transparent"
+                  placeholder="e.g. Alex Wanjiru"
+                />
+              </div>
+              <div>
+                <label className="block mb-1">Email</label>
+                <input
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  className="w-full rounded-lg border px-3 py-2 bg-transparent"
+                  placeholder="e.g. alex@email.com"
+                />
+              </div>
+              <div>
+                <label className="block mb-1">Phone</label>
+                <div className="flex gap-2">
+                  <span className="flex items-center px-3 border border-black/10 dark:border-white/10 rounded-lg bg-white dark:bg-black text-zinc-500 text-sm">
+                    +254
+                  </span>
+                  <input
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    className="flex-1 rounded-lg border border-black/10 dark:border-white/10 px-3 py-2 bg-white dark:bg-black"
+                    placeholder="712 345 678"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
           <div className="rounded-xl border border-black/10 dark:border-white/10 p-6 bg-white dark:bg-black">
             <div className="font-medium">Delivery Details</div>
             <div className="mt-4 space-y-3">
@@ -239,7 +280,7 @@ export default function CheckoutPage() {
               <div className="mt-4">
                 <button
                   onClick={() => setShowMap((v) => !v)}
-                  className="rounded-full px-4 py-2 bg-[color:var(--champagne-gold)] text-white"
+                  className="rounded-full px-4 py-2 bg-[color:var(--accent)] text-white"
                 >
                   Choose delivery location on map
                 </button>
@@ -280,12 +321,12 @@ export default function CheckoutPage() {
                   name="payment"
                   checked={paymentMode === "mpesa"}
                   onChange={() => setPaymentMode("mpesa")}
-                  className="accent-[color:var(--champagne-gold)]"
+                  className="accent-[color:var(--accent)]"
                 />
                 <div className="flex-1">
                   <div className="font-medium">M-Pesa Express</div>
                   <div className="text-xs text-zinc-500">
-                    Fast, secure payment to till number
+                    We’ll share payment instructions after you place the order
                   </div>
                 </div>
                 <div className="font-bold text-green-600 text-sm tracking-wide">
@@ -298,12 +339,12 @@ export default function CheckoutPage() {
                   name="payment"
                   checked={paymentMode === "delivery"}
                   onChange={() => setPaymentMode("delivery")}
-                  className="accent-[color:var(--champagne-gold)]"
+                  className="accent-[color:var(--accent)]"
                 />
                 <div className="flex-1">
                   <div className="font-medium">Pay on Delivery</div>
                   <div className="text-xs text-zinc-500">
-                    Pay via M-Pesa or Cash upon receipt
+                    Confirm payment when your delivery is arranged
                   </div>
                 </div>
               </label>
@@ -326,12 +367,11 @@ export default function CheckoutPage() {
                       )
                     }
                     placeholder="712 345 678"
-                    className="flex-1 rounded-lg border border-black/10 dark:border-white/10 px-3 py-2 bg-white dark:bg-black focus:outline-none focus:border-[color:var(--champagne-gold)]"
+                    className="flex-1 rounded-lg border border-black/10 dark:border-white/10 px-3 py-2 bg-white dark:bg-black focus:outline-none focus:border-[color:var(--accent)]"
                   />
                 </div>
                 <div className="mt-2 text-xs text-zinc-500">
-                  You will receive an STK push on your phone to complete the
-                  payment.
+                  Use a Safaricom number in 7XXXXXXXX format.
                 </div>
               </div>
             )}
@@ -342,21 +382,17 @@ export default function CheckoutPage() {
           <button
             onClick={placeOrder}
             disabled={
-              isPaying ||
               items.length === 0 ||
               !deliveryMethod ||
-              !((user?.name ?? "").trim() && (user?.email ?? "").trim() && (paymentMode === "mpesa" ? mpesaPhone.trim() : (user?.phone ?? "").trim())) ||
+              !customerName.trim() ||
+              !customerEmail.trim() ||
+              !customerPhone.trim() ||
+              (paymentMode === "mpesa" && !mpesaPhone.trim()) ||
               !(addressText.trim().length > 0 || !!mapSelected)
             }
-            className="w-full sm:w-auto rounded-full px-8 py-3 bg-[color:var(--champagne-gold)] text-white font-medium hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
+            className="w-full sm:w-auto rounded-full px-8 py-3 bg-[color:var(--accent)] text-white font-medium hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
           >
-            {isPaying
-              ? stkSent
-                ? "Check your phone..."
-                : "Sending STK Push..."
-              : paymentMode === "mpesa"
-              ? "Pay Now"
-              : "Place Order"}
+            Place order
           </button>
         </div>
 

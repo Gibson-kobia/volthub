@@ -15,7 +15,7 @@ type AuthContextValue = {
   signup: (name: string, email: string, phone: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
-  resetPassword: (email: string, newPassword?: string) => Promise<{ ok: boolean; error?: string }>;
+  resetPassword: (email: string) => Promise<{ ok: boolean; error?: string }>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -69,8 +69,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (error) return { ok: false, error: error.message };
           if (data.user) setUser(toPublicFromSupabase(data.user));
           return { ok: true };
-        } catch (error: any) {
-           return { ok: false, error: error.message || "Supabase not initialized" };
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : "Supabase not initialized";
+          return { ok: false, error: message };
         }
       },
       login: async (email, password) => {
@@ -79,8 +80,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (error) return { ok: false, error: error.message };
           if (data.user) setUser(toPublicFromSupabase(data.user));
           return { ok: true };
-        } catch (error: any) {
-           return { ok: false, error: error.message || "Supabase not initialized" };
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : "Supabase not initialized";
+          return { ok: false, error: message };
         }
       },
       logout: () => {
@@ -96,8 +98,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const { error } = await getSupabase().auth.resetPasswordForEmail(email);
           if (error) return { ok: false, error: error.message };
           return { ok: true };
-        } catch (error: any) {
-           return { ok: false, error: error.message || "Supabase not initialized" };
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : "Supabase not initialized";
+          return { ok: false, error: message };
         }
       },
     };

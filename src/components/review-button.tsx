@@ -21,7 +21,7 @@ export function ReviewButton({ productId }: { productId: string }) {
       return;
     }
     setLoading(true);
-    const raw = localStorage.getItem("neemonReviews");
+    const raw = localStorage.getItem("volthubReviews");
     const all = raw ? JSON.parse(raw) : [];
     const review = {
       id: crypto.randomUUID(),
@@ -32,7 +32,7 @@ export function ReviewButton({ productId }: { productId: string }) {
       createdAt: new Date().toISOString(),
     };
     const next = [...all, review];
-    localStorage.setItem("neemonReviews", JSON.stringify(next));
+    localStorage.setItem("volthubReviews", JSON.stringify(next));
     setLoading(false);
     setStatus("Thank you for your review.");
     setText("");
@@ -90,7 +90,7 @@ export function ReviewButton({ productId }: { productId: string }) {
             <button
               onClick={submit}
               disabled={loading}
-              className="rounded-full px-4 py-2 bg-[color:var(--champagne-gold)] text-white text-sm disabled:opacity-70"
+              className="rounded-full px-4 py-2 bg-[color:var(--accent)] text-white text-sm disabled:opacity-70"
             >
               {loading ? "Submitting..." : "Submit review"}
             </button>

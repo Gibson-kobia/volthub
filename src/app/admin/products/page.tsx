@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
-import { DBProduct, CategorySlug } from "@/lib/types";
+import { DBProduct } from "@/lib/types";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<DBProduct[]>([]);
@@ -10,7 +10,7 @@ export default function AdminProductsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<DBProduct | null>(null);
   const [formData, setFormData] = useState<Partial<DBProduct>>({
-    category: "makeup",
+    category: "audio",
     is_active: true,
   });
   const [saving, setSaving] = useState(false);
@@ -43,12 +43,12 @@ export default function AdminProductsPage() {
     } else {
       setEditingProduct(null);
       setFormData({
-        category: "makeup",
+        category: "audio",
         is_active: true,
         stock: 0,
         rating: 0,
         reviews_count: 0,
-        brand: "Neemon",
+        brand: "VoltHub",
       });
     }
     setIsModalOpen(true);
@@ -94,7 +94,8 @@ export default function AdminProductsPage() {
       await fetchProducts();
       handleCloseModal();
     } catch (error) {
-      alert("Error saving product: " + (error as any).message);
+      const message = error instanceof Error ? error.message : "Unknown error";
+      alert("Error saving product: " + message);
     } finally {
       setSaving(false);
     }
@@ -241,7 +242,7 @@ export default function AdminProductsPage() {
                     value={formData.name || ""}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
-                    placeholder="e.g. Matte Lipstick"
+                    placeholder="e.g. Wireless Earbuds"
                   />
                 </div>
 
@@ -259,15 +260,16 @@ export default function AdminProductsPage() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Category</label>
                   <select
-                    value={formData.category || "makeup"}
+                    value={formData.category || "audio"}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all bg-white"
                   >
-                    <option value="makeup">Makeup</option>
-                    <option value="skincare">Skincare</option>
-                    <option value="hair">Hair</option>
-                    <option value="perfumes">Perfumes</option>
-                    <option value="tools">Tools</option>
+                    <option value="audio">Audio</option>
+                    <option value="smartwatches">Smartwatches</option>
+                    <option value="chargers-cables">Chargers & Cables</option>
+                    <option value="power-banks">Power Banks</option>
+                    <option value="phone-accessories">Phone Accessories</option>
+                    <option value="speakers">Speakers</option>
                   </select>
                 </div>
 

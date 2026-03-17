@@ -27,7 +27,7 @@ export function AddToCartButton({
       }}
       className={
         className ||
-        "relative rounded-full px-4 py-2 bg-[color:var(--champagne-gold)] text-white hover:opacity-90 transition-transform active:scale-[0.98]"
+        "relative rounded-full px-4 py-2 bg-[color:var(--accent)] text-white hover:opacity-90 transition-transform active:scale-[0.98]"
       }
     >
       <span className={`inline-flex items-center gap-2 transition-opacity ${added ? "opacity-0" : "opacity-100"}`}>
@@ -46,4 +46,3 @@ export function AddToCartButton({
     </button>
   );
 }
-

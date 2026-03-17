@@ -16,9 +16,9 @@ const bodySans = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "NEEMON BEAUTY SHOP & COSMETICS",
+  title: "VoltHub | Gadgets & Accessories in Kenya",
   description:
-    "Luxury Kenyan beauty ecommerce. Authentic brands, secure M‑Pesa, nationwide delivery.",
+    "VoltHub is a gadget store in Kenya for audio, smartwatches, chargers, power banks, and phone accessories. Nairobi delivery and nationwide courier.",
 };
 
 export const viewport = {

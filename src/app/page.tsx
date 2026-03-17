@@ -18,7 +18,7 @@ export default function Home() {
     load();
   }, []);
 
-  const featured = products.slice(0, 12);
+  const featured = products.slice(0, 8);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -29,9 +29,9 @@ export default function Home() {
 
       <section className="mt-6">
         <div className="rounded-full px-4 py-2 text-xs grid grid-cols-3 gap-2 text-center border bg-white dark:bg-black">
-          <div className="opacity-80">Authentic Products</div>
+          <div className="opacity-80">Quality Gadgets</div>
           <div className="opacity-80">Fast Delivery</div>
-          <div className="opacity-80">Secure Payment</div>
+          <div className="opacity-80">M‑Pesa Friendly</div>
         </div>
       </section>
 
@@ -39,11 +39,11 @@ export default function Home() {
         <div className="font-serif text-2xl mb-6">Shop by Category</div>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
           {[
-            { slug: "makeup", title: "Makeup" },
-            { slug: "skincare", title: "Skincare" },
-            { slug: "hair", title: "Hair Products" },
-            { slug: "perfumes", title: "Perfumes" },
-            { slug: "tools", title: "Beauty Tools" },
+            { slug: "audio", title: "Audio" },
+            { slug: "smartwatches", title: "Smartwatches" },
+            { slug: "chargers-cables", title: "Chargers & Cables" },
+            { slug: "power-banks", title: "Power Banks" },
+            { slug: "phone-accessories", title: "Phone Accessories" },
           ].map((c) => (
             <Link
               key={c.slug}
@@ -57,7 +57,17 @@ export default function Home() {
       </section>
 
       <section className="mt-12">
-        <div className="font-serif text-2xl mb-6">Featured Products</div>
+        <div className="flex items-end justify-between gap-6 mb-6">
+          <div>
+            <div className="font-serif text-2xl">Featured products</div>
+            <div className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              Popular picks that ship fast in Kenya.
+            </div>
+          </div>
+          <Link href="/shop" className="rounded-full px-4 py-2 border text-sm">
+            Shop all
+          </Link>
+        </div>
         <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {featured.map((p) => (
             <ProductCard key={p.id} product={p} />
@@ -65,38 +75,57 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mt-12 grid md:grid-cols-2 gap-6">
-        <div className="rounded-xl border p-6 bg-white dark:bg-black">
-          <div className="font-serif text-xl">AI Beauty Experience</div>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Get recommendations based on your skin tone and preferences.
-          </p>
-          <Link
-            href="/shade-quiz"
-            aria-label="Try the shade quiz"
-            className="mt-4 inline-flex items-center justify-center rounded-xl px-4 py-3 min-h-12 border text-sm tracking-[0.02em] transition-all hover:bg-black/5 dark:hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--champagne-gold)] focus-visible:ring-offset-2"
-          >
-            Try the shade quiz
-          </Link>
-        </div>
-        <div className="rounded-xl border p-6 bg-white dark:bg-black"></div>
+      <section className="mt-12 grid md:grid-cols-3 gap-6">
+        {[
+          {
+            title: "Trusted picks",
+            body: "Practical gadgets and accessories selected for everyday use.",
+          },
+          {
+            title: "Fast delivery",
+            body: "Same‑day Nairobi delivery options and nationwide courier.",
+          },
+          {
+            title: "Support on WhatsApp",
+            body: "Ask questions before you buy — we’ll help you choose the right item.",
+          },
+        ].map((c) => (
+          <div key={c.title} className="rounded-xl border p-6 bg-white dark:bg-black">
+            <div className="font-serif text-xl">{c.title}</div>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{c.body}</p>
+          </div>
+        ))}
       </section>
 
       <section className="mt-12 rounded-xl border p-6 bg-white dark:bg-black">
-        <div className="font-serif text-2xl">Delivery & Payments</div>
+        <div className="font-serif text-2xl">Delivery & payment</div>
         <div className="mt-4 grid sm:grid-cols-3 gap-6 text-sm">
           <div>
-            <div className="font-medium">Bodaboda (Nairobi)</div>
-            <div className="text-zinc-600 dark:text-zinc-400">Same‑day</div>
+            <div className="font-medium">Nairobi delivery</div>
+            <div className="text-zinc-600 dark:text-zinc-400">Same‑day options available</div>
           </div>
           <div>
-            <div className="font-medium">Courier (Kenya)</div>
-            <div className="text-zinc-600 dark:text-zinc-400">1‑3 days</div>
+            <div className="font-medium">Nationwide courier</div>
+            <div className="text-zinc-600 dark:text-zinc-400">1‑3 working days</div>
           </div>
           <div>
-            <div className="font-medium">M‑Pesa + Cards</div>
-            <div className="text-zinc-600 dark:text-zinc-400">Secure payment</div>
+            <div className="font-medium">Pay with M‑Pesa</div>
+            <div className="text-zinc-600 dark:text-zinc-400">Clear instructions after you order</div>
           </div>
+        </div>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link
+            href="/shop"
+            className="rounded-full px-5 py-2 bg-[color:var(--accent)] text-white text-sm"
+          >
+            Start shopping
+          </Link>
+          <Link
+            href="/offers"
+            className="rounded-full px-5 py-2 border text-sm"
+          >
+            View deals
+          </Link>
         </div>
       </section>
     </div>
@@ -107,12 +136,12 @@ function HeroSlider() {
   const noise =
     "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>";
   const imageUrl =
-    "https://images.pexels.com/photos/3764019/pexels-photo-3764019.jpeg?auto=compress&cs=tinysrgb&w=1200";
+    "https://images.pexels.com/photos/4792733/pexels-photo-4792733.jpeg?auto=compress&cs=tinysrgb&w=1200";
   const blur =
-    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><rect width='100%' height='100%' fill='%23f7e9e4'/></svg>";
+    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><rect width='100%' height='100%' fill='%23e8f0ff'/></svg>";
 
   return (
-    <section className="relative mt-8 min-h-[100svh] px-4 md:px-6" aria-label="NEEMON luxury hero">
+    <section className="relative mt-8 min-h-[92svh] px-4 md:px-6" aria-label="VoltHub hero">
       <div className="absolute inset-0 pointer-events-none -z-10">
         <SlideBackground />
       </div>
@@ -127,27 +156,27 @@ function HeroSlider() {
           <div className="px-6 md:px-10 py-10 lg:py-14 flex items-center">
             <div className="max-w-xl">
               <h1 className="font-serif text-5xl md:text-6xl leading-tight tracking-[0.01em]">
-                <span className="block">Where Beauty</span>
-                <span className="block">Meets Confidence</span>
+                <span className="block">Power up</span>
+                <span className="block">your everyday</span>
               </h1>
               <p className="mt-4 text-sm md:text-base opacity-90">
-                Discover skincare, makeup, hair and fragrance curated for every shade, every style,
-                and every moment. NEEMON is not just beauty — it’s how you show up to the world.
+                VoltHub is a gadget store built for real life: audio, smartwatches, chargers, power
+                banks, and phone accessories — delivered fast across Kenya.
               </p>
               <div className="mt-8 flex items-center gap-4">
                 <Link
-                  href="/launch"
-                  className="rounded-2xl px-6 py-3 text-sm font-medium bg-[color:var(--champagne-gold)] text-[color:var(--charcoal-black)] shadow-[0_8px_24px_rgba(214,191,164,0.45)] hover:shadow-[0_12px_32px_rgba(214,191,164,0.55)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--champagne-gold)] focus-visible:ring-offset-2"
+                  href="/shop"
+                  className="rounded-2xl px-6 py-3 text-sm font-medium bg-[color:var(--accent)] text-white shadow-[0_8px_24px_rgba(37,99,235,0.35)] hover:shadow-[0_12px_32px_rgba(37,99,235,0.45)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)] focus-visible:ring-offset-2"
                 >
-                  Launching Soon — Join Us
+                  Shop gadgets
                 </Link>
                 <Link
-                  href="https://wa.me/254708065140"
+                  href="https://wa.me/254708065140?text=Hi%20VoltHub,%20I%20need%20help%20choosing%20a%20gadget."
                   target="_blank"
                   rel="noopener"
                   className="text-sm underline opacity-90 hover:opacity-100"
                 >
-                  Chat with us on WhatsApp
+                  WhatsApp support
                 </Link>
               </div>
             </div>
@@ -155,7 +184,7 @@ function HeroSlider() {
           <div className="relative h-[46vh] md:h-auto min-h-[46vh]">
             <Image
               src={imageUrl}
-              alt="Editorial beauty — soft cinematic portrait"
+              alt="Modern gadgets and accessories"
               fill
               priority
               quality={55}
@@ -164,7 +193,7 @@ function HeroSlider() {
               blurDataURL={blur}
               className="object-cover animate-[imageZoom_20s_ease_infinite]"
             />
-            <div className="absolute inset-0 bg-gradient-to-l from-[color:var(--charcoal-black)]/45 via-[color:var(--charcoal-black)]/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-l from-black/55 via-black/25 to-transparent" />
           </div>
         </div>
 
@@ -198,7 +227,7 @@ function HeroSlider() {
 function SlideBackground() {
   return (
     <div className="w-full h-full relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-[color:var(--nude-blush)] via-[color:var(--ivory-white)] to-[color:var(--ivory-white)] animate-[gradientShift_14s_ease_infinite] opacity-80" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[color:var(--accent-soft)] via-[color:var(--background)] to-[color:var(--background)] animate-[gradientShift_14s_ease_infinite] opacity-80" />
     </div>
   );
 }

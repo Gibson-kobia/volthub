@@ -47,7 +47,7 @@ export default function AccountPage() {
 
   const [addresses, setAddresses] = useState<Address[]>(() => {
     if (typeof window === "undefined") return [];
-    const raw = localStorage.getItem("neemonAddresses");
+    const raw = localStorage.getItem("volthubAddresses");
     const all = raw ? (JSON.parse(raw) as Address[]) : [];
     return user ? all.filter((a) => a.userId === user.id) : [];
   });
@@ -55,7 +55,7 @@ export default function AccountPage() {
   const [profileDraft, setProfileDraft] = useState<User | null>(user);
   const [reviews, setReviews] = useState<Review[]>(() => {
     if (typeof window === "undefined") return [];
-    const raw = localStorage.getItem("neemonReviews");
+    const raw = localStorage.getItem("volthubReviews");
     const all = raw ? (JSON.parse(raw) as Review[]) : [];
     return user ? all.filter((r) => r.userId === user.id) : [];
   });
@@ -75,11 +75,11 @@ export default function AccountPage() {
       if (e.key === "wishlist" && e.newValue) {
         setWishlistIds(JSON.parse(e.newValue));
       }
-      if (e.key === "neemonAddresses" && e.newValue) {
+      if (e.key === "volthubAddresses" && e.newValue) {
         const all = JSON.parse(e.newValue) as Address[];
         setAddresses(user ? all.filter((a) => a.userId === user.id) : []);
       }
-      if (e.key === "neemonReviews" && e.newValue) {
+      if (e.key === "volthubReviews" && e.newValue) {
         const all = JSON.parse(e.newValue) as Review[];
         setReviews(user ? all.filter((r) => r.userId === user.id) : []);
       }
@@ -174,7 +174,7 @@ export default function AccountPage() {
           onClick={() => setSection("profile")}
           className={`px-4 py-2 rounded-full border ${
             section === "profile"
-              ? "bg-[color:var(--champagne-gold)] text-white"
+              ? "bg-[color:var(--accent)] text-white"
               : ""
           }`}
         >
@@ -184,7 +184,7 @@ export default function AccountPage() {
           onClick={() => setSection("addresses")}
           className={`px-4 py-2 rounded-full border ${
             section === "addresses"
-              ? "bg-[color:var(--champagne-gold)] text-white"
+              ? "bg-[color:var(--accent)] text-white"
               : ""
           }`}
         >
@@ -194,7 +194,7 @@ export default function AccountPage() {
           onClick={() => setSection("orders")}
           className={`px-4 py-2 rounded-full border ${
             section === "orders"
-              ? "bg-[color:var(--champagne-gold)] text-white"
+              ? "bg-[color:var(--accent)] text-white"
               : ""
           }`}
         >
@@ -204,7 +204,7 @@ export default function AccountPage() {
           onClick={() => setSection("wishlist")}
           className={`px-4 py-2 rounded-full border ${
             section === "wishlist"
-              ? "bg-[color:var(--champagne-gold)] text-white"
+              ? "bg-[color:var(--accent)] text-white"
               : ""
           }`}
         >
@@ -214,7 +214,7 @@ export default function AccountPage() {
           onClick={() => setSection("reviews")}
           className={`px-4 py-2 rounded-full border ${
             section === "reviews"
-              ? "bg-[color:var(--champagne-gold)] text-white"
+              ? "bg-[color:var(--accent)] text-white"
               : ""
           }`}
         >
@@ -273,20 +273,25 @@ export default function AccountPage() {
                 </button>
                 <button
                   onClick={() => {
-                    const raw = localStorage.getItem("neemonUsers");
-                    const users = raw ? (JSON.parse(raw) as User[]) : [];
-                    const idx = users.findIndex((u: User) => u.id === user.id);
-                    if (idx >= 0 && profileDraft) {
-                      users[idx] = { ...users[idx], name: profileDraft.name, phone: profileDraft.phone };
-                      localStorage.setItem("neemonUsers", JSON.stringify(users));
-                      localStorage.setItem(
-                        "neemonUser",
-                        JSON.stringify({ ...user, name: profileDraft.name, phone: profileDraft.phone })
-                      );
-                    }
-                    setEditingProfile(false);
+                    (async () => {
+                      if (!profileDraft) return;
+                      try {
+                        const res = await getSupabase().auth.updateUser({
+                          data: { name: profileDraft.name, phone: profileDraft.phone },
+                        });
+                        if (res.error) {
+                          alert(res.error.message);
+                          return;
+                        }
+                        setEditingProfile(false);
+                        window.location.reload();
+                      } catch (e: unknown) {
+                        const message = e instanceof Error ? e.message : "Failed to update profile.";
+                        alert(message);
+                      }
+                    })();
                   }}
-                  className="rounded-full px-4 py-2 bg-[color:var(--champagne-gold)] text-white"
+                  className="rounded-full px-4 py-2 bg-[color:var(--accent)] text-white"
                 >
                   Save
                 </button>
@@ -320,7 +325,7 @@ export default function AccountPage() {
               const label = (document.getElementById("addr_label") as HTMLInputElement)?.value.trim();
               const text = (document.getElementById("addr_text") as HTMLInputElement)?.value.trim();
               if (!label || !text || !user) return;
-              const raw = localStorage.getItem("neemonAddresses");
+              const raw = localStorage.getItem("volthubAddresses");
               const all = raw ? (JSON.parse(raw) as Address[]) : [];
               const entry: Address = {
                 id: crypto.randomUUID(),
@@ -329,13 +334,13 @@ export default function AccountPage() {
                 addressText: text,
               };
               const next = [...all, entry];
-              localStorage.setItem("neemonAddresses", JSON.stringify(next));
+              localStorage.setItem("volthubAddresses", JSON.stringify(next));
               const mine = next.filter((a) => a.userId === user.id);
               setAddresses(mine);
               (document.getElementById("addr_label") as HTMLInputElement).value = "";
               (document.getElementById("addr_text") as HTMLInputElement).value = "";
             }}
-            className="rounded-full px-4 py-2 bg-[color:var(--champagne-gold)] text-white"
+            className="rounded-full px-4 py-2 bg-[color:var(--accent)] text-white"
           >
             Add address
           </button>
@@ -353,10 +358,10 @@ export default function AccountPage() {
                     <button
                       className="text-sm underline"
                       onClick={() => {
-                        const raw = localStorage.getItem("neemonAddresses");
+                        const raw = localStorage.getItem("volthubAddresses");
                         const all = raw ? (JSON.parse(raw) as Address[]) : [];
                         const next = all.filter((x) => x.id !== a.id);
-                        localStorage.setItem("neemonAddresses", JSON.stringify(next));
+                        localStorage.setItem("volthubAddresses", JSON.stringify(next));
                         setAddresses(next.filter((x) => x.userId === user!.id));
                       }}
                     >
@@ -491,12 +496,12 @@ export default function AccountPage() {
                         const next = reviews.map((x) =>
                           x.id === r.id ? { ...x, text: prompt("Edit review text", r.text) || r.text } : x
                         );
-                        const raw = localStorage.getItem("neemonReviews");
+                        const raw = localStorage.getItem("volthubReviews");
                         const all = raw ? (JSON.parse(raw) as Review[]) : [];
                         const merged = all.map((x) =>
                           x.id === r.id ? { ...x, text: next.find((n) => n.id === x.id)?.text || x.text } : x
                         );
-                        localStorage.setItem("neemonReviews", JSON.stringify(merged));
+                        localStorage.setItem("volthubReviews", JSON.stringify(merged));
                         setReviews(next);
                       }}
                     >
@@ -505,10 +510,10 @@ export default function AccountPage() {
                     <button
                       className="text-xs text-red-600"
                       onClick={() => {
-                        const raw = localStorage.getItem("neemonReviews");
+                        const raw = localStorage.getItem("volthubReviews");
                         const all = raw ? (JSON.parse(raw) as Review[]) : [];
                         const merged = all.filter((x) => x.id !== r.id);
-                        localStorage.setItem("neemonReviews", JSON.stringify(merged));
+                        localStorage.setItem("volthubReviews", JSON.stringify(merged));
                         setReviews(merged.filter((x) => x.userId === user!.id));
                       }}
                     >
