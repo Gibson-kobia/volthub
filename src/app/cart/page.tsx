@@ -4,9 +4,15 @@ import Link from "next/link";
 import { fetchProducts, type Product } from "../../lib/products";
 import { useCart } from "../../components/cart/cart-provider";
 import { useMemo, useState, useEffect } from "react";
+import { useAuth } from "../../components/auth/auth-provider";
+
+function buildWhatsAppOrderUrl(message: string) {
+  return `https://wa.me/254798966238?text=${encodeURIComponent(message)}`;
+}
 
 export default function CartPage() {
   const { items: cart, setQty, removeItem, addItem } = useCart();
+  const { user } = useAuth();
   const [delivery, setDelivery] = useState<"nairobi" | "kenya">("nairobi");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,6 +33,15 @@ export default function CartPage() {
     .filter((i) => i.product);
 
   const total = items.reduce((sum, i) => sum + (i.product?.priceKes || 0) * i.qty, 0);
+  const waMessage =
+    items.length === 0
+      ? ""
+      : `Hello VoltHub, I want to order: ${items
+          .map((i) => `${i.product!.name} x${i.qty}`)
+          .join(", ")} - Total: KES ${total.toLocaleString()}${
+          user?.name?.trim() ? ` - Name: ${user.name.trim()}` : ""
+        }`;
+  const waUrl = waMessage ? buildWhatsAppOrderUrl(waMessage) : "";
   const estimate = useMemo(() => {
     return delivery === "nairobi" ? "Same‑day via bodaboda" : "1‑3 days via courier";
   }, [delivery]);
@@ -210,6 +225,18 @@ export default function CartPage() {
                 KES {total.toLocaleString()}
               </span>
             </div>
+          <div className="mt-4">
+            <a
+              href={waUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`block rounded-full px-4 py-2 border text-center text-sm min-h-[48px] ${
+                items.length === 0 ? "pointer-events-none opacity-60" : ""
+              }`}
+            >
+              Prefer WhatsApp? Order directly here
+            </a>
+          </div>
             <div className="mt-4">
               <div className="text-sm font-medium">Estimated delivery</div>
               <div className="mt-2 flex gap-2 text-sm">

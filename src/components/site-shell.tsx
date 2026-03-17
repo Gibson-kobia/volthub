@@ -210,7 +210,7 @@ function Shell({ children }: { children: React.ReactNode }) {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z"/><path d="M16 11.37a4 4 0 1 1-7.87 1.16 4 4 0 0 1 7.87-1.16Z"/><path d="M17.5 6.5h.01"/></svg>
               </button>
               <a
-                href="https://wa.me/254708065140?text=Hi%20VoltHub,%20I%20need%20help%20choosing%20a%20gadget."
+                href="https://wa.me/254798966238?text=Hi%20VoltHub,%20I%20need%20help%20choosing%20a%20gadget."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-6 h-6 rounded-full grid place-items-center bg-white/50 dark:bg-black/40 text-[color:var(--foreground)]"
@@ -399,7 +399,7 @@ function Shell({ children }: { children: React.ReactNode }) {
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/85 dark:bg-black/70 backdrop-blur lg:hidden">
         <div className="mx-auto max-w-7xl px-6 py-2 flex items-center justify-between">
           <a
-            href="https://wa.me/254708065140?text=Hi%20VoltHub,%20I%20need%20help%20choosing%20a%20gadget."
+            href="https://wa.me/254798966238?text=Hi%20VoltHub,%20I%20need%20help%20choosing%20a%20gadget."
             target="_blank"
             rel="noopener noreferrer"
             className="rounded-full px-4 py-2 border text-sm min-h-[48px] min-w-[48px] grid place-items-center"

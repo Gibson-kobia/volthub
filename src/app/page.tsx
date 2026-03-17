@@ -68,11 +68,25 @@ export default function Home() {
             Shop all
           </Link>
         </div>
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {featured.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
+        {featured.length === 0 ? (
+          <div className="rounded-2xl border border-black/10 dark:border-white/10 p-10 bg-white dark:bg-black text-center">
+            <div className="font-serif text-2xl">Products coming soon</div>
+            <div className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              We’re preparing the catalog. Check back soon.
+            </div>
+            <div className="mt-6">
+              <Link href="/shop" className="inline-block rounded-full px-5 py-2 border text-sm">
+                Browse categories
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {featured.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="mt-12 grid md:grid-cols-3 gap-6">
@@ -171,7 +185,7 @@ function HeroSlider() {
                   Shop gadgets
                 </Link>
                 <Link
-                  href="https://wa.me/254708065140?text=Hi%20VoltHub,%20I%20need%20help%20choosing%20a%20gadget."
+                  href="https://wa.me/254798966238?text=Hi%20VoltHub,%20I%20need%20help%20choosing%20a%20gadget."
                   target="_blank"
                   rel="noopener"
                   className="text-sm underline opacity-90 hover:opacity-100"

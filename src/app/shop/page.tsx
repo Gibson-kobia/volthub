@@ -87,13 +87,18 @@ export default function ShopPage() {
 
       {filtered.length === 0 ? (
         <div className="mt-10 rounded-2xl border border-black/10 dark:border-white/10 p-10 bg-white dark:bg-black text-center">
-          <div className="font-serif text-2xl">No products yet</div>
+          <div className="font-serif text-2xl">Products coming soon</div>
           <div className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Add products in the admin area or connect your Supabase database.
+            No products available yet. Check back soon.
           </div>
-          <Link href="/admin" className="mt-5 inline-block rounded-full px-5 py-2 border text-sm">
-            Go to admin
-          </Link>
+          <div className="mt-6 flex items-center justify-center gap-3">
+            <Link href="/" className="inline-block rounded-full px-5 py-2 border text-sm">
+              Back to home
+            </Link>
+            <Link href="/offers" className="inline-block rounded-full px-5 py-2 border text-sm">
+              View deals
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="mt-8 grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

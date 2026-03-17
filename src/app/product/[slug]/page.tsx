@@ -8,6 +8,11 @@ import { AddToWishlistButton } from "../../../components/add-to-wishlist-button"
 import { useState, useEffect } from "react";
 import { ReviewButton } from "../../../components/review-button";
 import type { CategorySlug } from "../../../lib/types";
+import { useAuth } from "../../../components/auth/auth-provider";
+
+function buildWhatsAppOrderUrl(message: string) {
+  return `https://wa.me/254798966238?text=${encodeURIComponent(message)}`;
+}
 
 const CATEGORY_LABELS: Record<CategorySlug, string> = {
   audio: "Audio",
@@ -36,6 +41,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
   const [product, setProduct] = useState<Product | null>(null);
   const [related, setRelated] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     async function load() {
@@ -69,6 +75,10 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
   const inStock = product.stock > 0;
   const categoryLabel = CATEGORY_LABELS[product.category as CategorySlug] ?? "Gadgets";
   const highlights = getHighlights(product.category as CategorySlug);
+  const waMessage = `Hello VoltHub, I want to order: ${product.name} - Total: KES ${product.priceKes.toLocaleString()}${
+    user?.name?.trim() ? ` - Name: ${user.name.trim()}` : ""
+  }`;
+  const waUrl = buildWhatsAppOrderUrl(waMessage);
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
@@ -115,6 +125,16 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
           <div className="mt-5 flex gap-3">
             <AddToCartButton productId={product.id} />
             <AddToWishlistButton productId={product.id} />
+          </div>
+          <div className="mt-4">
+            <a
+              href={waUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center rounded-full px-4 py-2 border text-sm hover:bg-black/5 dark:hover:bg-white/10"
+            >
+              Prefer WhatsApp? Order directly here
+            </a>
           </div>
           <div className="mt-4">
             <ReviewButton productId={product.id} />

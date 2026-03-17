@@ -14,6 +14,10 @@ type DeliveryLocation = {
   deliveryMethod: "bodaboda" | "courier";
 };
 
+function buildWhatsAppOrderUrl(message: string) {
+  return `https://wa.me/254798966238?text=${encodeURIComponent(message)}`;
+}
+
 export default function CheckoutPage() {
   const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -41,6 +45,11 @@ export default function CheckoutPage() {
   });
   const [error, setError] = useState<string | null>(null);
   const [placed, setPlaced] = useState(false);
+  const [lastOrder, setLastOrder] = useState<{
+    customerName?: string;
+    itemsLabel: string;
+    total: number;
+  } | null>(null);
   const savedAddresses = useMemo<{ id: string; label: string; addressText: string }[]>(() => {
     if (!user) return [];
     const raw = typeof window !== "undefined" ? localStorage.getItem("volthubAddresses") : null;
@@ -104,6 +113,10 @@ export default function CheckoutPage() {
 
   const placeOrder = async () => {
     setError(null);
+    if (items.length === 0) {
+      setError("Your cart is empty.");
+      return;
+    }
     const hasAddress = addressText.trim().length > 0;
     const hasMap = !!mapSelected;
     if (!hasAddress && !hasMap) {
@@ -159,20 +172,41 @@ export default function CheckoutPage() {
       setError(insertError.message || "Order could not be placed. Check your Supabase connection.");
       return;
     }
+    setLastOrder({
+      customerName: name,
+      itemsLabel: items.map((i) => `${i.product.name} x${i.qty}`).join(", "),
+      total,
+    });
     localStorage.setItem("cart", JSON.stringify([]));
     setPlaced(true);
   };
 
   if (placed) {
+    const waMessage = lastOrder
+      ? `Hello VoltHub, I want to order: ${lastOrder.itemsLabel} - Total: KES ${lastOrder.total.toLocaleString()}${
+          lastOrder.customerName?.trim() ? ` - Name: ${lastOrder.customerName.trim()}` : ""
+        }`
+      : "Hello VoltHub, I just placed an order and need help confirming it.";
+    const waUrl = buildWhatsAppOrderUrl(waMessage);
     return (
       <div className="mx-auto max-w-5xl px-6 py-10">
         <div className="font-serif text-3xl">Order placed</div>
         <div className="mt-3 text-zinc-600 dark:text-zinc-400">
           We are processing your order. You can continue shopping.
         </div>
-        <Link href="/" className="mt-6 inline-block rounded-full px-5 py-2 bg-[color:var(--accent)] text-white">
-          Back to home
-        </Link>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link href="/" className="inline-block rounded-full px-5 py-2 bg-[color:var(--accent)] text-white">
+            Back to home
+          </Link>
+          <a
+            href={waUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block rounded-full px-5 py-2 border"
+          >
+            Prefer WhatsApp? Order directly here
+          </a>
+        </div>
       </div>
     );
   }

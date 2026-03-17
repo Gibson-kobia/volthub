@@ -61,13 +61,18 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
 
       {products.length === 0 ? (
         <div className="mt-10 rounded-2xl border border-black/10 dark:border-white/10 p-10 bg-white dark:bg-black text-center">
-          <div className="font-serif text-2xl">Nothing in this category yet</div>
+          <div className="font-serif text-2xl">Products coming soon</div>
           <div className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Add products in admin or connect your database.
+            No products available in {title.toLowerCase()} yet. Check back soon.
           </div>
-          <Link href="/admin/products" className="mt-5 inline-block rounded-full px-5 py-2 border text-sm">
-            Add products
-          </Link>
+          <div className="mt-6 flex items-center justify-center gap-3">
+            <Link href="/shop" className="inline-block rounded-full px-5 py-2 border text-sm">
+              Back to shop
+            </Link>
+            <Link href="/offers" className="inline-block rounded-full px-5 py-2 border text-sm">
+              View deals
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="mt-8 grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
