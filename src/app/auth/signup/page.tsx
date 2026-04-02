@@ -13,9 +13,13 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const [state, setState] = useState<"idle" | "sent" | "error">("idle");
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    setState("idle");
+
     if (!name.trim() || !email.trim() || !password) {
       setError("Please fill in all required fields.");
       return;
@@ -28,14 +32,18 @@ export default function SignupPage() {
       setError("Passwords do not match.");
       return;
     }
+
     setLoading(true);
     const res = await signup(name.trim(), email.trim(), phone.trim(), password);
     setLoading(false);
+
     if (!res.ok) {
+      setState("error");
       setError(res.error || "Could not create account.");
       return;
     }
-    window.location.href = "/account";
+
+    setState("sent");
   };
 
   return (
@@ -91,12 +99,17 @@ export default function SignupPage() {
           </div>
         </div>
         {error && <div className="text-sm text-red-600">{error}</div>}
+        {state === "sent" && (
+          <div className="text-sm text-emerald-500">
+            Check your email for a confirmation link. If you don’t see it in a few minutes, check spam.
+          </div>
+        )}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || state === "sent"}
           className="w-full rounded-full px-4 py-2 bg-[color:var(--accent)] text-white text-sm font-medium hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          {loading ? "Creating account..." : "Sign up"}
+          {loading ? "Creating account..." : state === "sent" ? "Email Sent" : "Sign up"}
         </button>
       </form>
       <div className="mt-4 text-xs text-zinc-600 dark:text-zinc-400">

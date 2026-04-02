@@ -30,18 +30,18 @@ function toPublicFromSupabase(u: User): PublicUser {
 }
 
 const getAuthRedirectUrl = () => {
+  const callbackPath = "/auth/callback";
+
   if (typeof window !== "undefined") {
     const localHost = /(localhost|127\.0\.0\.1)/i;
     if (localHost.test(window.location.hostname)) {
-      return window.location.origin;
+      return `${window.location.origin}${callbackPath}`;
     }
+    return `${window.location.origin}${callbackPath}`; // for all non-production local host setups
   }
 
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    return process.env.NEXT_PUBLIC_APP_URL;
-  }
-
-  return "https://volthub1.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://volthub1.vercel.app";
+  return `${baseUrl.replace(/\/*$/, "")}${callbackPath}`;
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
