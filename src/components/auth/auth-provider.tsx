@@ -29,6 +29,21 @@ function toPublicFromSupabase(u: User): PublicUser {
   };
 }
 
+const getAuthRedirectUrl = () => {
+  if (typeof window !== "undefined") {
+    const localHost = /(localhost|127\.0\.0\.1)/i;
+    if (localHost.test(window.location.hostname)) {
+      return window.location.origin;
+    }
+  }
+
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL;
+  }
+
+  return "https://volthub1.vercel.app";
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<PublicUser | null>(null);
 
@@ -61,10 +76,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       signup: async (name, email, phone, password) => {
         try {
+          const redirectTo = getAuthRedirectUrl();
           const { data, error } = await getSupabase().auth.signUp({
             email,
             password,
-            options: { data: { name, phone } },
+            options: {
+              emailRedirectTo: redirectTo,
+              data: { name, phone },
+            },
           });
           if (error) return { ok: false, error: error.message };
           if (data.user) setUser(toPublicFromSupabase(data.user));
@@ -95,7 +114,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
       resetPassword: async (email) => {
         try {
-          const { error } = await getSupabase().auth.resetPasswordForEmail(email);
+          const redirectTo = getAuthRedirectUrl();
+          const { error } = await getSupabase().auth.resetPasswordForEmail(email, {
+            redirectTo,
+          });
           if (error) return { ok: false, error: error.message };
           return { ok: true };
         } catch (error: unknown) {
