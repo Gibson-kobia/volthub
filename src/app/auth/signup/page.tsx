@@ -39,7 +39,11 @@ export default function SignupPage() {
 
     if (!res.ok) {
       setState("error");
-      setError(res.error || "Could not create account.");
+      if (res.error?.includes("already registered")) {
+        setError("An account with this email already exists. Try logging in instead.");
+      } else {
+        setError(res.error || "Could not create account.");
+      }
       return;
     }
 

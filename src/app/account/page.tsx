@@ -36,7 +36,7 @@ type Review = {
 };
 
 export default function AccountPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshSession } = useAuth();
   const [section, setSection] = useState<"profile" | "addresses" | "orders" | "wishlist" | "reviews">("profile");
   const [orders, setOrders] = useState<Order[]>([]);
   const [wishlistIds, setWishlistIds] = useState<string[]>(() => {
@@ -68,7 +68,10 @@ export default function AccountPage() {
       setProducts(p);
     }
     load();
-  }, []);
+
+    // Check session validity on page load
+    refreshSession();
+  }, [refreshSession]);
 
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {

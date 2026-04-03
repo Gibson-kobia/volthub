@@ -152,7 +152,7 @@ function CartButton() {
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
   const [isDark, setIsDark] = useState(() => {
     if (typeof document === "undefined") return false;
@@ -283,7 +283,15 @@ function Shell({ children }: { children: React.ReactNode }) {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
             </button>
             {user ? (
-              <Link href="/account" className="rounded-xl px-3 py-2 border border-black/10 dark:border-white/10">Account</Link>
+              <div className="flex items-center gap-2">
+                <Link href="/account" className="rounded-xl px-3 py-2 border border-black/10 dark:border-white/10">Account</Link>
+                <button
+                  onClick={logout}
+                  className="rounded-xl px-3 py-2 border border-black/10 dark:border-white/10 text-sm hover:bg-black/5 dark:hover:bg-white/10"
+                >
+                  Logout
+                </button>
+              </div>
             ) : (
               <Link href="/auth/login" className="rounded-xl px-3 py-2 border border-black/10 dark:border-white/10">Login</Link>
             )}

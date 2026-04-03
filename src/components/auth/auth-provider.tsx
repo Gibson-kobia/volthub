@@ -16,6 +16,7 @@ type AuthContextValue = {
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
   resetPassword: (email: string) => Promise<{ ok: boolean; error?: string }>;
+  refreshSession: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -56,9 +57,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const u = res.data.user;
         if (mounted) setUser(u ? toPublicFromSupabase(u) : null);
       });
-      const { data } = getSupabase().auth.onAuthStateChange((_event, session) => {
+      const { data } = getSupabase().auth.onAuthStateChange(async (_event, session) => {
         const u = session?.user || null;
-        setUser(u ? toPublicFromSupabase(u) : null);
+        if (mounted) setUser(u ? toPublicFromSupabase(u) : null);
       });
       sub = data;
     } catch (error) {
@@ -123,6 +124,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : "Supabase not initialized";
           return { ok: false, error: message };
+        }
+      },
+      refreshSession: async () => {
+        try {
+          const { data, error } = await getSupabase().auth.getSession();
+          if (error || !data.session) {
+            setUser(null);
+            return;
+          }
+          setUser(toPublicFromSupabase(data.session.user));
+        } catch (error) {
+          console.error("Failed to refresh session:", error);
+          setUser(null);
         }
       },
     };

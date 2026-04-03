@@ -40,7 +40,14 @@ export default function AuthCallbackPage() {
             timeoutId = setTimeout(() => router.push("/account"), 2600);
             return;
           }
-          throw error;
+          // Specific error handling
+          let errorMsg = "Verification link is invalid or expired.";
+          if (error.message?.includes("Token has expired")) {
+            errorMsg = "This verification link has expired. Please request a new one.";
+          } else if (error.message?.includes("Invalid token")) {
+            errorMsg = "This verification link is invalid. Please check your email for the correct link.";
+          }
+          throw new Error(errorMsg);
         }
 
         if (data.session?.user?.email_confirmed_at) {

@@ -4,11 +4,14 @@ import Link from "next/link";
 import { useAuth } from "../../../components/auth/auth-provider";
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, signup } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [resendEmail, setResendEmail] = useState("");
+  const [resendStatus, setResendStatus] = useState<string | null>(null);
+  const [resendLoading, setResendLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -21,10 +24,32 @@ export default function LoginPage() {
     const res = await login(email.trim(), password);
     setLoading(false);
     if (!res.ok) {
-      setError(res.error || "Invalid credentials");
+      if (res.error?.includes("Email not confirmed")) {
+        setError("Please check your email and click the verification link before logging in.");
+      } else {
+        setError(res.error || "Invalid credentials");
+      }
       return;
     }
     window.location.href = "/account";
+  };
+
+  const handleResend = async (e: FormEvent) => {
+    e.preventDefault();
+    setResendStatus(null);
+    if (!resendEmail.trim()) {
+      setResendStatus("Enter your email address.");
+      return;
+    }
+    setResendLoading(true);
+    // Use signup with empty password to trigger resend
+    const res = await signup("", resendEmail.trim(), "", "dummy");
+    setResendLoading(false);
+    if (res.ok) {
+      setResendStatus("Verification email sent. Check your inbox.");
+    } else {
+      setResendStatus(res.error || "Failed to send email.");
+    }
   };
 
   return (
@@ -71,6 +96,32 @@ export default function LoginPage() {
         <Link href="/auth/signup" className="underline">
           Create account
         </Link>
+      </div>
+      <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-3">
+          Didn’t receive verification email?
+        </p>
+        <form onSubmit={handleResend} className="space-y-3">
+          <input
+            type="email"
+            value={resendEmail}
+            onChange={(e) => setResendEmail(e.target.value)}
+            placeholder="Enter your email"
+            className="w-full rounded-lg border border-black/10 dark:border-white/10 px-3 py-2 bg-white dark:bg-black text-sm"
+          />
+          {resendStatus && (
+            <div className={`text-sm ${resendStatus.includes("sent") ? "text-emerald-600" : "text-red-600"}`}>
+              {resendStatus}
+            </div>
+          )}
+          <button
+            type="submit"
+            disabled={resendLoading}
+            className="w-full rounded-full px-4 py-2 border border-black/10 dark:border-white/10 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {resendLoading ? "Sending..." : "Resend verification email"}
+          </button>
+        </form>
       </div>
     </div>
   );
