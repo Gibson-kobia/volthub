@@ -102,7 +102,6 @@ function CartButton() {
                       alt={l.product!.name}
                       className="w-full h-full object-cover"
                     />
-                    />
                   </div>
                   <div className="flex-1">
                     <div className="text-xs text-zinc-500">
