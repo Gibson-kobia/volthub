@@ -161,14 +161,10 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               <div key={p.id} className="rounded-xl border p-4 bg-white dark:bg-black">
                 <Link href={`/product/${p.slug}`} className="block">
                   <div className="relative aspect-[4/5] rounded-md overflow-hidden">
-                    <Image
-                      src={p.image}
+                    <img
+                      src={p.image && p.image.startsWith("http") ? p.image : "/product-placeholder.png"}
                       alt={p.name}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 25vw"
-                      placeholder="blur"
-                      blurDataURL={blur}
-                      className="object-cover"
+                      className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="mt-3 text-xs text-zinc-500">{p.brand}</div>

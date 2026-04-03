@@ -165,19 +165,14 @@ export default function CartPage() {
                     >
                       <div className="flex items-center gap-3">
                         <div className="relative w-12 h-16 rounded-md overflow-hidden">
-                          <Image
+                          <img
                             src={
                               p!.image && p!.image.startsWith("http")
                                 ? p!.image
                                 : "/product-placeholder.png"
                             }
                             alt={p!.name}
-                            fill
-                            sizes="64px"
-                            loading="lazy"
-                            placeholder="blur"
-                            blurDataURL={blur}
-                            className="object-cover"
+                            className="w-full h-full object-cover"
                           />
                         </div>
                         <div>
