@@ -1,12 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { fetchProducts, type Product } from "../../../lib/products";
+import { fetchProductBySlug, fetchProducts, type Product } from "../../../lib/products";
 import { AddToCartButton } from "../../../components/add-to-cart-button";
 import { AddToWishlistButton } from "../../../components/add-to-wishlist-button";
 import { ReviewButton } from "../../../components/review-button";
 import type { CategorySlug } from "../../../lib/types";
-import { getSupabase } from "../../../lib/supabase";
-import { mapDBProductToProduct } from "../../../lib/products";
 
 function buildWhatsAppOrderUrl(message: string) {
   return `https://wa.me/254798966238?text=${encodeURIComponent(message)}`;
@@ -34,32 +32,20 @@ function getHighlights(category: CategorySlug) {
   return byCategory[category];
 }
 
-export default async function Page({ params }: { params: { slug: string } }) {
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .eq('slug', params.slug)
-    .eq('is_active', true)
-    .limit(1)
-    .maybeSingle();
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const product = await fetchProductBySlug(slug);
+  if (!product) return notFound();
 
-  if (error) {
-    console.error(error);
-    notFound();
-  }
-
-  if (!data) {
-    notFound();
-  }
-
-  const product = mapDBProductToProduct(data);
-
-  // Fetch related products
   const allProducts = await fetchProducts();
   const related = allProducts
     .filter((item) => item.category === product.category && item.id !== product.id)
     .slice(0, 4);
+
   const inStock = product.stock > 0;
   const categoryLabel = CATEGORY_LABELS[product.category as CategorySlug] ?? "Gadgets";
   const highlights = getHighlights(product.category as CategorySlug);
