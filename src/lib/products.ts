@@ -69,27 +69,17 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
   try {
     const supabase = getSupabase();
 
-    // Primary query: only active products; use maybeSingle() to avoid 406 when no row exists.
-    let { data, error } = await supabase
+    const { data, error } = await supabase
       .from("products")
       .select("*")
       .eq("slug", slug)
       .eq("is_active", true)
+      .limit(1)
       .maybeSingle();
 
     if (error) {
-      // Fallback query: allow any status for cases where active flag inconsistency causes 404
-      const fallback = await supabase
-        .from("products")
-        .select("*")
-        .eq("slug", slug)
-        .maybeSingle();
-
-      if (fallback.error || !fallback.data) {
-        return null;
-      }
-
-      data = fallback.data;
+      console.error("Error fetching product:", error);
+      return null;
     }
 
     if (!data) {
@@ -97,7 +87,8 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
     }
 
     return mapDBProductToProduct(data);
-  } catch {
+  } catch (err) {
+    console.error("Exception fetching product:", err);
     return null;
   }
 }
