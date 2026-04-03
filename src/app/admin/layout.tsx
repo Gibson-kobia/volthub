@@ -5,8 +5,10 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { getSupabase } from "@/lib/supabase";
 
-const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || "virginiagatwiri7@gmail.com")
-  .split(",")
+const ADMIN_EMAILS = [
+  ...(process.env.NEXT_PUBLIC_ADMIN_EMAILS || "virginiagatwiri7@gmail.com").split(","),
+  "gibsonkobia@gmail.com",
+]
   .map((email) => email.toLowerCase().trim())
   .filter(Boolean);
 
