@@ -16,59 +16,84 @@ export default function AuthCallbackContent() {
 
   const query = useMemo(() => searchParams.toString(), [searchParams]);
   const code = searchParams.get("code");
+  const token = searchParams.get("token");
   const type = searchParams.get("type");
 
   useEffect(() => {
+    if (status !== "loading") {
+      return;
+    }
     let active = true;
     let timeoutId: NodeJS.Timeout;
 
-    const finalize = async () => {
-      try {
-        // Exchange code for session (required for all callback types)
-        if (!code) {
-          throw new Error("No authorization code provided. The link may be invalid.");
-        }
-
-        const { data: sessionData, error: sessionError } = await getSupabase().auth.exchangeCodeForSession(code);
-
-        if (sessionError) {
-          let errorMsg = "Verification link is invalid or expired.";
-          if (sessionError.message?.includes("expired")) {
-            errorMsg = "This verification link has expired. Please request a new one.";
-          } else if (sessionError.message?.includes("invalid")) {
-            errorMsg = "This verification link is invalid. Please check your email for the correct link.";
-          }
-          throw new Error(errorMsg);
-        }
-
-        // After successful code exchange, handle based on type
-        if (type === "recovery") {
-          // Session is now established, show password reset form
-          if (!active) return;
-          setStatus("reset");
-          return;
-        }
-
-        // For email verification, check if user is confirmed
-        if (sessionData?.session?.user?.email_confirmed_at) {
-          if (!active) return;
-          setStatus("success");
-          timeoutId = setTimeout(() => router.push("/account"), 2600);
-          return;
-        }
-
-        throw new Error("Unable to verify your account. The link may be expired or invalid.");
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "An unexpected error occurred.";
-        if (!active) return;
-        setErrorText(message);
-        setStatus("error");
-      }
+    const handleSuccess = () => {
+      if (!active) return;
+      setStatus("success");
+      timeoutId = setTimeout(() => router.push("/account"), 1800);
     };
 
-    finalize();
+    const handleRecovery = () => {
+      if (!active) return;
+      setStatus("reset");
+    };
 
-    // Timeout after 10 seconds if still loading
+    const exchangeCode = async () => {
+      const { data, error } = await getSupabase().auth.exchangeCodeForSession(code!);
+      if (error) throw error;
+      return data;
+    };
+
+    const verifyToken = async () => {
+      const { data, error } = await getSupabase().auth.verifyOtp({
+        token_hash: token!,
+        type: type!,
+      });
+      if (error) throw error;
+      return data;
+    };
+
+    const finalize = async () => {
+      let lastError: Error | null = null;
+      let result: unknown = null;
+
+      if (code) {
+        try {
+          result = await exchangeCode();
+        } catch (err) {
+          lastError = err instanceof Error ? err : new Error("Email verification failed via code.");
+        }
+      }
+
+      if ((!code || lastError) && token && type) {
+        try {
+          result = await verifyToken();
+          lastError = null;
+        } catch (err) {
+          lastError = err instanceof Error ? err : new Error("Email verification failed via token.");
+        }
+      }
+
+      if (!result) {
+        if (lastError) throw lastError;
+        throw new Error("No authorization code or token/type provided. The link may be invalid.");
+      }
+
+      if (type === "recovery") {
+        handleRecovery();
+        return;
+      }
+
+      // existing profile verification + magic links
+      handleSuccess();
+    };
+
+    finalize().catch((error) => {
+      if (!active) return;
+      const message = error instanceof Error ? error.message : "An unexpected error occurred.";
+      setErrorText(message);
+      setStatus("error");
+    });
+
     timeoutId = setTimeout(() => {
       if (active && status === "loading") {
         setErrorText("Verification is taking longer than expected. Please try again or contact support.");
@@ -80,7 +105,7 @@ export default function AuthCallbackContent() {
       active = false;
       clearTimeout(timeoutId);
     };
-  }, [query, router, type, code, status]);
+  }, [query, router, type, code, token, status]);
 
   const handlePasswordReset = async (e: FormEvent) => {
     e.preventDefault();
