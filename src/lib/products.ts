@@ -25,7 +25,7 @@ function normalizeCategorySlug(input: string): CategorySlug {
 }
 
 // Mapper to convert DB Product to Frontend Product
-function mapDBProductToProduct(dbProduct: DBProduct): Product {
+export function mapDBProductToProduct(dbProduct: DBProduct): Product {
   return {
     id: dbProduct.id,
     slug: dbProduct.slug,
