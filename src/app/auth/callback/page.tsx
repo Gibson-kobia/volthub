@@ -15,6 +15,7 @@ export default function AuthCallbackPage() {
   const [resetLoading, setResetLoading] = useState(false);
 
   const query = useMemo(() => searchParams.toString(), [searchParams]);
+  const code = searchParams.get("code");
   const type = searchParams.get("type");
 
   useEffect(() => {
@@ -22,35 +23,34 @@ export default function AuthCallbackPage() {
     let timeoutId: NodeJS.Timeout;
 
     const finalize = async () => {
-      if (type === "recovery") {
-        if (!active) return;
-        setStatus("reset");
-        return;
-      }
-
       try {
-        const { data, error } = await getSupabase().auth.getSessionFromUrl({ storeSession: true });
+        // Exchange code for session (required for all callback types)
+        if (!code) {
+          throw new Error("No authorization code provided. The link may be invalid.");
+        }
 
-        if (error) {
-          // Check if user is already verified/logged in
-          const { data: userData, error: userError } = await getSupabase().auth.getUser();
-          if (!userError && userData.user?.email_confirmed_at) {
-            if (!active) return;
-            setStatus("success");
-            timeoutId = setTimeout(() => router.push("/account"), 2600);
-            return;
-          }
-          // Specific error handling
+        const { data: sessionData, error: sessionError } = await getSupabase().auth.exchangeCodeForSession(code);
+
+        if (sessionError) {
           let errorMsg = "Verification link is invalid or expired.";
-          if (error.message?.includes("Token has expired")) {
+          if (sessionError.message?.includes("expired")) {
             errorMsg = "This verification link has expired. Please request a new one.";
-          } else if (error.message?.includes("Invalid token")) {
+          } else if (sessionError.message?.includes("invalid")) {
             errorMsg = "This verification link is invalid. Please check your email for the correct link.";
           }
           throw new Error(errorMsg);
         }
 
-        if (data.session?.user?.email_confirmed_at) {
+        // After successful code exchange, handle based on type
+        if (type === "recovery") {
+          // Session is now established, show password reset form
+          if (!active) return;
+          setStatus("reset");
+          return;
+        }
+
+        // For email verification, check if user is confirmed
+        if (sessionData?.session?.user?.email_confirmed_at) {
           if (!active) return;
           setStatus("success");
           timeoutId = setTimeout(() => router.push("/account"), 2600);
@@ -80,7 +80,7 @@ export default function AuthCallbackPage() {
       active = false;
       clearTimeout(timeoutId);
     };
-  }, [query, router, type, status]);
+  }, [query, router, type, code, status]);
 
   const handlePasswordReset = async (e: FormEvent) => {
     e.preventDefault();
