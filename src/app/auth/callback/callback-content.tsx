@@ -5,6 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabase } from "../../../lib/supabase";
 
 type AuthCallbackStatus = "loading" | "success" | "error" | "reset";
+type EmailOtpType = "email" | "magiclink" | "recovery" | "email_change";
+
+function isValidEmailOtpType(value: unknown): value is EmailOtpType {
+  return (
+    typeof value === "string" &&
+    ["email", "magiclink", "recovery", "email_change"].includes(value)
+  );
+}
 
 export default function AuthCallbackContent() {
   const router = useRouter();
@@ -44,9 +52,12 @@ export default function AuthCallbackContent() {
     };
 
     const verifyToken = async () => {
+      if (!isValidEmailOtpType(type)) {
+        throw new Error(`Invalid OTP type for token verification: "${type}". Expected one of: email, magiclink, recovery, email_change.`);
+      }
       const { data, error } = await getSupabase().auth.verifyOtp({
         token_hash: token!,
-        type: type!,
+        type,
       });
       if (error) throw error;
       return data;
