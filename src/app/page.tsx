@@ -5,6 +5,21 @@ import { ProductCard } from "../components/product-card";
 import Link from "next/link";
 import Image from "next/image";
 
+const HOME_UTILITY_BAR = "Fast WhatsApp support · M-Pesa accepted · Nairobi same-day delivery";
+
+const TRUST_ITEMS = [
+  "M-Pesa accepted",
+  "Nairobi same-day delivery",
+  "Nationwide courier 1–3 working days",
+  "Easy faulty return policy",
+];
+
+const VALUE_COLLECTIONS = [
+  { title: "Daily essentials", subtitle: "Trusted picks for everyday use" },
+  { title: "Fast charging setup", subtitle: "Power up without waiting" },
+  { title: "Budget smart audio", subtitle: "Clear sound from trusted models" },
+];
+
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,10 +39,14 @@ export default function Home() {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
   return (
-    <div className="mx-auto max-w-7xl px-6">
-      <HeroSlider />
+    <div>
+      <div className="bg-black text-white text-xs xl:text-sm text-center font-medium tracking-wide py-2">
+        {HOME_UTILITY_BAR}
+      </div>
+      <div className="mx-auto max-w-7xl px-6">
+        <HeroSlider />
 
-      <section className="mt-6">
+        <section className="mt-6">
         <div className="rounded-full px-4 py-2 text-xs grid grid-cols-3 gap-2 text-center border bg-white dark:bg-black">
           <div className="opacity-80">Quality Gadgets</div>
           <div className="opacity-80">Fast Delivery</div>
@@ -44,10 +63,12 @@ export default function Home() {
             { slug: "chargers-cables", title: "Chargers & Cables" },
             { slug: "power-banks", title: "Power Banks" },
             { slug: "phone-accessories", title: "Phone Accessories" },
+            { slug: "speakers", title: "Speakers" },
+            { slug: "new-arrivals", title: "New Arrivals", href: "/shop" },
           ].map((c) => (
             <Link
               key={c.slug}
-              href={`/category/${c.slug}`}
+              href={c.href ?? `/category/${c.slug}`}
               className="rounded-xl border p-6 bg-white dark:bg-black hover:opacity-90 text-center"
             >
               {c.title}
@@ -89,6 +110,15 @@ export default function Home() {
         )}
       </section>
 
+      <section className="mt-10 flex flex-wrap items-center justify-center gap-4 rounded-2xl border bg-white/90 dark:bg-black/70 border-black/10 dark:border-white/10 p-4">
+        {TRUST_ITEMS.map((item) => (
+          <div key={item} className="flex items-center gap-2 rounded-lg bg-zinc-100/70 dark:bg-white/10 px-3 py-2 text-xs font-medium text-zinc-700 dark:text-zinc-200">
+            <span>✅</span>
+            <span>{item}</span>
+          </div>
+        ))}
+      </section>
+
       <section className="mt-12 grid md:grid-cols-3 gap-6">
         {[
           {
@@ -109,6 +139,77 @@ export default function Home() {
             <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{c.body}</p>
           </div>
         ))}
+      </section>
+
+      <section className="mt-10 rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-black p-6">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div>
+            <h2 className="font-serif text-2xl">Big value picks</h2>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              Handpicked products under KES 5,000. No fake markdowns, just honest value.
+            </p>
+          </div>
+          <Link href="/shop" className="rounded-full border px-4 py-2 text-sm">
+            Browse all value picks
+          </Link>
+        </div>
+        <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {featured.slice(0, 2).map((p) => (
+            <Link key={p.id} href={`/product/${p.slug}`} className="rounded-xl border p-4 bg-zinc-50 dark:bg-zinc-900 hover:border-[color:var(--accent)] transition-colors">
+              <div className="text-xs text-zinc-500">Featured</div>
+              <div className="mt-2 font-medium text-zinc-900 dark:text-white">{p.name}</div>
+              <div className="mt-1 text-sm font-semibold">KES {p.priceKes.toLocaleString()}</div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-12">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="font-serif text-2xl">Curated collections</h2>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">Intent-based picks for faster decision making</p>
+        </div>
+        <div className="mt-4 grid sm:grid-cols-3 gap-4">
+          {VALUE_COLLECTIONS.map((c) => (
+            <div key={c.title} className="rounded-xl border p-5 bg-white dark:bg-black dark:border-white/10">
+              <div className="text-sm font-bold text-zinc-900 dark:text-white">{c.title}</div>
+              <div className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">{c.subtitle}</div>
+              <div className="mt-3 grid gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                {featured.slice(0, 2).map((p) => (
+                  <Link key={`${c.title}-${p.id}`} href={`/product/${p.slug}`} className="rounded-lg border p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900">
+                    <div className="font-medium">{p.name}</div>
+                    <div className="text-xs">KES {p.priceKes.toLocaleString()}</div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-12 rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-black p-6">
+        <h2 className="font-serif text-2xl">Why buy from VoltHub</h2>
+        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+          A focused Kenyan gadget specialist with real products, clear terms, and fast support.
+        </p>
+        <div className="mt-4 grid sm:grid-cols-2 gap-4">
+          <div className="rounded-xl border p-4 bg-zinc-50 dark:bg-zinc-900">
+            <div className="font-semibold">Curated selection</div>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">We stock only reliable accessories that match daily needs.</p>
+          </div>
+          <div className="rounded-xl border p-4 bg-zinc-50 dark:bg-zinc-900">
+            <div className="font-semibold">Order clarity</div>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">No hidden fees, no fake discounts — just up-front pricing.</p>
+          </div>
+          <div className="rounded-xl border p-4 bg-zinc-50 dark:bg-zinc-900">
+            <div className="font-semibold">Trustworthy support</div>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">WhatsApp help for questions before and after purchase.</p>
+          </div>
+          <div className="rounded-xl border p-4 bg-zinc-50 dark:bg-zinc-900">
+            <div className="font-semibold">Delivery confidence</div>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">Nairobi same-day and nationwide service with tracking.</p>
+          </div>
+        </div>
       </section>
 
       <section className="mt-12 rounded-xl border p-6 bg-white dark:bg-black">
@@ -143,6 +244,7 @@ export default function Home() {
         </div>
       </section>
     </div>
+  </div>
   );
 }
 
@@ -170,14 +272,17 @@ function HeroSlider() {
           <div className="px-6 md:px-10 py-10 lg:py-14 flex items-center">
             <div className="max-w-xl">
               <h1 className="font-serif text-5xl md:text-6xl leading-tight tracking-[0.01em]">
-                <span className="block">Power up</span>
-                <span className="block">your everyday</span>
+                <span className="block">Quality gadgets for Kenyan life</span>
+                <span className="block">Fast delivery, clear support</span>
               </h1>
               <p className="mt-4 text-sm md:text-base opacity-90">
-                VoltHub is a gadget store built for real life: audio, smartwatches, chargers, power
-                banks, and phone accessories — delivered fast across Kenya.
+                Shop proven electronics curated for reliability: earbuds, power banks, smartwatches, and
+                mobile accessories with practical support and honest pricing.
               </p>
-              <div className="mt-8 flex items-center gap-4">
+              <p className="mt-3 text-xs md:text-sm text-zinc-300">
+                M-Pesa payments, Nairobi same-day delivery, nationwide courier, easy returns.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
                 <Link
                   href="/shop"
                   className="rounded-2xl px-6 py-3 text-sm font-medium bg-[color:var(--accent)] text-white shadow-[0_8px_24px_rgba(37,99,235,0.35)] hover:shadow-[0_12px_32px_rgba(37,99,235,0.45)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)] focus-visible:ring-offset-2"
