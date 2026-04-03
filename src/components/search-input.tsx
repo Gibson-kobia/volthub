@@ -2,12 +2,10 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { fetchProducts, type Product } from "../lib/products";
 
 export function SearchInput({ className }: { className?: string }) {
-  const blur = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><rect width='100%' height='100%' fill='%23f5e7c6'/></svg>";
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -104,18 +102,14 @@ export function SearchInput({ className }: { className?: string }) {
                   className="flex items-center gap-3 px-3 py-2 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                 >
                   <div className="relative w-8 h-10 flex-shrink-0 rounded overflow-hidden">
-                    <Image
+                    <img
                       src={
                         product.image && product.image.startsWith("http")
                           ? product.image
                           : "/product-placeholder.png"
                       }
                       alt={product.name}
-                      fill
-                      sizes="32px"
-                      placeholder="blur"
-                      blurDataURL={blur}
-                      className="object-cover"
+                      className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="flex-1 min-w-0">

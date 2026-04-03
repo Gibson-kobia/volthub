@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { CartProvider, useCart } from "./cart/cart-provider";
 import { AuthProvider, useAuth } from "./auth/auth-provider";
 import { CartDrawer } from "./cart/cart-drawer";
@@ -47,7 +46,6 @@ function CartButton() {
     (sum, l) => sum + (l.product?.priceKes || 0) * l.qty,
     0
   );
-  const blur = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><rect width='100%' height='100%' fill='%23e8f0ff'/></svg>";
   return (
     <div className="relative">
       <button
@@ -95,19 +93,15 @@ function CartButton() {
               {lines.map((l) => (
                 <div key={l.product!.id} className="flex items-center gap-3">
                   <div className="relative w-10 h-12 rounded-md overflow-hidden">
-                    <Image
+                    <img
                       src={
                         l.product!.image && l.product!.image.startsWith("http")
                           ? l.product!.image
                           : "/product-placeholder.png"
                       }
                       alt={l.product!.name}
-                      fill
-                      sizes="40px"
-                      loading="lazy"
-                      placeholder="blur"
-                      blurDataURL={blur}
-                      className="object-cover"
+                      className="w-full h-full object-cover"
+                    />
                     />
                   </div>
                   <div className="flex-1">

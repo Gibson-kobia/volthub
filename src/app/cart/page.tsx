@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import { fetchProducts, type Product } from "../../lib/products";
 import { useCart } from "../../components/cart/cart-provider";
@@ -25,8 +24,6 @@ export default function CartPage() {
     }
     load();
   }, []);
-
-  const blur = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><rect width='100%' height='100%' fill='%23f5e7c6'/></svg>";
 
   const items = cart
     .map((c) => ({ ...c, product: products.find((p) => p.id === c.productId) }))
@@ -111,19 +108,14 @@ export default function CartPage() {
                 className="flex items-center gap-4 border rounded-xl p-4 bg-white dark:bg-black"
               >
                 <div className="relative w-20 h-24 rounded-md overflow-hidden">
-                  <Image
+                  <img
                     src={
                       i.product?.image && i.product?.image.startsWith("http")
                         ? i.product?.image
                         : "/product-placeholder.png"
                     }
                     alt={i.product?.name || ""}
-                    fill
-                    sizes="80px"
-                    loading="lazy"
-                    placeholder="blur"
-                    blurDataURL={blur}
-                    className="object-cover"
+                    className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="flex-1">

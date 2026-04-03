@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchProductBySlug, fetchProducts, type Product } from "../../../lib/products";
@@ -37,7 +36,6 @@ function getHighlights(category: CategorySlug) {
 }
 
 export default function ProductPage({ params }: { params: { slug: string } }) {
-  const [imgError, setImgError] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
   const [related, setRelated] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,7 +69,6 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
   }
 
   if (!product) return notFound();
-  const blur = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><rect width='100%' height='100%' fill='%23f5e7c6'/></svg>";
   const inStock = product.stock > 0;
   const categoryLabel = CATEGORY_LABELS[product.category as CategorySlug] ?? "Gadgets";
   const highlights = getHighlights(product.category as CategorySlug);
@@ -90,18 +87,11 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
       </div>
       <div className="grid md:grid-cols-2 gap-8">
         <div className="relative aspect-[4/5] rounded-xl overflow-hidden border bg-white dark:bg-black">
-          {product.image.startsWith("http") && !imgError && (
-            <Image
-              src={product.image}
-              alt={product.name}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              placeholder="blur"
-              blurDataURL={blur}
-              onError={() => setImgError(true)}
-              className="object-cover"
-            />
-          )}
+          <img
+            src={product.image && product.image.startsWith("http") ? product.image : "/product-placeholder.png"}
+            alt={product.name}
+            className="w-full h-full object-cover"
+          />
         </div>
         <div>
           <div className="text-sm text-zinc-500">{product.brand}</div>
