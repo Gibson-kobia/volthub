@@ -1,24 +1,78 @@
 "use client";
-import { useEffect, useState } from "react";
-import { fetchProducts, Product } from "../lib/products";
-import { ProductCard } from "../components/product-card";
+
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-
-const HOME_UTILITY_BAR = "Fast WhatsApp support · M-Pesa accepted · Nairobi same-day delivery";
+import { ProductCard } from "../components/product-card";
+import { fetchProducts, Product } from "../lib/products";
+import type { CategorySlug } from "../lib/types";
 
 const TRUST_ITEMS = [
+  "Fast WhatsApp support",
   "M-Pesa accepted",
   "Nairobi same-day delivery",
-  "Nationwide courier 1–3 working days",
-  "Easy faulty return policy",
 ];
 
-const VALUE_COLLECTIONS = [
-  { title: "Daily essentials", subtitle: "Trusted picks for everyday use" },
-  { title: "Home & kitchen", subtitle: "Essentials for your household" },
-  { title: "Personal care", subtitle: "Quality products for self-care" },
+const HOMEPAGE_CATEGORIES: {
+  slug: CategorySlug;
+  title: string;
+  description: string;
+}[] = [
+  {
+    slug: "groceries",
+    title: "Groceries",
+    description: "Pantry staples and home restocks.",
+  },
+  {
+    slug: "beverages",
+    title: "Beverages",
+    description: "Drinks for daily stocking and quick top-ups.",
+  },
+  {
+    slug: "snacks",
+    title: "Snacks",
+    description: "Easy treats, bites, and grab-and-go picks.",
+  },
+  {
+    slug: "household",
+    title: "Household",
+    description: "Cleaning, utility, and everyday home basics.",
+  },
+  {
+    slug: "personal-care",
+    title: "Personal Care",
+    description: "Self-care essentials and daily routines.",
+  },
+  {
+    slug: "electronics",
+    title: "Electronics",
+    description: "VoltHub's department for gadgets and accessories.",
+  },
 ];
+
+const ESSENTIALS_CATEGORIES: CategorySlug[] = [
+  "groceries",
+  "beverages",
+  "snacks",
+  "household",
+  "personal-care",
+];
+
+const ELECTRONICS_CATEGORIES: CategorySlug[] = [
+  "electronics",
+  "audio",
+  "smartwatches",
+  "chargers-cables",
+  "power-banks",
+  "phone-accessories",
+  "speakers",
+];
+
+function getProductImage(product: Product) {
+  return product.image && product.image.startsWith("http")
+    ? product.image
+    : "/product-placeholder.png";
+}
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -30,332 +84,276 @@ export default function Home() {
       setProducts(data);
       setLoading(false);
     }
+
     load();
   }, []);
 
-  const featured = products.slice(0, 8);
+  const featured = useMemo(() => products.slice(0, 8), [products]);
+
+  const heroPreview = useMemo(() => {
+    const priorityOrder: CategorySlug[] = [
+      "groceries",
+      "beverages",
+      "household",
+      "personal-care",
+      "electronics",
+      "audio",
+    ];
+
+    const picked: Product[] = [];
+
+    priorityOrder.forEach((slug) => {
+      const match = products.find(
+        (product) => product.category === slug && !picked.some((item) => item.id === product.id)
+      );
+
+      if (match) {
+        picked.push(match);
+      }
+    });
+
+    featured.forEach((product) => {
+      if (picked.length < 4 && !picked.some((item) => item.id === product.id)) {
+        picked.push(product);
+      }
+    });
+
+    return picked.slice(0, 4);
+  }, [featured, products]);
+
+  const essentialsPicks = useMemo(
+    () => products.filter((product) => ESSENTIALS_CATEGORIES.includes(product.category)).slice(0, 4),
+    [products]
+  );
+
+  const electronicsPicks = useMemo(
+    () => products.filter((product) => ELECTRONICS_CATEGORIES.includes(product.category)).slice(0, 3),
+    [products]
+  );
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
+
   return (
-    <div>
-      <div className="bg-black text-white text-xs xl:text-sm text-center font-medium tracking-wide py-2">
-        {HOME_UTILITY_BAR}
-      </div>
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="py-12 text-center">
-          <h1 className="font-serif text-4xl md:text-5xl mb-4">VoltHub Market</h1>
-          <p className="text-lg text-zinc-600 dark:text-zinc-400 mb-8 max-w-2xl mx-auto">
-            Everyday essentials and trusted gadgets, delivered fast in Nairobi. VoltHub is your electronics department while the store grows.
-          </p>
-          <Link href="/shop" className="inline-block rounded-full px-6 py-3 bg-[color:var(--accent)] text-white text-lg font-medium">
-            Start browsing
-          </Link>
+    <div className="mx-auto max-w-7xl px-4 pb-14 pt-4 sm:px-6 sm:pb-16 sm:pt-6">
+      <section className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(37,99,235,0.18),_transparent_38%),linear-gradient(135deg,_rgba(24,24,27,0.98),_rgba(9,9,11,1))] shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-8 top-10 h-36 w-36 rounded-full bg-white/6 blur-3xl" />
+          <div className="absolute bottom-0 right-0 h-48 w-48 rounded-full bg-[color:var(--accent)]/10 blur-3xl" />
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:22px_22px] opacity-20" />
         </div>
 
-        <section className="mt-6">
-        <div className="rounded-full px-4 py-2 text-xs grid grid-cols-3 gap-2 text-center border bg-white dark:bg-black">
-          <div className="opacity-80">VoltHub Electronics & Essentials</div>
-          <div className="opacity-80">Fast Nairobi delivery</div>
-          <div className="opacity-80">M‑Pesa payments accepted</div>
+        <div className="relative grid gap-6 px-4 py-5 sm:px-6 sm:py-7 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-8 lg:px-8 lg:py-9">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.24em] text-zinc-200">
+              VoltHub Market
+            </div>
+            <h1 className="mt-4 max-w-[12ch] font-serif text-[2.4rem] leading-[0.94] text-white sm:text-5xl lg:text-6xl">
+              Everyday essentials, groceries, and gadgets in one place
+            </h1>
+            <p className="mt-4 max-w-xl text-sm leading-6 text-zinc-300 sm:text-base">
+              Shop groceries, drinks, household items, personal care, and electronics with fast Nairobi delivery and M-Pesa checkout.
+            </p>
+
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Link
+                href="/category/groceries"
+                className="inline-flex min-h-12 items-center justify-center rounded-full bg-[color:var(--accent)] px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(37,99,235,0.35)] transition-transform hover:scale-[1.01]"
+              >
+                Shop groceries
+              </Link>
+              <Link
+                href="/category/electronics"
+                className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/15 bg-white/6 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+              >
+                Shop electronics
+              </Link>
+            </div>
+
+            <div className="mt-5 grid grid-cols-1 gap-2 text-xs text-zinc-200 sm:grid-cols-3 sm:gap-3 sm:text-sm">
+              {TRUST_ITEMS.map((item) => (
+                <div
+                  key={item}
+                  className="rounded-2xl border border-white/10 bg-white/6 px-3 py-3 text-center font-medium backdrop-blur"
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="rounded-[26px] border border-white/10 bg-white/6 p-3 backdrop-blur-sm">
+              <div className="grid grid-cols-2 gap-3">
+                {heroPreview.map((product, index) => (
+                  <Link
+                    key={product.id}
+                    href={`/product/${product.slug}`}
+                    className={`group overflow-hidden rounded-[22px] border border-white/10 bg-black/20 ${
+                      index === 0 ? "col-span-2" : ""
+                    }`}
+                  >
+                    <div className={`relative ${index === 0 ? "aspect-[16/9]" : "aspect-[5/6]"}`}>
+                      <Image
+                        src={getProductImage(product)}
+                        alt={product.name}
+                        fill
+                        sizes={index === 0 ? "(max-width: 1024px) 100vw, 40vw" : "(max-width: 1024px) 50vw, 20vw"}
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/15 to-transparent" />
+                      <div className="absolute inset-x-0 bottom-0 p-3 text-white">
+                        <div className="text-[10px] uppercase tracking-[0.22em] text-zinc-300">
+                          {product.category.replace("-", " ")}
+                        </div>
+                        <div className="mt-1 text-sm font-medium leading-5">{product.name}</div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+                {heroPreview.length === 0 && (
+                  <div className="col-span-2 rounded-[22px] border border-dashed border-white/15 bg-black/25 p-5 text-sm text-zinc-300">
+                    Fresh essentials and electronics will appear here as soon as the catalog is loaded.
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-3 rounded-[22px] border border-white/10 bg-black/20 px-4 py-3 text-sm text-zinc-200">
+                <div className="text-[10px] uppercase tracking-[0.24em] text-zinc-400">Store focus</div>
+                <div className="mt-2 flex items-center justify-between gap-3">
+                  <span>General shopping first</span>
+                  <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-300">
+                    Electronics by VoltHub
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="mt-12">
-        <div className="font-serif text-2xl mb-6">Shop by Category</div>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-          {[
-            { slug: "electronics", title: "Electronics" },
-            { slug: "audio", title: "Audio" },
-            { slug: "smartwatches", title: "Smartwatches" },
-            { slug: "chargers-cables", title: "Chargers & Cables" },
-            { slug: "power-banks", title: "Power Banks" },
-            { slug: "phone-accessories", title: "Phone Accessories" },
-            { slug: "speakers", title: "Speakers" },
-            { slug: "new-arrivals", title: "New Arrivals", href: "/shop" },
-          ].map((c) => (
+      <section className="mt-8 sm:mt-10">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <div className="text-xs uppercase tracking-[0.22em] text-zinc-500">Shop faster</div>
+            <h2 className="mt-2 font-serif text-2xl text-zinc-900 dark:text-white sm:text-3xl">
+              Start with the everyday categories
+            </h2>
+          </div>
+          <Link href="/shop" className="hidden rounded-full border border-black/10 px-4 py-2 text-sm dark:border-white/10 sm:inline-flex">
+            Browse full shop
+          </Link>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:mt-5 lg:grid-cols-3">
+          {HOMEPAGE_CATEGORIES.map((category) => (
             <Link
-              key={c.slug}
-              href={c.href ?? `/category/${c.slug}`}
-              className="rounded-xl border p-6 bg-white dark:bg-black hover:opacity-90 text-center"
+              key={category.slug}
+              href={`/category/${category.slug}`}
+              className="group rounded-[22px] border border-black/10 bg-white/90 p-4 transition-colors hover:border-[color:var(--accent)] dark:border-white/10 dark:bg-zinc-950/70"
             >
-              {c.title}
+              <div className="text-[11px] uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
+                Category
+              </div>
+              <div className="mt-2 font-serif text-xl text-zinc-900 dark:text-white">
+                {category.title}
+              </div>
+              <p className="mt-2 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
+                {category.description}
+              </p>
+              <div className="mt-4 text-sm font-medium text-[color:var(--accent)]">
+                Browse now
+              </div>
             </Link>
           ))}
         </div>
       </section>
 
-      <section className="mt-12">
-        <div className="flex items-end justify-between gap-6 mb-6">
-          <div>
-            <div className="font-serif text-2xl">Featured products</div>
-            <div className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              Popular picks that ship fast in Kenya.
+      <section className="mt-8 grid gap-4 sm:mt-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+        <div className="rounded-[28px] border border-black/10 bg-white/90 p-4 dark:border-white/10 dark:bg-zinc-950/70 sm:p-5">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <div className="text-xs uppercase tracking-[0.22em] text-zinc-500">Popular now</div>
+              <h2 className="mt-2 font-serif text-2xl text-zinc-900 dark:text-white">
+                Featured store picks
+              </h2>
+              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                Fast-moving items from across groceries, home, personal care, and gadgets.
+              </p>
             </div>
+            <Link href="/shop" className="rounded-full border border-black/10 px-4 py-2 text-sm dark:border-white/10">
+              Shop all
+            </Link>
           </div>
-          <Link href="/shop" className="rounded-full px-4 py-2 border text-sm">
-            Shop all
-          </Link>
-        </div>
-        {featured.length === 0 ? (
-          <div className="rounded-2xl border border-black/10 dark:border-white/10 p-10 bg-white dark:bg-black text-center">
-            <div className="font-serif text-2xl">Products coming soon</div>
-            <div className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-              We’re preparing the catalog. Check back soon.
+
+          {featured.length === 0 ? (
+            <div className="mt-6 rounded-[22px] border border-black/10 bg-zinc-50 p-8 text-center dark:border-white/10 dark:bg-black/30">
+              <div className="font-serif text-2xl">Products coming soon</div>
+              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                Browse the store structure now and check back as products go live.
+              </p>
             </div>
-            <div className="mt-6">
-              <Link href="/shop" className="inline-block rounded-full px-5 py-2 border text-sm">
-                Browse categories
+          ) : (
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {(essentialsPicks.length > 0 ? essentialsPicks : featured.slice(0, 4)).map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        <aside className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(18,18,20,0.96),rgba(8,8,10,1))] p-4 text-white shadow-[0_18px_50px_rgba(0,0,0,0.3)] sm:p-5">
+          <div className="text-xs uppercase tracking-[0.22em] text-zinc-400">Electronics department</div>
+          <h2 className="mt-2 font-serif text-2xl">VoltHub handles the gadget side</h2>
+          <p className="mt-3 text-sm leading-6 text-zinc-300">
+            When the basket needs earphones, power, audio, or phone accessories, the electronics aisle is still one tap away.
+          </p>
+
+          <div className="mt-5 grid gap-3">
+            <Link href="/category/electronics" className="rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm font-medium transition-colors hover:bg-white/10">
+              Shop all electronics
+            </Link>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <Link href="/category/audio" className="rounded-2xl border border-white/10 bg-white/6 px-4 py-3 transition-colors hover:bg-white/10">
+                Audio
+              </Link>
+              <Link href="/category/chargers-cables" className="rounded-2xl border border-white/10 bg-white/6 px-4 py-3 transition-colors hover:bg-white/10">
+                Chargers
               </Link>
             </div>
           </div>
-        ) : (
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {featured.map((p) => (
-              <ProductCard key={p.id} product={p} />
+
+          <div className="mt-5 space-y-3">
+            {(electronicsPicks.length > 0 ? electronicsPicks : featured.slice(0, 3)).map((product) => (
+              <Link
+                key={product.id}
+                href={`/product/${product.slug}`}
+                className="flex items-center gap-3 rounded-[20px] border border-white/10 bg-white/6 p-3 transition-colors hover:bg-white/10"
+              >
+                <div className="relative h-16 w-16 overflow-hidden rounded-2xl">
+                  <Image
+                    src={getProductImage(product)}
+                    alt={product.name}
+                    fill
+                    sizes="64px"
+                    className="object-cover"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-medium text-white">{product.name}</div>
+                  <div className="mt-1 text-xs uppercase tracking-[0.18em] text-zinc-400">
+                    {product.category.replace("-", " ")}
+                  </div>
+                </div>
+                <div className="text-sm font-semibold text-zinc-200">
+                  KES {product.priceKes.toLocaleString()}
+                </div>
+              </Link>
             ))}
           </div>
-        )}
+        </aside>
       </section>
-
-      <section className="mt-10 flex flex-wrap items-center justify-center gap-4 rounded-2xl border bg-white/90 dark:bg-black/70 border-black/10 dark:border-white/10 p-4">
-        {TRUST_ITEMS.map((item) => (
-          <div key={item} className="flex items-center gap-2 rounded-lg bg-zinc-100/70 dark:bg-white/10 px-3 py-2 text-xs font-medium text-zinc-700 dark:text-zinc-200">
-            <span>✅</span>
-            <span>{item}</span>
-          </div>
-        ))}
-      </section>
-
-      <section className="mt-12 grid md:grid-cols-3 gap-6">
-        {[
-          {
-            title: "Trusted picks",
-            body: "Quality products and essentials selected for everyday use.",
-          },
-          {
-            title: "Fast delivery",
-            body: "Same‑day Nairobi delivery options and nationwide courier.",
-          },
-          {
-            title: "Support on WhatsApp",
-            body: "Ask questions before you buy — we’ll help you choose the right item.",
-          },
-        ].map((c) => (
-          <div key={c.title} className="rounded-xl border p-6 bg-white dark:bg-black">
-            <div className="font-serif text-xl">{c.title}</div>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{c.body}</p>
-          </div>
-        ))}
-      </section>
-
-      <section className="mt-10 rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-black p-6">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-          <div>
-            <h2 className="font-serif text-2xl">Big value picks</h2>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              Handpicked products under KES 5,000. No fake markdowns, just honest value.
-            </p>
-          </div>
-          <Link href="/shop" className="rounded-full border px-4 py-2 text-sm">
-            Browse all value picks
-          </Link>
-        </div>
-        <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {featured.slice(0, 2).map((p) => (
-            <Link key={p.id} href={`/product/${p.slug}`} className="rounded-xl border p-4 bg-zinc-50 dark:bg-zinc-900 hover:border-[color:var(--accent)] transition-colors">
-              <div className="text-xs text-zinc-500">Featured</div>
-              <div className="mt-2 font-medium text-zinc-900 dark:text-white">{p.name}</div>
-              <div className="mt-1 text-sm font-semibold">KES {p.priceKes.toLocaleString()}</div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-12">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="font-serif text-2xl">Curated collections</h2>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">Intent-based picks for faster decision making</p>
-        </div>
-        <div className="mt-4 grid sm:grid-cols-3 gap-4">
-          {VALUE_COLLECTIONS.map((c) => (
-            <div key={c.title} className="rounded-xl border p-5 bg-white dark:bg-black dark:border-white/10">
-              <div className="text-sm font-bold text-zinc-900 dark:text-white">{c.title}</div>
-              <div className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">{c.subtitle}</div>
-              <div className="mt-3 grid gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                {featured.slice(0, 2).map((p) => (
-                  <Link key={`${c.title}-${p.id}`} href={`/product/${p.slug}`} className="rounded-lg border p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900">
-                    <div className="font-medium">{p.name}</div>
-                    <div className="text-xs">KES {p.priceKes.toLocaleString()}</div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-12 rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-black p-6">
-        <h2 className="font-serif text-2xl">Why buy from VoltHub</h2>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          Your trusted Kenyan online shop with real products, clear terms, and fast support.
-        </p>
-        <div className="mt-4 grid sm:grid-cols-2 gap-4">
-          <div className="rounded-xl border p-4 bg-zinc-50 dark:bg-zinc-900">
-            <div className="font-semibold">Curated selection</div>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">We stock only reliable accessories that match daily needs.</p>
-          </div>
-          <div className="rounded-xl border p-4 bg-zinc-50 dark:bg-zinc-900">
-            <div className="font-semibold">Order clarity</div>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">No hidden fees, no fake discounts — just up-front pricing.</p>
-          </div>
-          <div className="rounded-xl border p-4 bg-zinc-50 dark:bg-zinc-900">
-            <div className="font-semibold">Trustworthy support</div>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">WhatsApp help for questions before and after purchase.</p>
-          </div>
-          <div className="rounded-xl border p-4 bg-zinc-50 dark:bg-zinc-900">
-            <div className="font-semibold">Delivery confidence</div>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">Nairobi same-day and nationwide service with tracking.</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="mt-12 rounded-xl border p-6 bg-white dark:bg-black">
-        <div className="font-serif text-2xl">Delivery & payment</div>
-        <div className="mt-4 grid sm:grid-cols-3 gap-6 text-sm">
-          <div>
-            <div className="font-medium">Nairobi delivery</div>
-            <div className="text-zinc-600 dark:text-zinc-400">Same‑day options available</div>
-          </div>
-          <div>
-            <div className="font-medium">Nationwide courier</div>
-            <div className="text-zinc-600 dark:text-zinc-400">1‑3 working days</div>
-          </div>
-          <div>
-            <div className="font-medium">Pay with M‑Pesa</div>
-            <div className="text-zinc-600 dark:text-zinc-400">Clear instructions after you order</div>
-          </div>
-        </div>
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link
-            href="/shop"
-            className="rounded-full px-5 py-2 bg-[color:var(--accent)] text-white text-sm"
-          >
-            Start shopping
-          </Link>
-          <Link
-            href="/offers"
-            className="rounded-full px-5 py-2 border text-sm"
-          >
-            View deals
-          </Link>
-        </div>
-      </section>
-    </div>
-  </div>
-  );
-}
-
-function HeroSlider() {
-  const noise =
-    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>";
-  const imageUrl =
-    "https://images.pexels.com/photos/4792733/pexels-photo-4792733.jpeg?auto=compress&cs=tinysrgb&w=1200";
-  const blur =
-    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><rect width='100%' height='100%' fill='%23e8f0ff'/></svg>";
-
-  return (
-    <section className="relative mt-8 min-h-[92svh] px-4 md:px-6" aria-label="VoltHub hero">
-      <div className="absolute inset-0 pointer-events-none -z-10">
-        <SlideBackground />
-      </div>
-
-      <div className="relative mx-auto max-w-7xl rounded-[32px] overflow-hidden bg-white/80 dark:bg-black/60 backdrop-blur-sm ring-1 ring-black/5 dark:ring-white/10 shadow-[0_40px_120px_rgba(0,0,0,0.08)] animate-[fadeCard_600ms_ease-out_both]">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-multiply"
-          style={{ backgroundImage: `url(${noise})`, backgroundSize: "200px" }}
-        />
-
-        <div className="grid md:grid-cols-2">
-          <div className="px-6 md:px-10 py-10 lg:py-14 flex items-center">
-            <div className="max-w-xl">
-              <h1 className="font-serif text-5xl md:text-6xl leading-tight tracking-[0.01em]">
-                <span className="block">Quality gadgets for Kenyan life</span>
-                <span className="block">Fast delivery, clear support</span>
-              </h1>
-              <p className="mt-4 text-sm md:text-base opacity-90">
-                Shop proven electronics curated for reliability: earbuds, power banks, smartwatches, and
-                mobile accessories with practical support and honest pricing.
-              </p>
-              <p className="mt-3 text-xs md:text-sm text-zinc-300">
-                M-Pesa payments, Nairobi same-day delivery, nationwide courier, easy returns.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link
-                  href="/shop"
-                  className="rounded-2xl px-6 py-3 text-sm font-medium bg-[color:var(--accent)] text-white shadow-[0_8px_24px_rgba(37,99,235,0.35)] hover:shadow-[0_12px_32px_rgba(37,99,235,0.45)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)] focus-visible:ring-offset-2"
-                >
-                  Shop gadgets
-                </Link>
-                <Link
-                  href="https://wa.me/254798966238?text=Hi%20VoltHub,%20I%20need%20help%20choosing%20a%20gadget."
-                  target="_blank"
-                  rel="noopener"
-                  className="text-sm underline opacity-90 hover:opacity-100"
-                >
-                  WhatsApp support
-                </Link>
-              </div>
-            </div>
-          </div>
-          <div className="relative h-[46vh] md:h-auto min-h-[46vh]">
-            <Image
-              src={imageUrl}
-              alt="Modern gadgets and accessories"
-              fill
-              priority
-              quality={55}
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
-              placeholder="blur"
-              blurDataURL={blur}
-              className="object-cover animate-[imageZoom_20s_ease_infinite]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-l from-black/55 via-black/25 to-transparent" />
-          </div>
-        </div>
-
-        
-
-        <style jsx>{`
-          @keyframes gradientShift {
-            0% { transform: translate3d(-2%, -2%, 0) scale(1.02); }
-            50% { transform: translate3d(2%, 2%, 0) scale(1.04); }
-            100% { transform: translate3d(-2%, -2%, 0) scale(1.02); }
-          }
-          @keyframes fadeUp {
-            0% { opacity: 0; transform: translate3d(0, 12px, 0); }
-            100% { opacity: 1; transform: translate3d(0, 0, 0); }
-          }
-          @keyframes imageZoom {
-            0% { transform: scale(1.05) translate3d(0,0,0); }
-            50% { transform: scale(1.08) translate3d(0,0,0); }
-            100% { transform: scale(1.05) translate3d(0,0,0); }
-          }
-          @keyframes fadeCard {
-            0% { opacity: 0; transform: translate3d(0, 8px, 0); }
-            100% { opacity: 1; transform: translate3d(0, 0, 0); }
-          }
-        `}</style>
-      </div>
-    </section>
-  );
-}
-
-function SlideBackground() {
-  return (
-    <div className="w-full h-full relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-[color:var(--accent-soft)] via-[color:var(--background)] to-[color:var(--background)] animate-[gradientShift_14s_ease_infinite] opacity-80" />
     </div>
   );
 }

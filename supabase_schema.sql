@@ -1,4 +1,25 @@
--- Create products table
+I want to use this email address as the admin account for the project:
+
+gibsonkobia@gmail.com
+
+Please update the admin access configuration so this email can access /admin.
+
+Requirements:
+1. Find the admin gate in src/app/admin/layout.tsx
+2. Check whether admin emails are read from NEXT_PUBLIC_ADMIN_EMAILS or from a hardcoded fallback
+3. Add gibsonkobia@gmail.com to the allowed admin emails
+4. Keep the current admin protection logic intact
+5. Do not refactor auth
+6. Do not change unrelated files
+7. Tell me exactly what changed
+8. Tell me whether I also need to add or update NEXT_PUBLIC_ADMIN_EMAILS in Vercel
+9. Tell me whether a redeploy is required
+
+Return:
+- file changed
+- exact allowed admin email(s)
+- whether Vercel env must be updated
+- whether redeploy is needed-- Create products table
 create table public.products (
   id uuid default gen_random_uuid() primary key,
   slug text unique not null,
