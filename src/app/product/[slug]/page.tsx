@@ -60,6 +60,7 @@ export default async function Page({
         </Link>
         <div className="text-xs text-zinc-600 dark:text-zinc-400">{categoryLabel}</div>
       </div>
+
       <div className="grid md:grid-cols-2 gap-8">
         <div className="relative aspect-[4/5] rounded-xl overflow-hidden border bg-white dark:bg-black">
           <img
@@ -68,69 +69,117 @@ export default async function Page({
             className="w-full h-full object-cover"
           />
         </div>
-        <div>
-          <div className="text-sm text-zinc-500">{product.brand}</div>
-          <div className="font-serif text-2xl mt-1">{product.name}</div>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span
-              className={`text-xs rounded-full px-3 py-1 border ${
-                inStock
-                  ? "border-emerald-200 text-emerald-700 bg-emerald-50 dark:bg-emerald-950/20 dark:text-emerald-300 dark:border-emerald-900"
-                  : "border-red-200 text-red-700 bg-red-50 dark:bg-red-950/20 dark:text-red-300 dark:border-red-900"
-              }`}
-            >
-              {inStock ? `${product.stock} in stock` : "Out of stock"}
-            </span>
-            <span className="text-xs text-zinc-600 dark:text-zinc-400">
-              {product.rating > 0 ? `${product.rating.toFixed(1)} rating` : "Ratings coming soon"}
-            </span>
-          </div>
-          <div className="mt-3 text-xl font-semibold">KES {product.priceKes.toLocaleString()}</div>
-          <p className="mt-4 text-sm text-zinc-700 dark:text-zinc-300">{product.description}</p>
-          <div className="mt-5 flex gap-3">
-            <AddToCartButton productId={product.id} />
-            <AddToWishlistButton productId={product.id} />
-          </div>
-          <div className="mt-4">
-            <a
-              href={waUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-full px-4 py-2 border text-sm hover:bg-black/5 dark:hover:bg-white/10"
-            >
-              Prefer WhatsApp? Order directly here
-            </a>
-          </div>
-          <div className="mt-4">
-            <ReviewButton productId={product.id} />
-          </div>
-          <div className="mt-6 rounded-xl border border-black/10 dark:border-white/10 p-5 bg-white/60 dark:bg-black/40">
-            <div className="font-medium mb-3">Key features</div>
-            <ul className="text-sm text-zinc-700 dark:text-zinc-300 list-disc pl-5 space-y-1">
-              {highlights.map((h) => (
-                <li key={h}>{h}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="mt-6 rounded-xl border border-black/10 dark:border-white/10 p-5 bg-white/60 dark:bg-black/40">
-            <div className="font-medium mb-3">Specifications</div>
-            <div className="text-sm grid grid-cols-2 gap-3">
-              <div className="text-zinc-600 dark:text-zinc-400">Brand</div>
-              <div>{product.brand}</div>
-              <div className="text-zinc-600 dark:text-zinc-400">Category</div>
-              <div>{categoryLabel}</div>
-              <div className="text-zinc-600 dark:text-zinc-400">Stock</div>
-              <div>{inStock ? `${product.stock} available` : "Currently unavailable"}</div>
+
+        <div className="space-y-5">
+          <div>
+            <div className="text-sm text-zinc-500">{product.brand}</div>
+            <h1 className="font-serif text-3xl md:text-4xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+              {product.name}
+            </h1>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="text-xs rounded-full px-3 py-1 border border-emerald-200 text-emerald-700 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-300">
+                {inStock ? `${product.stock} in stock` : "Out of stock"}
+              </span>
+              <span className="text-xs text-zinc-600 dark:text-zinc-400">
+                {product.rating > 0 ? `${product.rating.toFixed(1)} rating` : "Ratings coming soon"}
+              </span>
             </div>
-            <div className="mt-4 text-xs text-zinc-600 dark:text-zinc-400">
-              Delivery: Nairobi same‑day options, nationwide courier in 1‑3 working days. Payment: M‑Pesa instructions after order confirmation.
+          </div>
+
+          <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-5 dark:border-zinc-800 dark:bg-zinc-950/40">
+            <div className="text-2xl md:text-3xl font-semibold">KES {product.priceKes.toLocaleString()}</div>
+            <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-zinc-700 dark:text-zinc-300 md:grid-cols-1">
+              <div>✅ M-Pesa payment available</div>
+              <div>✅ Nairobi same-day delivery</div>
+              <div>✅ Nationwide 1–3 working days</div>
+              <div>✅ Easy return if item arrives faulty</div>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <AddToCartButton productId={product.id} />
+                <AddToWishlistButton productId={product.id} />
+              </div>
+              <a
+                href={waUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-full items-center justify-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
+              >
+                WhatsApp order for support
+              </a>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                Need help before ordering? Chat with us on WhatsApp for quick assistance.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+              <h2 className="font-medium text-lg text-zinc-900 dark:text-white">Product description</h2>
+              <p className="mt-2 text-sm leading-7 text-zinc-700 dark:text-zinc-300">{product.description}</p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+                <h3 className="font-medium text-sm text-zinc-900 dark:text-white">Compatibility</h3>
+                <ul className="mt-2 space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
+                  <li>• Works with Android phones</li>
+                  <li>• Works with iPhones</li>
+                  <li>• Works with laptops and tablets that support Bluetooth</li>
+                </ul>
+              </div>
+
+              <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+                <h3 className="font-medium text-sm text-zinc-900 dark:text-white">What’s in the box</h3>
+                <ul className="mt-2 space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
+                  <li>• 1 × {product.name}</li>
+                  <li>• 1 × charging cable</li>
+                  <li>• 1 × user guide</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+              <h3 className="font-medium text-sm text-zinc-900 dark:text-white">Why buy from VoltHub</h3>
+              <ul className="mt-2 space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
+                <li>• Curated gadgets for everyday use</li>
+                <li>• Fast support on WhatsApp</li>
+                <li>• Clear pricing with no fake discounts</li>
+                <li>• Delivery options across Kenya</li>
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+              <h3 className="font-medium text-sm text-zinc-900 dark:text-white">Key features</h3>
+              <ul className="mt-2 text-sm text-zinc-700 dark:text-zinc-300 list-disc pl-5 space-y-1">
+                {highlights.map((h) => (
+                  <li key={h}>{h}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+              <h3 className="font-medium text-sm text-zinc-900 dark:text-white">Specifications</h3>
+              <div className="mt-2 text-sm grid grid-cols-2 gap-3 text-zinc-700 dark:text-zinc-300">
+                <div className="font-medium text-zinc-600 dark:text-zinc-400">Brand</div>
+                <div>{product.brand}</div>
+                <div className="font-medium text-zinc-600 dark:text-zinc-400">Category</div>
+                <div>{categoryLabel}</div>
+                <div className="font-medium text-zinc-600 dark:text-zinc-400">Stock</div>
+                <div>{inStock ? `${product.stock} available` : "Currently unavailable"}</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
       {related.length > 0 && (
         <div className="mt-12">
-          <div className="font-serif text-xl mb-4">You may also like</div>
+          <div className="mb-3">
+            <h2 className="font-serif text-2xl text-zinc-900 dark:text-white">You may also like</h2>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">Similar picks from VoltHub.</p>
+          </div>
           <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
             {related.map((p) => (
               <div key={p.id} className="rounded-xl border p-4 bg-white dark:bg-black">
@@ -143,8 +192,8 @@ export default async function Page({
                     />
                   </div>
                   <div className="mt-3 text-xs text-zinc-500">{p.brand}</div>
-                  <div className="font-medium">{p.name}</div>
-                  <div className="mt-1 font-semibold">KES {p.priceKes.toLocaleString()}</div>
+                  <div className="font-medium text-sm text-zinc-900 dark:text-white">{p.name}</div>
+                  <div className="mt-1 font-semibold text-zinc-800 dark:text-zinc-100">KES {p.priceKes.toLocaleString()}</div>
                   <div className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
                     <span aria-hidden>☆☆☆☆☆</span>
                     <span className="ml-2">No reviews yet</span>
