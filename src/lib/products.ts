@@ -10,6 +10,12 @@ const CATEGORY_SLUGS: CategorySlug[] = [
   "power-banks",
   "phone-accessories",
   "speakers",
+  "groceries",
+  "beverages",
+  "household",
+  "snacks",
+  "personal-care",
+  "electronics",
 ];
 
 function isSupabaseConfigured() {

@@ -14,6 +14,12 @@ const CATEGORY_LABELS: Record<CategorySlug, string> = {
   "power-banks": "Power Banks",
   "phone-accessories": "Phone Accessories",
   speakers: "Speakers",
+  groceries: "Groceries",
+  beverages: "Beverages",
+  household: "Household",
+  snacks: "Snacks",
+  "personal-care": "Personal Care",
+  electronics: "Electronics",
 };
 
 function isCategorySlug(v: string): v is CategorySlug {

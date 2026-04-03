@@ -9,13 +9,32 @@ export default function AdminProductsPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<DBProduct | null>(null);
+  const CATEGORY_OPTIONS = [
+    "electronics",
+    "audio",
+    "smartwatches",
+    "chargers-cables",
+    "power-banks",
+    "phone-accessories",
+    "speakers",
+    "groceries",
+    "beverages",
+    "household",
+    "snacks",
+    "personal-care",
+  ] as const;
+
   const [formData, setFormData] = useState<Partial<DBProduct>>({
-    category: "audio",
+    category: "electronics",
     is_active: true,
+    stock: 0,
+    rating: 0,
+    reviews_count: 0,
+    brand: "VoltHub",
   });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const supabase = getSupabase();
-
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -67,12 +86,37 @@ export default function AdminProductsPage() {
       .replace(/(^-|-$)+/g, "");
   };
 
+  const validateProduct = () => {
+    const err: Record<string, string> = {};
+    if (!formData.name?.trim()) err.name = "Product name is required.";
+    if (!formData.slug?.trim()) err.slug = "Slug is required.";
+    else if (!/^[a-z0-9]+(?:[-][a-z0-9]+)*$/.test(formData.slug!))
+      err.slug = "Slug must be lowercase alphanumeric and may contain dashes.";
+
+    if (!formData.category || !CATEGORY_OPTIONS.includes(formData.category as any))
+      err.category = "Please select a valid category.";
+
+    if (formData.price === undefined || Number.isNaN(Number(formData.price)) || Number(formData.price) < 0)
+      err.price = "Price must be a positive number.";
+
+    if (formData.stock === undefined || Number.isNaN(Number(formData.stock)) || Number(formData.stock) < 0)
+      err.stock = "Stock must be a non-negative integer.";
+
+    if (!formData.image_url?.trim()) err.image_url = "Image URL is required.";
+    else if (!/^https?:\/\/.+\.(jpg|jpeg|png|webp|gif)$/i.test(formData.image_url))
+      err.image_url = "Image URL must be valid and end with jpg/jpeg/png/webp/gif.";
+
+    setFormErrors(err);
+    return Object.keys(err).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateProduct()) return;
     setSaving(true);
 
     try {
-      const slug = formData.slug || generateSlug(formData.name || "");
+      const slug = (formData.slug || generateSlug(formData.name || "")).toLowerCase();
       const productData = {
         ...formData,
         slug,
@@ -240,10 +284,19 @@ export default function AdminProductsPage() {
                     required
                     type="text"
                     value={formData.name || ""}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const shouldAutoSlug = !formData.slug || formData.slug === generateSlug(formData.name || "");
+                      setFormData({
+                        ...formData,
+                        name: value,
+                        slug: shouldAutoSlug ? generateSlug(value) : formData.slug,
+                      });
+                    }}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                     placeholder="e.g. Wireless Earbuds"
                   />
+                  {formErrors.name && <p className="text-xs text-red-600">{formErrors.name}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -253,24 +306,37 @@ export default function AdminProductsPage() {
                     value={formData.brand || ""}
                     onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
-                    placeholder="e.g. Maybelline"
+                    placeholder="e.g. VoltHub"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Slug</label>
+                  <input
+                    required
+                    type="text"
+                    value={formData.slug || ""}
+                    onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase() })}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                    placeholder="e.g. wireless-earbuds"
+                  />
+                  {formErrors.slug && <p className="text-xs text-red-600">{formErrors.slug}</p>}
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Category</label>
                   <select
-                    value={formData.category || "audio"}
+                    value={formData.category || "electronics"}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all bg-white"
                   >
-                    <option value="audio">Audio</option>
-                    <option value="smartwatches">Smartwatches</option>
-                    <option value="chargers-cables">Chargers & Cables</option>
-                    <option value="power-banks">Power Banks</option>
-                    <option value="phone-accessories">Phone Accessories</option>
-                    <option value="speakers">Speakers</option>
+                    {CATEGORY_OPTIONS.map((c) => (
+                      <option key={c} value={c}>
+                        {c.replace(/-/g, " ").replace(/^./, (s) => s.toUpperCase())}
+                      </option>
+                    ))}
                   </select>
+                  {formErrors.category && <p className="text-xs text-red-600">{formErrors.category}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -279,22 +345,43 @@ export default function AdminProductsPage() {
                     required
                     type="number"
                     min="0"
-                    value={formData.price || ""}
+                    value={formData.price ?? ""}
                     onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                   />
+                  {formErrors.price && <p className="text-xs text-red-600">{formErrors.price}</p>}
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Stock Quantity</label>
-                  <input
-                    required
-                    type="number"
-                    min="0"
-                    value={formData.stock || ""}
-                    onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
-                  />
+                  <div className="flex gap-2 items-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newStock = Math.max(0, Number(formData.stock || 0) - 1);
+                        setFormData({ ...formData, stock: newStock });
+                      }}
+                      className="px-3 py-2 border rounded-lg"
+                    >
+                      -
+                    </button>
+                    <input
+                      required
+                      type="number"
+                      min="0"
+                      value={formData.stock ?? 0}
+                      onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, stock: Number(formData.stock || 0) + 1 })}
+                      className="px-3 py-2 border rounded-lg"
+                    >
+                      +
+                    </button>
+                  </div>
+                  {formErrors.stock && <p className="text-xs text-red-600">{formErrors.stock}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -306,6 +393,17 @@ export default function AdminProductsPage() {
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                     placeholder="https://..."
                   />
+                  {formErrors.image_url && <p className="text-xs text-red-600">{formErrors.image_url}</p>}
+                  {formData.image_url && (
+                    <img
+                      src={formData.image_url}
+                      alt="Preview"
+                      className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "";
+                      }}
+                    />
+                  )}
                 </div>
               </div>
 
@@ -320,21 +418,49 @@ export default function AdminProductsPage() {
                 />
               </div>
 
-              <div className="pt-4 border-t border-gray-100 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="px-6 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-6 py-2 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {saving ? "Saving..." : "Save Product"}
-                </button>
+              <div className="pt-4 border-t border-gray-100 flex flex-col md:flex-row justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  {editingProduct && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const { error } = await supabase
+                            .from("products")
+                            .update({ is_active: false })
+                            .eq("id", editingProduct.id);
+                          if (error) throw error;
+                          setProducts(products.map((p) =>
+                            p.id === editingProduct.id ? { ...p, is_active: false } : p
+                          ));
+                          handleCloseModal();
+                        } catch (error) {
+                          console.error(error);
+                          alert("Failed to archive product");
+                        }
+                      }}
+                      className="px-4 py-2 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                    >
+                      Archive Product
+                    </button>
+                  )}
+                </div>
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="px-6 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="px-6 py-2 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {saving ? "Saving..." : "Save Product"}
+                  </button>
+                </div>
               </div>
             </form>
           </div>

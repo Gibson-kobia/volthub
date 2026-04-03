@@ -235,7 +235,7 @@ function Shell({ children }: { children: React.ReactNode }) {
             <div className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10" />
             <Link href="/" className="group">
               <span className="font-serif text-2xl tracking-[0.04em]">VoltHub</span>
-              <span className="hidden xl:block text-xs text-zinc-500">Gadgets & Accessories</span>
+              <span className="hidden xl:block text-xs text-zinc-500">VoltHub Market – Electronics & Essentials</span>
             </Link>
           </div>
           <div className="hidden lg:flex items-center gap-8 text-sm">
@@ -261,7 +261,7 @@ function Shell({ children }: { children: React.ReactNode }) {
               }}
               className="inline-flex items-center gap-1 transition-all duration-200 hover:text-[color:var(--accent)] hover:scale-105"
             >
-              Categories
+              Departments
               <span>▾</span>
             </button>
             <Link href="/offers" className="transition-all duration-200 hover:text-[color:var(--accent)] hover:scale-105">Deals</Link>
@@ -326,12 +326,18 @@ function Shell({ children }: { children: React.ReactNode }) {
                 ) : (
                   <>
                     {[
+                      { slug: "electronics", label: "Electronics" },
                       { slug: "audio", label: "Audio" },
                       { slug: "smartwatches", label: "Smartwatches" },
                       { slug: "chargers-cables", label: "Chargers & Cables" },
                       { slug: "power-banks", label: "Power Banks" },
                       { slug: "phone-accessories", label: "Phone Accessories" },
                       { slug: "speakers", label: "Speakers" },
+                      { slug: "groceries", label: "Groceries" },
+                      { slug: "beverages", label: "Beverages" },
+                      { slug: "household", label: "Household" },
+                      { slug: "snacks", label: "Snacks" },
+                      { slug: "personal-care", label: "Personal Care" },
                     ].map((c) => (
                       <Link
                         key={c.slug}

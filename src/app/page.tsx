@@ -16,8 +16,8 @@ const TRUST_ITEMS = [
 
 const VALUE_COLLECTIONS = [
   { title: "Daily essentials", subtitle: "Trusted picks for everyday use" },
-  { title: "Fast charging setup", subtitle: "Power up without waiting" },
-  { title: "Budget smart audio", subtitle: "Clear sound from trusted models" },
+  { title: "Home & kitchen", subtitle: "Essentials for your household" },
+  { title: "Personal care", subtitle: "Quality products for self-care" },
 ];
 
 export default function Home() {
@@ -44,13 +44,21 @@ export default function Home() {
         {HOME_UTILITY_BAR}
       </div>
       <div className="mx-auto max-w-7xl px-6">
-        <HeroSlider />
+        <div className="py-12 text-center">
+          <h1 className="font-serif text-4xl md:text-5xl mb-4">VoltHub Market</h1>
+          <p className="text-lg text-zinc-600 dark:text-zinc-400 mb-8 max-w-2xl mx-auto">
+            Everyday essentials and trusted gadgets, delivered fast in Nairobi. VoltHub is your electronics department while the store grows.
+          </p>
+          <Link href="/shop" className="inline-block rounded-full px-6 py-3 bg-[color:var(--accent)] text-white text-lg font-medium">
+            Start browsing
+          </Link>
+        </div>
 
         <section className="mt-6">
         <div className="rounded-full px-4 py-2 text-xs grid grid-cols-3 gap-2 text-center border bg-white dark:bg-black">
-          <div className="opacity-80">Quality Gadgets</div>
-          <div className="opacity-80">Fast Delivery</div>
-          <div className="opacity-80">M‑Pesa Friendly</div>
+          <div className="opacity-80">VoltHub Electronics & Essentials</div>
+          <div className="opacity-80">Fast Nairobi delivery</div>
+          <div className="opacity-80">M‑Pesa payments accepted</div>
         </div>
       </section>
 
@@ -58,6 +66,7 @@ export default function Home() {
         <div className="font-serif text-2xl mb-6">Shop by Category</div>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
           {[
+            { slug: "electronics", title: "Electronics" },
             { slug: "audio", title: "Audio" },
             { slug: "smartwatches", title: "Smartwatches" },
             { slug: "chargers-cables", title: "Chargers & Cables" },
@@ -123,7 +132,7 @@ export default function Home() {
         {[
           {
             title: "Trusted picks",
-            body: "Practical gadgets and accessories selected for everyday use.",
+            body: "Quality products and essentials selected for everyday use.",
           },
           {
             title: "Fast delivery",
@@ -190,7 +199,7 @@ export default function Home() {
       <section className="mt-12 rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-black p-6">
         <h2 className="font-serif text-2xl">Why buy from VoltHub</h2>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          A focused Kenyan gadget specialist with real products, clear terms, and fast support.
+          Your trusted Kenyan online shop with real products, clear terms, and fast support.
         </p>
         <div className="mt-4 grid sm:grid-cols-2 gap-4">
           <div className="rounded-xl border p-4 bg-zinc-50 dark:bg-zinc-900">

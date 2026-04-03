@@ -6,8 +6,10 @@ import { Order, OrderStatus } from "@/lib/types";
 
 const STATUS_OPTIONS: OrderStatus[] = [
   "NEW",
+  "CONFIRMED",
   "PREPARING",
   "WITH_RIDER",
+  "DISPATCHED",
   "DELIVERED",
   "CANCELLED",
 ];
@@ -158,9 +160,11 @@ export default function AdminOrdersPage() {
                         className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
                           order.status === "NEW"
                             ? "bg-blue-100 text-blue-800"
+                            : order.status === "CONFIRMED"
+                            ? "bg-indigo-100 text-indigo-800"
                             : order.status === "PREPARING"
                             ? "bg-yellow-100 text-yellow-800"
-                            : order.status === "WITH_RIDER"
+                            : order.status === "WITH_RIDER" || order.status === "DISPATCHED"
                             ? "bg-purple-100 text-purple-800"
                             : order.status === "DELIVERED"
                             ? "bg-green-100 text-green-800"
@@ -211,6 +215,33 @@ export default function AdminOrdersPage() {
             </div>
 
             <div className="p-6 space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                  <div className="text-xs font-medium text-gray-500">Order Status</div>
+                  <div className="mt-1 text-sm font-semibold text-gray-900">
+                    {selectedOrder.status.replace("_", " ")}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                  <div className="text-xs font-medium text-gray-500">Total</div>
+                  <div className="mt-1 text-sm font-semibold text-gray-900">
+                    KES {Number(selectedOrder.total).toLocaleString()}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                  <div className="text-xs font-medium text-gray-500">Delivery</div>
+                  <div className="mt-1 text-sm font-semibold text-gray-900">
+                    {selectedOrder.delivery_method || "–"}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                  <div className="text-xs font-medium text-gray-500">Payment method</div>
+                  <div className="mt-1 text-sm font-semibold text-gray-900">
+                    {(selectedOrder as any).payment_method || "M-Pesa / default"}
+                  </div>
+                </div>
+              </div>
+
               {/* Status Control */}
               <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                 <label className="block text-sm font-medium text-gray-700 mb-2">

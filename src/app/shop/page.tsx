@@ -7,12 +7,18 @@ import { ProductCard } from "../../components/product-card";
 import type { CategorySlug } from "../../lib/types";
 
 const CATEGORIES: { slug: CategorySlug; label: string }[] = [
+  { slug: "electronics", label: "Electronics" },
   { slug: "audio", label: "Audio" },
   { slug: "smartwatches", label: "Smartwatches" },
   { slug: "chargers-cables", label: "Chargers & Cables" },
   { slug: "power-banks", label: "Power Banks" },
   { slug: "phone-accessories", label: "Phone Accessories" },
   { slug: "speakers", label: "Speakers" },
+  { slug: "groceries", label: "Groceries" },
+  { slug: "beverages", label: "Beverages" },
+  { slug: "household", label: "Household" },
+  { slug: "snacks", label: "Snacks" },
+  { slug: "personal-care", label: "Personal Care" },
 ];
 
 export default function ShopPage() {
@@ -44,7 +50,7 @@ export default function ShopPage() {
         <div>
           <h1 className="font-serif text-3xl">Shop</h1>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Gadgets and accessories with fast delivery in Kenya.
+            Everyday essentials and gadgets with fast delivery in Kenya.
           </p>
         </div>
         <Link

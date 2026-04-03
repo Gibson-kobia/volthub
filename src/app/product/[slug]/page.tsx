@@ -17,6 +17,12 @@ const CATEGORY_LABELS: Record<CategorySlug, string> = {
   "power-banks": "Power Banks",
   "phone-accessories": "Phone Accessories",
   speakers: "Speakers",
+  groceries: "Groceries",
+  beverages: "Beverages",
+  household: "Household",
+  snacks: "Snacks",
+  "personal-care": "Personal Care",
+  electronics: "Electronics",
 };
 
 function getHighlights(category: CategorySlug) {
@@ -28,6 +34,12 @@ function getHighlights(category: CategorySlug) {
     "power-banks": ["Charge on the go", "High‑capacity everyday backup", ...common],
     "phone-accessories": ["Protection and everyday convenience", "Easy to carry and use", ...common],
     speakers: ["Portable sound for home and outdoors", "Easy pairing and controls", ...common],
+    groceries: ["Fresh and quality products", "Essential for daily cooking", ...common],
+    beverages: ["Refreshing drinks for every occasion", "Quality and variety", ...common],
+    household: ["Essentials for your home", "Durable and practical", ...common],
+    snacks: ["Tasty treats and quick bites", "Perfect for sharing", ...common],
+    "personal-care": ["Quality care products", "Gentle and effective", ...common],
+    electronics: ["Reliable tech for everyday use", "Latest and trusted brands", ...common],
   };
   return byCategory[category];
 }

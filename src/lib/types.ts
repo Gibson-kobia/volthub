@@ -4,7 +4,13 @@ export type CategorySlug =
   | "chargers-cables"
   | "power-banks"
   | "phone-accessories"
-  | "speakers";
+  | "speakers"
+  | "groceries"
+  | "beverages"
+  | "household"
+  | "snacks"
+  | "personal-care"
+  | "electronics";
 
 export type Product = {
   id: string;
@@ -44,7 +50,7 @@ export type CartItem = {
   qty: number;
 };
 
-export type OrderStatus = 'NEW' | 'PREPARING' | 'WITH_RIDER' | 'DELIVERED' | 'CANCELLED';
+export type OrderStatus = 'NEW' | 'CONFIRMED' | 'PREPARING' | 'WITH_RIDER' | 'DISPATCHED' | 'DELIVERED' | 'CANCELLED';
 
 export type Order = {
   id: string;

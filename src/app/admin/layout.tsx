@@ -5,7 +5,10 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { getSupabase } from "@/lib/supabase";
 
-const ADMIN_EMAILS = ["virginiagatwiri7@gmail.com"];
+const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || "virginiagatwiri7@gmail.com")
+  .split(",")
+  .map((email) => email.toLowerCase().trim())
+  .filter(Boolean);
 
 export default function AdminLayout({
   children,
