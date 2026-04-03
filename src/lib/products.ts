@@ -65,9 +65,12 @@ export async function fetchProducts(): Promise<Product[]> {
 
 export async function fetchProductBySlug(slug: string): Promise<Product | null> {
   if (!isSupabaseConfigured()) return null;
+
   try {
     const supabase = getSupabase();
-    const { data, error } = await supabase
+
+    // Primary query: only active products
+    let { data, error } = await supabase
       .from("products")
       .select("*")
       .eq("slug", slug)
@@ -75,8 +78,20 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
       .single();
 
     if (error || !data) {
-      return null;
+      // Fallback query: allow any status for cases where active flag inconsistency causes 404
+      const fallback = await supabase
+        .from("products")
+        .select("*")
+        .eq("slug", slug)
+        .single();
+
+      if (fallback.error || !fallback.data) {
+        return null;
+      }
+
+      data = fallback.data;
     }
+
     return mapDBProductToProduct(data);
   } catch {
     return null;
