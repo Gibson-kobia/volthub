@@ -205,21 +205,21 @@ function Shell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto max-w-7xl px-6">
           <div className="flex items-center justify-between h-9 text-xs">
             <div className="opacity-80">Free Nairobi delivery on orders over KES 3,000</div>
-            <div className="flex items-center gap-3">
-              <button className="w-6 h-6 rounded-full grid place-items-center bg-white/50 dark:bg-black/40 text-[color:var(--foreground)]">
+            <div className="flex items-center gap-2 pr-1">
+              <button className="w-7 h-7 rounded-full grid place-items-center bg-white/50 dark:bg-black/40 text-[color:var(--foreground)] transition-all duration-200 hover:bg-white/70 dark:hover:bg-black/60 hover:scale-110">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z"/><path d="M16 11.37a4 4 0 1 1-7.87 1.16 4 4 0 0 1 7.87-1.16Z"/><path d="M17.5 6.5h.01"/></svg>
               </button>
               <a
                 href="https://wa.me/254798966238?text=Hi%20VoltHub,%20I%20need%20help%20choosing%20a%20gadget."
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-6 h-6 rounded-full grid place-items-center bg-white/50 dark:bg-black/40 text-[color:var(--foreground)]"
+                className="w-7 h-7 rounded-full grid place-items-center bg-white/50 dark:bg-black/40 text-[color:var(--foreground)] transition-all duration-200 hover:bg-white/70 dark:hover:bg-black/60 hover:scale-110"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M15.05 14.45c-.2.1-1.15.55-1.33.6-.18.07-.32.1-.45-.1-.13-.2-.52-.6-.64-.73-.12-.13-.23-.15-.43-.05-.2.1-.85.42-1.62 1.34-.6.73-.99 1.62-1.1 1.82-.1.2-.22.18-.42.1-.2-.1-1.1-.4-1.85-.86-.76-.47-1.37-1.03-1.97-1.78-.6-.76-1.06-1.58-1.35-2.48-.28-.9-.4-1.77-.4-2.6 0-2.4 1.05-4.6 2.87-6.1a8.66 8.66 0 0 1 5.47-2.01c2.38 0 4.65.92 6.34 2.57a8.66 8.66 0 0 1 2.52 6.17c0 2.33-.91 4.52-2.56 6.17A8.66 8.66 0 0 1 12 21.33c-.81 0-1.61-.12-2.38-.35l-3.59 1.16 1.18-3.5A9.13 9.13 0 0 1 3 12.03c0-2.54.99-4.92 2.77-6.7A9.46 9.46 0 0 1 12 2.87c2.52 0 4.9.98 6.68 2.76a9.46 9.46 0 0 1 2.76 6.68c0 2.52-.98 4.89-2.76 6.67A9.46 9.46 0 0 1 12 21.73"/></svg>
               </a>
               <button
                 aria-label="Toggle theme"
-                className="w-6 h-6 rounded-full grid place-items-center bg-white/50 dark:bg-black/40 text-[color:var(--foreground)]"
+                className="w-7 h-7 rounded-full grid place-items-center bg-white/50 dark:bg-black/40 text-[color:var(--foreground)] transition-all duration-200 hover:bg-white/70 dark:hover:bg-black/60 hover:scale-110"
                 onClick={() => {
                   const html = document.documentElement;
                   const next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
@@ -237,7 +237,7 @@ function Shell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </div>
-        <div className="mx-auto max-w-7xl px-6 py-3 md:py-4 flex items-center justify-between gap-6">
+        <div className="mx-auto max-w-7xl px-6 py-3 md:py-4 flex items-center justify-between gap-12">
           <div className="flex items-center gap-3 flex-shrink-0">
             <div className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10" />
             <Link href="/" className="group">
@@ -245,8 +245,8 @@ function Shell({ children }: { children: React.ReactNode }) {
               <span className="hidden xl:block text-xs text-zinc-500">Gadgets & Accessories</span>
             </Link>
           </div>
-          <div className="hidden lg:flex items-center gap-6 text-sm">
-            <Link href="/" className="transition-opacity hover:opacity-80">Home</Link>
+          <div className="hidden lg:flex items-center gap-8 text-sm">
+            <Link href="/" className="transition-all duration-200 hover:text-[color:var(--accent)] hover:scale-105">Home</Link>
             <button
               onMouseEnter={() => openWithDelay("shop")}
               onFocus={() => openWithDelay("shop")}
@@ -254,7 +254,7 @@ function Shell({ children }: { children: React.ReactNode }) {
               onClick={() => {
                 setMenuOpen((v) => (v === "shop" ? null : "shop"));
               }}
-              className="inline-flex items-center gap-1 transition-opacity hover:opacity-80"
+              className="inline-flex items-center gap-1 transition-all duration-200 hover:text-[color:var(--accent)] hover:scale-105"
             >
               Shop
               <span>▾</span>
@@ -266,45 +266,37 @@ function Shell({ children }: { children: React.ReactNode }) {
               onClick={() => {
                 setMenuOpen((v) => (v === "categories" ? null : "categories"));
               }}
-              className="inline-flex items-center gap-1 transition-opacity hover:opacity-80"
+              className="inline-flex items-center gap-1 transition-all duration-200 hover:text-[color:var(--accent)] hover:scale-105"
             >
               Categories
               <span>▾</span>
             </button>
-            <Link href="/offers" className="transition-opacity hover:opacity-80">Deals</Link>
-            <Link href="/about" className="transition-opacity hover:opacity-80">About</Link>
+            <Link href="/offers" className="transition-all duration-200 hover:text-[color:var(--accent)] hover:scale-105">Deals</Link>
+            <Link href="/about" className="transition-all duration-200 hover:text-[color:var(--accent)] hover:scale-105">About</Link>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-3">
             <button
               aria-label="Search"
-              className="rounded-xl px-3 py-2 border border-black/10 dark:border-white/10 min-h-[48px] min-w-[48px] text-[color:var(--foreground)]"
+              className="rounded-xl px-3 py-2.5 border border-black/10 dark:border-white/10 h-11 text-[color:var(--foreground)] transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20"
               onClick={() => setSearchOpen(true)}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
             </button>
             {user ? (
               <div className="flex items-center gap-2">
-                <Link href="/account" className="rounded-xl px-3 py-2 border border-black/10 dark:border-white/10">Account</Link>
+                <Link href="/account" className="rounded-xl px-4 py-2.5 border border-black/10 dark:border-white/10 h-11 text-sm font-medium transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20">Account</Link>
                 <button
                   onClick={logout}
-                  className="rounded-xl px-3 py-2 border border-black/10 dark:border-white/10 text-sm hover:bg-black/5 dark:hover:bg-white/10"
+                  className="rounded-xl px-4 py-2.5 border border-black/10 dark:border-white/10 h-11 text-sm font-medium transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20"
                 >
                   Logout
                 </button>
               </div>
             ) : (
-              <Link href="/auth/login" className="rounded-xl px-3 py-2 border border-black/10 dark:border-white/10">Login</Link>
+              <Link href="/auth/login" className="rounded-xl px-4 py-2.5 border border-black/10 dark:border-white/10 h-11 text-sm font-medium transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20">Login</Link>
             )}
             <CartButton />
-            <button className="lg:hidden rounded-xl px-3 py-2 border" onClick={() => setMobileOpen(true)}>☰</button>
-            <style jsx>{`
-              @media (max-width: 480px) {
-                button.lg\\:hidden {
-                  min-width: 48px;
-                  min-height: 48px;
-                }
-              }
-            `}</style>
+            <button className="lg:hidden rounded-xl px-3 py-2.5 border h-11 transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/10" onClick={() => setMobileOpen(true)}>☰</button>
           </div>
         </div>
         {menuOpen && (
