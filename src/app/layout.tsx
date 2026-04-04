@@ -1,24 +1,25 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Instrument_Serif, Manrope } from "next/font/google";
 import "./globals.css";
 import { SiteShell } from "../components/site-shell";
 
-const headingSerif = Playfair_Display({
+const headingSerif = Instrument_Serif({
   variable: "--font-heading",
   subsets: ["latin"],
+  weight: "400",
   display: "swap",
 });
 
-const bodySans = Inter({
+const bodySans = Manrope({
   variable: "--font-body",
   subsets: ["latin"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "VoltHub | Gadgets & Accessories in Kenya",
+  title: "Zora | Fast Everyday Shopping in Nairobi",
   description:
-    "VoltHub is a gadget store in Kenya for audio, smartwatches, chargers, power banks, and phone accessories. Nairobi delivery and nationwide courier.",
+    "Zora is a Nairobi-first minimart for groceries, drinks, household essentials, personal care, and VoltHub electronics with same-day delivery, M-Pesa checkout, and fast WhatsApp support.",
 };
 
 export const viewport = {

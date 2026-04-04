@@ -1,12 +1,33 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { CartProvider, useCart } from "./cart/cart-provider";
 import { AuthProvider, useAuth } from "./auth/auth-provider";
 import { CartDrawer } from "./cart/cart-drawer";
-import { fetchProducts, type Product } from "../lib/products";
 
-import { useRouter } from "next/navigation";
+const SUPPORT_PHONE = "+254 798 966 238";
+const SUPPORT_EMAIL = "support@volthub.co.ke";
+const WHATSAPP_URL = "https://wa.me/254798966238?text=Hi%20Zora,%20I%20need%20help%20with%20my%20order.";
+
+const HEADER_LINKS = [
+  { href: "/shop", label: "Categories" },
+  { href: "/#delivery", label: "Delivery" },
+  { href: "/category/electronics", label: "Electronics" },
+  { href: "/#support", label: "Support" },
+];
+
+const QUICK_CATEGORY_LINKS = [
+  { href: "/category/groceries", label: "Groceries" },
+  { href: "/category/beverages", label: "Beverages" },
+  { href: "/category/snacks", label: "Snacks" },
+  { href: "/category/household", label: "Household" },
+  { href: "/category/personal-care", label: "Personal care" },
+  { href: "/category/electronics", label: "VoltHub electronics" },
+];
+
+const SEARCH_TRENDS = ["groceries", "snacks", "drinks", "chargers", "earbuds"];
 
 export function SiteShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -27,443 +48,306 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
 }
 
 function CartButton() {
-  const { count, openDrawer, items } = useCart();
-  const [products, setProducts] = useState<Product[]>([]);
+  const { count, openDrawer } = useCart();
 
-  useEffect(() => {
-    async function load() {
-      const p = await fetchProducts();
-      setProducts(p);
-    }
-    load();
-  }, []);
-
-  const lines = items
-    .map((i) => ({ ...i, product: products.find((p) => p.id === i.productId) }))
-    .filter((l) => l.product)
-    .slice(0, 3);
-  const subtotal = lines.reduce(
-    (sum, l) => sum + (l.product?.priceKes || 0) * l.qty,
-    0
-  );
   return (
-    <div className="relative">
-      <button
-        aria-label="Cart"
-        onClick={openDrawer}
-        className="relative rounded-full px-3 py-2 border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/10 min-h-[48px] min-w-[48px] text-[color:var(--foreground)]"
-      >
-        <span className="inline-flex items-center gap-2">
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M7 9h14l-1.2 11H8.2L7 9Z"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M9 9V7a3 3 0 0 1 6 0v2"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-            />
-          </svg>
-          <span className="hidden sm:inline">Cart</span>
+    <button
+      aria-label="Cart"
+      onClick={openDrawer}
+      className="relative inline-flex min-h-11 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/8"
+    >
+      <span className="inline-flex items-center gap-2">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 9h14l-1.2 11H8.2L7 9Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+          <path d="M9 9V7a3 3 0 0 1 6 0v2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        </svg>
+        <span className="hidden sm:inline">Cart</span>
+      </span>
+      {count > 0 ? (
+        <span className="absolute -right-1 -top-1 min-h-5 min-w-5 rounded-full bg-[color:var(--accent)] px-1 text-[11px] font-semibold text-white">
+          {count}
         </span>
-        {count > 0 && (
-          <span className="absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full bg-[color:var(--accent)] text-white text-xs grid place-items-center">
-            {count}
-          </span>
-        )}
-      </button>
-      <div className="absolute right-0 mt-2 w-[320px] rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-black shadow-lg overflow-hidden hidden md:block">
-        <div className="p-3">
-          {lines.length === 0 ? (
-            <div className="text-sm text-zinc-600 dark:text-zinc-400">
-              Your cart is empty.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {lines.map((l) => (
-                <div key={l.product!.id} className="flex items-center gap-3">
-                  <div className="relative w-10 h-12 rounded-md overflow-hidden">
-                    <img
-                      src={
-                        l.product!.image && l.product!.image.startsWith("http")
-                          ? l.product!.image
-                          : "/product-placeholder.png"
-                      }
-                      alt={l.product!.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-xs text-zinc-500">
-                      {l.product!.brand}
-                    </div>
-                    <div className="text-sm leading-5">
-                      {l.product!.name}
-                    </div>
-                  </div>
-                  <div className="text-xs">
-                    × {l.qty}
-                  </div>
-                </div>
-              ))}
-              <div className="flex items-center justify-between text-sm pt-2 border-t border-black/10 dark:border-white/10">
-                <div className="text-zinc-600 dark:text-zinc-400">Subtotal</div>
-                <div className="font-semibold">
-                  KES {subtotal.toLocaleString()}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-        <div className="grid grid-cols-2">
-          <Link
-            href="/cart"
-            className="text-center px-3 py-2 text-sm hover:bg-black/5 dark:hover:bg-white/10"
-          >
-            View cart
-          </Link>
-          <Link
-            href="/checkout"
-            className="text-center px-3 py-2 text-sm hover:bg-black/5 dark:hover:bg-white/10"
-          >
-            Checkout
-          </Link>
-        </div>
-      </div>
-    </div>
+      ) : null}
+    </button>
   );
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof document === "undefined") return false;
-    const attr = document.documentElement.getAttribute("data-theme");
-    const stored = typeof window !== "undefined" ? localStorage.getItem("theme") : null;
-    const current = stored || attr || "light";
-    return current === "dark";
-  });
-  const [solid, setSolid] = useState(false);
-  const [menuOpen, setMenuOpen] = useState<null | "shop" | "categories">(null);
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const trending = ["earbuds", "smartwatch", "power bank", "usb-c cable", "bluetooth speaker"];
-  const [hoverTimer, setHoverTimer] = useState<number | null>(null);
-  const openWithDelay = (which: "shop" | "categories") => {
-    if (hoverTimer) {
-      clearTimeout(hoverTimer);
-    }
-    const t = window.setTimeout(() => setMenuOpen(which), 220);
-    setHoverTimer(t);
-  };
-  const cancelHover = () => {
-    if (hoverTimer) {
-      clearTimeout(hoverTimer);
-      setHoverTimer(null);
-    }
-  };
+  const [solid, setSolid] = useState(false);
+
   useEffect(() => {
-    const onScroll = () => {
-      setSolid(window.scrollY > 8);
-    };
+    const onScroll = () => setSolid(window.scrollY > 8);
     window.addEventListener("scroll", onScroll, { passive: true });
+
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setMenuOpen(null);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
         setSearchOpen(false);
         setMobileOpen(false);
       }
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
+
+  function runSearch(query: string) {
+    if (!query.trim()) {
+      return;
+    }
+
+    setSearchOpen(false);
+    setMobileOpen(false);
+    router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+  }
+
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
-      <header className={`${solid ? "bg-white/95 dark:bg-black/85 shadow-lg" : "bg-transparent"} sticky top-0 z-40 backdrop-blur transition-colors`}>
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="flex items-center justify-between h-9 text-xs">
-            <div className="opacity-80">Free Nairobi delivery on orders over KES 3,000</div>
-            <div className="flex items-center gap-2 pr-1">
-              <button className="w-7 h-7 rounded-full grid place-items-center bg-white/50 dark:bg-black/40 text-[color:var(--foreground)] transition-all duration-200 hover:bg-white/70 dark:hover:bg-black/60 hover:scale-110">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z"/><path d="M16 11.37a4 4 0 1 1-7.87 1.16 4 4 0 0 1 7.87-1.16Z"/><path d="M17.5 6.5h.01"/></svg>
-              </button>
-              <a
-                href="https://wa.me/254798966238?text=Hi%20VoltHub,%20I%20need%20help%20choosing%20a%20gadget."
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-7 h-7 rounded-full grid place-items-center bg-white/50 dark:bg-black/40 text-[color:var(--foreground)] transition-all duration-200 hover:bg-white/70 dark:hover:bg-black/60 hover:scale-110"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M15.05 14.45c-.2.1-1.15.55-1.33.6-.18.07-.32.1-.45-.1-.13-.2-.52-.6-.64-.73-.12-.13-.23-.15-.43-.05-.2.1-.85.42-1.62 1.34-.6.73-.99 1.62-1.1 1.82-.1.2-.22.18-.42.1-.2-.1-1.1-.4-1.85-.86-.76-.47-1.37-1.03-1.97-1.78-.6-.76-1.06-1.58-1.35-2.48-.28-.9-.4-1.77-.4-2.6 0-2.4 1.05-4.6 2.87-6.1a8.66 8.66 0 0 1 5.47-2.01c2.38 0 4.65.92 6.34 2.57a8.66 8.66 0 0 1 2.52 6.17c0 2.33-.91 4.52-2.56 6.17A8.66 8.66 0 0 1 12 21.33c-.81 0-1.61-.12-2.38-.35l-3.59 1.16 1.18-3.5A9.13 9.13 0 0 1 3 12.03c0-2.54.99-4.92 2.77-6.7A9.46 9.46 0 0 1 12 2.87c2.52 0 4.9.98 6.68 2.76a9.46 9.46 0 0 1 2.76 6.68c0 2.52-.98 4.89-2.76 6.67A9.46 9.46 0 0 1 12 21.73"/></svg>
+    <div className="min-h-screen bg-background text-foreground">
+      <header className={`sticky top-0 z-50 border-b transition-colors ${solid ? "border-[color:var(--border)] bg-[#0b0d10]/88 shadow-[0_16px_40px_rgba(0,0,0,0.28)] backdrop-blur-xl" : "border-transparent bg-transparent"}`}>
+        <div className="border-b border-white/6 bg-black/18">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.18em] text-white/72 sm:px-6">
+            <div>Same-day Nairobi delivery on essentials before 6PM</div>
+            <div className="hidden items-center gap-4 sm:flex">
+              <span>M-Pesa accepted</span>
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white">
+                WhatsApp support
               </a>
-              <button
-                aria-label="Toggle theme"
-                className="w-7 h-7 rounded-full grid place-items-center bg-white/50 dark:bg-black/40 text-[color:var(--foreground)] transition-all duration-200 hover:bg-white/70 dark:hover:bg-black/60 hover:scale-110"
-                onClick={() => {
-                  const html = document.documentElement;
-                  const next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
-                  html.setAttribute("data-theme", next);
-                  localStorage.setItem("theme", next);
-                  setIsDark(next === "dark");
-                }}
-              >
-                {isDark ? (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
-                ) : (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                )}
-              </button>
             </div>
           </div>
         </div>
-        <div className="mx-auto max-w-7xl px-6 py-3 md:py-4 flex items-center justify-between gap-12">
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <div className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10" />
-            <Link href="/" className="group">
-              <span className="font-serif text-2xl tracking-[0.04em]">VoltHub</span>
-              <span className="hidden xl:block text-xs text-zinc-500">VoltHub Market – Electronics & Essentials</span>
+
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
+          <div className="flex items-center gap-8">
+            <Link href="/" className="leading-none text-white">
+              <div className="text-[1.75rem] font-extrabold tracking-[0.18em]">ZORA</div>
+              <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/50">
+                Nairobi minimart
+              </div>
             </Link>
+
+            <nav className="hidden items-center gap-6 text-sm font-medium text-white/82 lg:flex">
+              {HEADER_LINKS.map((link) => (
+                <Link key={link.label} href={link.href} className="transition-colors hover:text-white">
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
           </div>
-          <div className="hidden lg:flex items-center gap-8 text-sm">
-            <Link href="/" className="transition-all duration-200 hover:text-[color:var(--accent)] hover:scale-105">Home</Link>
-            <button
-              onMouseEnter={() => openWithDelay("shop")}
-              onFocus={() => openWithDelay("shop")}
-              onMouseLeave={cancelHover}
-              onClick={() => {
-                setMenuOpen((v) => (v === "shop" ? null : "shop"));
-              }}
-              className="inline-flex items-center gap-1 transition-all duration-200 hover:text-[color:var(--accent)] hover:scale-105"
-            >
-              Shop
-              <span>▾</span>
-            </button>
-            <button
-              onMouseEnter={() => openWithDelay("categories")}
-              onFocus={() => openWithDelay("categories")}
-              onMouseLeave={cancelHover}
-              onClick={() => {
-                setMenuOpen((v) => (v === "categories" ? null : "categories"));
-              }}
-              className="inline-flex items-center gap-1 transition-all duration-200 hover:text-[color:var(--accent)] hover:scale-105"
-            >
-              Departments
-              <span>▾</span>
-            </button>
-            <Link href="/offers" className="transition-all duration-200 hover:text-[color:var(--accent)] hover:scale-105">Deals</Link>
-            <Link href="/about" className="transition-all duration-200 hover:text-[color:var(--accent)] hover:scale-105">About</Link>
-          </div>
-          <div className="flex items-center gap-3">
+
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               aria-label="Search"
-              className="rounded-xl px-3 py-2.5 border border-black/10 dark:border-white/10 h-11 text-[color:var(--foreground)] transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20"
               onClick={() => setSearchOpen(true)}
+              className="inline-flex min-h-11 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/8"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <span className="inline-flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
+                <span className="hidden sm:inline">Search</span>
+              </span>
             </button>
+
             {user ? (
-              <div className="flex items-center gap-2">
-                <Link href="/account" className="rounded-xl px-4 py-2.5 border border-black/10 dark:border-white/10 h-11 text-sm font-medium transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20">Account</Link>
-                <button
-                  onClick={logout}
-                  className="rounded-xl px-4 py-2.5 border border-black/10 dark:border-white/10 h-11 text-sm font-medium transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20"
-                >
+              <div className="hidden items-center gap-2 sm:flex">
+                <Link href="/account" className="inline-flex min-h-11 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/8">
+                  Account
+                </Link>
+                <button onClick={logout} className="inline-flex min-h-11 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/8">
                   Logout
                 </button>
               </div>
             ) : (
-              <Link href="/auth/login" className="rounded-xl px-4 py-2.5 border border-black/10 dark:border-white/10 h-11 text-sm font-medium transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20">Login</Link>
+              <Link href="/auth/login" className="hidden min-h-11 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/8 sm:inline-flex">
+                Account
+              </Link>
             )}
+
             <CartButton />
-            <button className="lg:hidden rounded-xl px-3 py-2.5 border h-11 transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/10" onClick={() => setMobileOpen(true)}>☰</button>
+
+            <button
+              aria-label="Menu"
+              onClick={() => setMobileOpen(true)}
+              className="inline-flex min-h-11 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/8 lg:hidden"
+            >
+              Menu
+            </button>
           </div>
         </div>
-        {menuOpen && (
-          <div
-            onMouseLeave={() => setMenuOpen(null)}
-            className="hidden lg:block border-t border-black/10 dark:border-white/10 bg-white/95 dark:bg-black/90 backdrop-blur transition-all duration-200"
-          >
-            <div className="mx-auto max-w-7xl px-6 py-4">
-              <div className="grid sm:grid-cols-3 gap-3 text-sm">
-                {menuOpen === "shop" ? (
-                  <>
-                    <Link
-                      href="/shop"
-                      onClick={() => setMenuOpen(null)}
-                      className="text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                    >
-                      Shop all
-                    </Link>
-                    <Link
-                      href="/offers"
-                      onClick={() => setMenuOpen(null)}
-                      className="text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                    >
-                      Deals
-                    </Link>
-                    <Link
-                      href="/cart"
-                      onClick={() => setMenuOpen(null)}
-                      className="text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                    >
-                      Cart
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    {[
-                      { slug: "electronics", label: "Electronics" },
-                      { slug: "audio", label: "Audio" },
-                      { slug: "smartwatches", label: "Smartwatches" },
-                      { slug: "chargers-cables", label: "Chargers & Cables" },
-                      { slug: "power-banks", label: "Power Banks" },
-                      { slug: "phone-accessories", label: "Phone Accessories" },
-                      { slug: "speakers", label: "Speakers" },
-                      { slug: "groceries", label: "Groceries" },
-                      { slug: "beverages", label: "Beverages" },
-                      { slug: "household", label: "Household" },
-                      { slug: "snacks", label: "Snacks" },
-                      { slug: "personal-care", label: "Personal Care" },
-                    ].map((c) => (
-                      <Link
-                        key={c.slug}
-                        href={`/category/${c.slug}`}
-                        onClick={() => setMenuOpen(null)}
-                        className="text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                      >
-                        {c.label}
-                      </Link>
-                    ))}
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-        {searchOpen && (
-          <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm">
-            <div className="mx-auto max-w-2xl px-6 pt-24">
-              <div className="rounded-2xl border p-6 bg-white dark:bg-black">
-                <input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search earbuds, chargers, smartwatches…"
-                  className="w-full rounded-xl px-4 py-3 border bg-transparent text-lg"
-                />
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {trending.map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => setSearchQuery(t)}
-                      className="rounded-full px-3 py-1 text-sm border"
-                    >
-                      {t}
-                    </button>
-                  ))}
-                </div>
-                <div className="mt-4 flex gap-2">
-                  <button
-                    onClick={() => {
-                      if (searchQuery.trim()) {
-                        setSearchOpen(false);
-                        router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-                      }
-                    }}
-                    className="rounded-full px-4 py-2 bg-[color:var(--accent)] text-white"
-                  >
-                    Search
-                  </button>
-                  <button onClick={() => setSearchOpen(false)} className="rounded-full px-4 py-2 border">Close</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </header>
-      <main className="flex-1">{children}</main>
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/85 dark:bg-black/70 backdrop-blur lg:hidden">
-        <div className="mx-auto max-w-7xl px-6 py-2 flex items-center justify-between">
-          <a
-            href="https://wa.me/254798966238?text=Hi%20VoltHub,%20I%20need%20help%20choosing%20a%20gadget."
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-full px-4 py-2 border text-sm min-h-[48px] min-w-[48px] grid place-items-center"
-          >WhatsApp</a>
-          <button onClick={() => setSearchOpen(true)} className="rounded-full px-4 py-2 border text-sm min-h-[48px] min-w-[48px]">Search</button>
-          <button onClick={() => setMobileOpen(true)} className="rounded-full px-4 py-2 border text-sm min-h-[48px] min-w-[48px]">Menu</button>
-        </div>
-      </div>
-      {mobileOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm">
-          <div className="absolute left-0 top-0 bottom-0 w-[80%] max-w-[340px] bg-white dark:bg-black p-6 rounded-tr-2xl rounded-br-2xl shadow-xl">
-            <div className="flex items-center justify-between">
-              <div className="font-serif text-xl">VoltHub</div>
-              <button onClick={() => setMobileOpen(false)} className="rounded-full px-3 py-1 border">Close</button>
+
+      <main>{children}</main>
+
+      <footer className="mt-16 border-t border-[color:var(--border)] bg-[#0c0f12]/92">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12">
+          <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr]">
+            <div>
+              <div className="text-[1.55rem] font-extrabold tracking-[0.18em] text-white">ZORA</div>
+              <p className="mt-4 max-w-md text-sm leading-6 text-[color:var(--muted)]">
+                Nairobi-first everyday shopping for groceries, drinks, snacks, household essentials, personal care, and VoltHub electronics in one clean checkout flow.
+              </p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl border border-white/8 bg-white/4 p-4 text-sm text-white/88">
+                  Same-day Nairobi delivery before 6PM. Next-day outside Nairobi as coverage expands.
+                </div>
+                <div className="rounded-2xl border border-white/8 bg-white/4 p-4 text-sm text-white/88">
+                  M-Pesa, cards, cash on delivery, and pay on pickup supported where applicable.
+                </div>
+              </div>
             </div>
-            <div className="mt-6 flex flex-col gap-3">
-              <Link href="/" className="py-3" onClick={() => setMobileOpen(false)}>Home</Link>
-              <Link href="/shop" className="py-3" onClick={() => setMobileOpen(false)}>Shop</Link>
-              <Link href="/offers" className="py-3" onClick={() => setMobileOpen(false)}>Deals</Link>
-              <Link href="/about" className="py-3" onClick={() => setMobileOpen(false)}>About</Link>
-              <Link href="/account" className="py-3" onClick={() => setMobileOpen(false)}>Account</Link>
+
+            <div>
+              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">Quick links</div>
+              <div className="mt-4 flex flex-col gap-3 text-sm text-[color:var(--muted)]">
+                {QUICK_CATEGORY_LINKS.map((link) => (
+                  <Link key={link.label} href={link.href} className="transition-colors hover:text-white">
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
-        </div>
-      )}
-      <footer className="border-t border-black/10 dark:border-white/10">
-        <div className="mx-auto max-w-7xl px-6 py-10 grid gap-6 sm:grid-cols-3">
-          <div>
-            <div className="font-serif text-xl mb-2">VoltHub</div>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              A practical gadget store for Kenya. Audio, smartwatches, chargers,
-              power banks, and accessories with fast delivery and clear support.
-            </p>
-          </div>
-          <div className="text-sm">
-            <div className="font-medium mb-2">Links</div>
-            <div className="flex flex-col gap-1">
-              <Link href="/" className="hover:opacity-80">
-                Home
-              </Link>
-              <Link href="/shop" className="hover:opacity-80">
-                Shop
-              </Link>
-              <Link href="/offers" className="hover:opacity-80">
-                Deals
-              </Link>
-              <Link href="/about" className="hover:opacity-80">
-                About
-              </Link>
-              <Link href="/checkout" className="hover:opacity-80">
-                Checkout
-              </Link>
+
+            <div>
+              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">Support</div>
+              <div className="mt-4 flex flex-col gap-3 text-sm text-[color:var(--muted)]">
+                <span>Nairobi, Kenya</span>
+                <a href={`tel:${SUPPORT_PHONE.replace(/\s+/g, "")}`} className="transition-colors hover:text-white">
+                  {SUPPORT_PHONE}
+                </a>
+                <a href={`mailto:${SUPPORT_EMAIL}`} className="transition-colors hover:text-white">
+                  {SUPPORT_EMAIL}
+                </a>
+                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white">
+                  WhatsApp support
+                </a>
+                <Link href="/#delivery" className="transition-colors hover:text-white">
+                  Delivery information
+                </Link>
+              </div>
             </div>
-          </div>
-          <div className="text-sm">
-            <div className="font-medium mb-2">Contact</div>
-            <div className="flex flex-col gap-1">
-              <span>Nairobi, Kenya</span>
-              <a href="mailto:support@volthub.co.ke" className="hover:opacity-80">
-                support@volthub.co.ke
-              </a>
+
+            <div>
+              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">Payments and channels</div>
+              <div className="mt-4 flex flex-col gap-3 text-sm text-[color:var(--muted)]">
+                <span>M-Pesa STK push</span>
+                <span>Card payments</span>
+                <span>Cash on delivery</span>
+                <span>Pay on pickup</span>
+                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white">
+                  WhatsApp
+                </a>
+                <a href={`mailto:${SUPPORT_EMAIL}`} className="transition-colors hover:text-white">
+                  Email updates
+                </a>
+              </div>
             </div>
           </div>
         </div>
       </footer>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[color:var(--border)] bg-[#0b0d10]/92 px-4 py-3 backdrop-blur lg:hidden">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2">
+          <button onClick={() => setSearchOpen(true)} className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white">
+            Search
+          </button>
+          <Link href="/#categories" className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white">
+            Categories
+          </Link>
+          <button onClick={() => setMobileOpen(true)} className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white">
+            Menu
+          </button>
+        </div>
+      </div>
+
+      {searchOpen ? (
+        <div className="fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm">
+          <div className="mx-auto max-w-2xl px-4 pt-24 sm:px-6">
+            <div className="rounded-[28px] border border-[color:var(--border)] bg-[#101418] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[color:var(--glow)]">
+                Search Zora
+              </div>
+              <input
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    runSearch(searchQuery);
+                  }
+                }}
+                placeholder="Search groceries, drinks, household items, or VoltHub electronics"
+                className="mt-4 w-full rounded-[22px] border border-[color:var(--border)] bg-white/4 px-4 py-4 text-base text-white outline-none placeholder:text-white/40 focus:border-[color:var(--glow)]"
+              />
+              <div className="mt-4 flex flex-wrap gap-2">
+                {SEARCH_TRENDS.map((trend) => (
+                  <button
+                    key={trend}
+                    onClick={() => setSearchQuery(trend)}
+                    className="rounded-full border border-[color:var(--border)] bg-white/4 px-3 py-1 text-sm text-white/82 transition-colors hover:bg-white/8"
+                  >
+                    {trend}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <button onClick={() => runSearch(searchQuery)} className="inline-flex min-h-12 items-center justify-center rounded-full bg-[color:var(--accent)] px-5 text-sm font-semibold text-white">
+                  Search
+                </button>
+                <button onClick={() => setSearchOpen(false)} className="inline-flex min-h-12 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-5 text-sm font-semibold text-white">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {mobileOpen ? (
+        <div className="fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm">
+          <div className="absolute right-0 top-0 h-full w-full max-w-sm border-l border-[color:var(--border)] bg-[#0f1317] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-[1.45rem] font-extrabold tracking-[0.16em] text-white">ZORA</div>
+                <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/45">
+                  Everyday shopping first
+                </div>
+              </div>
+              <button onClick={() => setMobileOpen(false)} className="inline-flex min-h-11 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white">
+                Close
+              </button>
+            </div>
+
+            <div className="mt-8 flex flex-col gap-4 text-base font-medium text-white">
+              {HEADER_LINKS.map((link) => (
+                <Link key={link.label} href={link.href} onClick={() => setMobileOpen(false)} className="rounded-2xl border border-white/8 bg-white/4 px-4 py-3 transition-colors hover:bg-white/8">
+                  {link.label}
+                </Link>
+              ))}
+              <Link href="/account" onClick={() => setMobileOpen(false)} className="rounded-2xl border border-white/8 bg-white/4 px-4 py-3 transition-colors hover:bg-white/8">
+                Account
+              </Link>
+            </div>
+
+            <div className="mt-8 grid gap-3">
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="rounded-[22px] border border-white/8 bg-white/4 px-4 py-4 text-sm text-white/88">
+                WhatsApp support and order updates
+              </a>
+              <div className="rounded-[22px] border border-white/8 bg-white/4 px-4 py-4 text-sm text-white/88">
+                Same-day Nairobi delivery before 6PM. Next-day outside Nairobi.
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
