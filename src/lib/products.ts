@@ -36,14 +36,15 @@ export function mapDBProductToProduct(dbProduct: DBProduct): Product {
     id: dbProduct.id,
     slug: dbProduct.slug,
     name: dbProduct.name,
-    brand: dbProduct.brand,
+    brand: dbProduct.brand || "Zora",
     category: normalizeCategorySlug(dbProduct.category),
     priceKes: dbProduct.price,
-    image: dbProduct.image_url,
-    description: dbProduct.description,
+    image: dbProduct.image_url || "/product-placeholder.png",
+    description: dbProduct.description || "",
     stock: dbProduct.stock,
-    rating: dbProduct.rating,
-    reviewsCount: dbProduct.reviews_count,
+    rating: Number(dbProduct.rating || 0),
+    reviewsCount: Number(dbProduct.reviews_count || 0),
+    is_active: dbProduct.is_active,
   };
 }
 

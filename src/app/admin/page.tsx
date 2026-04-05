@@ -1,201 +1,477 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import {
+  ActionButton,
+  AdminPageHeader,
+  Badge,
+  EmptyState,
+  MetricCard,
+  Surface,
+  SurfaceHeader,
+} from "@/components/admin/admin-ui";
+import {
+  buildSalesTrend,
+  buildTopSellingProducts,
+  estimateGrossProfit,
+  extractSupabaseErrorMessage,
+  formatCurrency,
+  formatDateTime,
+  formatNumber,
+  getInventoryStatus,
+  getMovementMeta,
+  getOrderStatusMeta,
+  isToday,
+  normalizeOrderItems,
+  sortMovementsByNewest,
+  sumOrderRevenue,
+} from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase";
-import { Order } from "@/lib/types";
+import type { DBProduct, InventoryMovement, Order } from "@/lib/types";
 
-type DashboardStats = {
-  newOrders: number;
-  salesToday: number;
-  lowStock: number;
+type DashboardState = {
+  products: DBProduct[];
+  orders: Order[];
+  movements: InventoryMovement[];
+  warnings: string[];
 };
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<DashboardStats>({
-    newOrders: 0,
-    salesToday: 0,
-    lowStock: 0,
+  const [state, setState] = useState<DashboardState>({
+    products: [],
+    orders: [],
+    movements: [],
+    warnings: [],
   });
-  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = getSupabase();
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+    let active = true;
 
-        // 1. Get New Orders Count
-        const { count: newOrdersCount } = await supabase
-          .from("orders")
-          .select("*", { count: "exact", head: true })
-          .eq("status", "NEW");
+    async function load() {
+      setLoading(true);
+      const warnings: string[] = [];
 
-        // 2. Get Sales Today
-        const { data: todayOrders } = await supabase
-          .from("orders")
-          .select("total")
-          .gte("created_at", today.toISOString());
-
-        const salesToday = todayOrders?.reduce((sum, order) => sum + Number(order.total), 0) || 0;
-
-        // 3. Get Low Stock Products Count
-        const { count: lowStockCount } = await supabase
-          .from("products")
-          .select("*", { count: "exact", head: true })
-          .lt("stock", 10);
-
-        // 4. Get Recent Orders
-        const { data: orders } = await supabase
-          .from("orders")
+      const [productsResult, ordersResult, movementsResult] = await Promise.allSettled([
+        supabase.from("products").select("*").order("created_at", { ascending: false }),
+        supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(300),
+        supabase
+          .from("inventory_movements")
           .select("*")
           .order("created_at", { ascending: false })
-          .limit(5);
+          .limit(12),
+      ]);
 
-        setStats({
-          newOrders: newOrdersCount || 0,
-          salesToday: salesToday,
-          lowStock: lowStockCount || 0,
-        });
-        setRecentOrders(orders || []);
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      } finally {
-        setLoading(false);
+      const products =
+        productsResult.status === "fulfilled" && !productsResult.value.error
+          ? ((productsResult.value.data || []) as DBProduct[])
+          : [];
+      if (productsResult.status === "fulfilled" && productsResult.value.error) {
+        warnings.push(`Products could not be loaded: ${productsResult.value.error.message}`);
       }
+      if (productsResult.status === "rejected") {
+        warnings.push(`Products could not be loaded: ${extractSupabaseErrorMessage(productsResult.reason)}`);
+      }
+
+      const orders =
+        ordersResult.status === "fulfilled" && !ordersResult.value.error
+          ? (((ordersResult.value.data || []) as Order[]).map((order) => ({
+              ...order,
+              items: normalizeOrderItems(order.items),
+            })) as Order[])
+          : [];
+      if (ordersResult.status === "fulfilled" && ordersResult.value.error) {
+        warnings.push(`Orders could not be loaded: ${ordersResult.value.error.message}`);
+      }
+      if (ordersResult.status === "rejected") {
+        warnings.push(`Orders could not be loaded: ${extractSupabaseErrorMessage(ordersResult.reason)}`);
+      }
+
+      const movements =
+        movementsResult.status === "fulfilled" && !movementsResult.value.error
+          ? ((movementsResult.value.data || []) as InventoryMovement[])
+          : [];
+      if (movementsResult.status === "fulfilled" && movementsResult.value.error) {
+        warnings.push(
+          movementsResult.value.error.message.includes("inventory_movements")
+            ? "Inventory movement history is not available yet. Apply the admin migration to enable stock audit trails."
+            : `Inventory activity could not be loaded: ${movementsResult.value.error.message}`
+        );
+      }
+      if (movementsResult.status === "rejected") {
+        warnings.push(`Inventory activity could not be loaded: ${extractSupabaseErrorMessage(movementsResult.reason)}`);
+      }
+
+      if (!active) return;
+
+      setState({
+        products,
+        orders,
+        movements: sortMovementsByNewest(movements),
+        warnings,
+      });
+      setLoading(false);
     }
 
-    fetchData();
+    load();
+
+    return () => {
+      active = false;
+    };
   }, [supabase]);
+
+  const metrics = useMemo(() => {
+    const activeProducts = state.products.filter((product) => product.is_active !== false && !product.is_archived);
+    const lowStockProducts = state.products.filter((product) => {
+      const status = getInventoryStatus(product);
+      return status.label === "Low stock";
+    });
+    const outOfStockProducts = state.products.filter((product) => Number(product.stock || 0) <= 0);
+    const todayOrders = state.orders.filter((order) => isToday(order.created_at) && order.status !== "CANCELLED");
+    const trend = buildSalesTrend(state.orders, 7);
+    const topSelling = buildTopSellingProducts(state.orders, state.products, 5);
+    const grossProfit = estimateGrossProfit(state.orders, state.products);
+    return {
+      activeProducts,
+      lowStockProducts,
+      outOfStockProducts,
+      todayOrders,
+      todayRevenue: sumOrderRevenue(todayOrders),
+      trend,
+      topSelling,
+      grossProfit,
+    };
+  }, [state.orders, state.products]);
+
+  const statusSummary = useMemo(() => {
+    const summary = new Map<string, number>();
+    state.orders.forEach((order) => {
+      summary.set(order.status, (summary.get(order.status) || 0) + 1);
+    });
+    return Array.from(summary.entries()).sort((left, right) => right[1] - left[1]);
+  }, [state.orders]);
+
+  const recentOrders = state.orders.slice(0, 6);
+  const recentMovements = state.movements.slice(0, 6);
+  const productLookup = useMemo(
+    () => new Map(state.products.map((product) => [product.id, product])),
+    [state.products]
+  );
+  const highestRevenue = Math.max(...metrics.trend.map((entry) => entry.revenue), 1);
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-2 border-white/15 border-t-[color:var(--accent)]" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
-        <div className="text-sm text-gray-500">
-          Today: {new Date().toLocaleDateString()}
-        </div>
+    <div className="space-y-6">
+      <AdminPageHeader
+        eyebrow="Operations dashboard"
+        title="The store should be runnable from here."
+        description="Live operational visibility for revenue, order pressure, product readiness, and stock movement. Metrics only use available store data and fall back cleanly when schema upgrades have not been applied yet."
+        actions={
+          <>
+            <Link href="/admin/inventory">
+              <ActionButton variant="secondary">Open inventory control</ActionButton>
+            </Link>
+            <Link href="/admin/pos">
+              <ActionButton>Open sales desk</ActionButton>
+            </Link>
+          </>
+        }
+      />
+
+      {state.warnings.length > 0 ? (
+        <Surface className="border-amber-400/18 bg-amber-400/10 p-5">
+          <div className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-100/70">Operational notes</div>
+          <div className="mt-3 space-y-2 text-sm leading-6 text-amber-50/90">
+            {state.warnings.map((warning) => (
+              <p key={warning}>{warning}</p>
+            ))}
+          </div>
+        </Surface>
+      ) : null}
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          label="Today revenue"
+          value={formatCurrency(metrics.todayRevenue)}
+          caption={`${formatNumber(metrics.todayOrders.length)} live orders recorded today`}
+          tone="sky"
+        />
+        <MetricCard
+          label="Active products"
+          value={formatNumber(metrics.activeProducts.length)}
+          caption="Sellable products currently visible to operations"
+          tone="indigo"
+        />
+        <MetricCard
+          label="Low stock"
+          value={formatNumber(metrics.lowStockProducts.length)}
+          caption={`${formatNumber(metrics.outOfStockProducts.length)} fully out of stock`}
+          tone="amber"
+        />
+        <MetricCard
+          label="Estimated gross profit"
+          value={formatCurrency(metrics.grossProfit.grossProfit)}
+          caption={
+            metrics.grossProfit.uncoveredLines > 0
+              ? `${formatNumber(metrics.grossProfit.uncoveredLines)} item units missing cost data`
+              : "Based on available cost prices"
+          }
+          tone="emerald"
+        />
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">New Orders</p>
-              <p className="text-3xl font-bold text-blue-600">{stats.newOrders}</p>
-            </div>
-            <div className="p-3 bg-blue-50 rounded-full text-blue-600 text-xl">
-              🛍️
-            </div>
-          </div>
-        </div>
+      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <Surface>
+          <SurfaceHeader
+            title="Sales trend"
+            description="Last 7 days of recorded revenue and order count."
+            action={<Badge tone="sky">Live data</Badge>}
+          />
+          <div className="px-5 py-6 sm:px-6">
+            {metrics.trend.every((entry) => entry.revenue === 0) ? (
+              <EmptyState
+                title="No trend data yet"
+                description="Revenue bars appear automatically once orders are recorded in Supabase."
+              />
+            ) : (
+              <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+                <div className="flex h-72 items-end gap-3 rounded-[24px] border border-white/8 bg-white/3 px-4 py-5">
+                  {metrics.trend.map((entry) => (
+                    <div key={entry.key} className="flex flex-1 flex-col items-center gap-3">
+                      <div className="text-xs text-white/50">{formatNumber(entry.orders)}</div>
+                      <div className="flex h-48 w-full items-end rounded-full bg-white/6 p-1">
+                        <div
+                          className="w-full rounded-full bg-[linear-gradient(180deg,rgba(33,212,253,0.95),rgba(47,107,255,0.95))]"
+                          style={{ height: `${Math.max((entry.revenue / highestRevenue) * 100, 8)}%` }}
+                        />
+                      </div>
+                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
+                        {entry.label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Sales Today</p>
-              <p className="text-3xl font-bold text-green-600">
-                KES {stats.salesToday.toLocaleString()}
-              </p>
-            </div>
-            <div className="p-3 bg-green-50 rounded-full text-green-600 text-xl">
-              💰
-            </div>
+                <div className="space-y-3">
+                  {metrics.trend.map((entry) => (
+                    <div key={entry.key} className="rounded-2xl border border-white/8 bg-white/4 px-4 py-4">
+                      <div className="flex items-center justify-between gap-3 text-sm text-white/70">
+                        <span>{entry.label}</span>
+                        <span>{formatCurrency(entry.revenue)}</span>
+                      </div>
+                      <div className="mt-2 text-xs uppercase tracking-[0.18em] text-white/38">
+                        {formatNumber(entry.orders)} orders
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
+        </Surface>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Low Stock Items</p>
-              <p className="text-3xl font-bold text-orange-600">{stats.lowStock}</p>
-            </div>
-            <div className="p-3 bg-orange-50 rounded-full text-orange-600 text-xl">
-              ⚠️
-            </div>
+        <Surface>
+          <SurfaceHeader
+            title="Order pressure"
+            description="Current status mix across recorded orders."
+            action={<Link href="/admin/orders"><ActionButton variant="ghost">Manage orders</ActionButton></Link>}
+          />
+          <div className="space-y-3 px-5 py-6 sm:px-6">
+            {statusSummary.length === 0 ? (
+              <EmptyState
+                title="No order records yet"
+                description="Once checkouts start landing, status distribution will show where fulfilment is getting blocked."
+              />
+            ) : (
+              statusSummary.map(([status, count]) => {
+                const meta = getOrderStatusMeta(status);
+                return (
+                  <div key={status} className="rounded-2xl border border-white/8 bg-white/4 px-4 py-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <Badge tone={meta.tone}>{meta.label}</Badge>
+                      <div className="text-lg font-semibold text-white">{formatNumber(count)}</div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
-        </div>
+        </Surface>
       </div>
 
-      {/* Recent Orders */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-          <h3 className="text-lg font-bold text-gray-800">Recent Orders</h3>
-          <Link
-            href="/admin/orders"
-            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-          >
-            View All Orders →
-          </Link>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Order ID</th>
-                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Customer</th>
-                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Total</th>
-                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Date</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {recentOrders.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                    No orders found.
-                  </td>
-                </tr>
-              ) : (
-                recentOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      #{order.id.slice(0, 8)}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {order.customer_name}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      KES {Number(order.total).toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
-                          order.status === "NEW"
-                            ? "bg-blue-100 text-blue-800"
-                            : order.status === "PREPARING"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : order.status === "WITH_RIDER"
-                            ? "bg-purple-100 text-purple-800"
-                            : order.status === "DELIVERED"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {order.status.replace("_", " ")}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {new Date(order.created_at).toLocaleDateString()}
-                    </td>
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <Surface>
+          <SurfaceHeader
+            title="Recent orders"
+            description="Most recent customer orders, with totals and current fulfilment state."
+            action={<Link href="/admin/orders"><ActionButton variant="secondary">See all orders</ActionButton></Link>}
+          />
+          <div className="overflow-x-auto px-2 py-2 sm:px-3">
+            {recentOrders.length === 0 ? (
+              <div className="px-3 py-3">
+                <EmptyState
+                  title="No recent orders"
+                  description="Customer orders will appear here once checkout activity starts writing to the orders table."
+                />
+              </div>
+            ) : (
+              <table className="min-w-full border-separate border-spacing-y-2 text-left text-sm">
+                <thead className="text-white/42">
+                  <tr>
+                    <th className="px-4 py-2 font-medium">Order</th>
+                    <th className="px-4 py-2 font-medium">Customer</th>
+                    <th className="px-4 py-2 font-medium">Items</th>
+                    <th className="px-4 py-2 font-medium">Total</th>
+                    <th className="px-4 py-2 font-medium">Status</th>
+                    <th className="px-4 py-2 font-medium">Placed</th>
                   </tr>
+                </thead>
+                <tbody>
+                  {recentOrders.map((order) => {
+                    const meta = getOrderStatusMeta(order.status);
+                    return (
+                      <tr key={order.id} className="rounded-2xl bg-white/4">
+                        <td className="rounded-l-2xl px-4 py-4 font-semibold text-white">#{order.id.slice(0, 8)}</td>
+                        <td className="px-4 py-4 text-white/76">{order.customer_name || "Walk-in / guest"}</td>
+                        <td className="px-4 py-4 text-white/56">{formatNumber(normalizeOrderItems(order.items).length)} lines</td>
+                        <td className="px-4 py-4 text-white">{formatCurrency(order.total)}</td>
+                        <td className="px-4 py-4"><Badge tone={meta.tone}>{meta.label}</Badge></td>
+                        <td className="rounded-r-2xl px-4 py-4 text-white/56">{formatDateTime(order.created_at)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </Surface>
+
+        <div className="space-y-6">
+          <Surface>
+            <SurfaceHeader
+              title="Top-selling products"
+              description="Demand ranked from recorded order line quantities."
+              action={<Link href="/admin/reports"><ActionButton variant="ghost">Open reports</ActionButton></Link>}
+            />
+            <div className="space-y-3 px-5 py-6 sm:px-6">
+              {metrics.topSelling.length === 0 ? (
+                <EmptyState
+                  title="No top sellers yet"
+                  description="Product rankings appear once orders include line items tied to products."
+                />
+              ) : (
+                metrics.topSelling.map((entry, index) => (
+                  <div key={entry.id} className="rounded-2xl border border-white/8 bg-white/4 px-4 py-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <div className="text-xs uppercase tracking-[0.22em] text-white/34">#{index + 1}</div>
+                        <div className="mt-2 font-semibold text-white">{entry.name}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-base font-semibold text-white">{formatNumber(entry.qty)} units</div>
+                        <div className="text-sm text-white/52">{formatCurrency(entry.revenue)}</div>
+                      </div>
+                    </div>
+                  </div>
                 ))
               )}
-            </tbody>
-          </table>
+            </div>
+          </Surface>
+
+          <Surface>
+            <SurfaceHeader
+              title="Stock pressure"
+              description="Products needing replenishment or immediate action."
+              action={<Link href="/admin/inventory"><ActionButton variant="ghost">Inventory actions</ActionButton></Link>}
+            />
+            <div className="space-y-3 px-5 py-6 sm:px-6">
+              {metrics.lowStockProducts.length === 0 && metrics.outOfStockProducts.length === 0 ? (
+                <EmptyState
+                  title="No critical stock alerts"
+                  description="Low-stock and out-of-stock products will surface here automatically."
+                />
+              ) : (
+                [...metrics.outOfStockProducts, ...metrics.lowStockProducts.filter((product) => Number(product.stock || 0) > 0)]
+                  .slice(0, 6)
+                  .map((product) => {
+                    const status = getInventoryStatus(product);
+                    return (
+                      <div key={product.id} className="rounded-2xl border border-white/8 bg-white/4 px-4 py-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <div className="font-semibold text-white">{product.name}</div>
+                            <div className="mt-1 text-sm text-white/52">{product.category} · {product.brand || "Brand pending"}</div>
+                          </div>
+                          <Badge tone={status.tone}>{status.label}</Badge>
+                        </div>
+                        <div className="mt-3 text-sm text-white/68">
+                          {formatNumber(product.stock)} on hand · reorder level {formatNumber(product.reorder_level ?? 8)}
+                        </div>
+                      </div>
+                    );
+                  })
+              )}
+            </div>
+          </Surface>
         </div>
       </div>
+
+      <Surface>
+        <SurfaceHeader
+          title="Recent stock changes"
+          description="Inventory movements and manual adjustments, when the movement table is available."
+        />
+        <div className="overflow-x-auto px-2 py-2 sm:px-3">
+          {recentMovements.length === 0 ? (
+            <div className="px-3 py-3">
+              <EmptyState
+                title="No stock movement records"
+                description="Apply the migration, then use product or inventory adjustments to create a durable movement history."
+              />
+            </div>
+          ) : (
+            <table className="min-w-full border-separate border-spacing-y-2 text-left text-sm">
+              <thead className="text-white/42">
+                <tr>
+                  <th className="px-4 py-2 font-medium">Product</th>
+                  <th className="px-4 py-2 font-medium">Movement</th>
+                  <th className="px-4 py-2 font-medium">Before</th>
+                  <th className="px-4 py-2 font-medium">After</th>
+                  <th className="px-4 py-2 font-medium">Reason</th>
+                  <th className="px-4 py-2 font-medium">When</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentMovements.map((movement) => {
+                  const meta = getMovementMeta(movement.movement_type);
+                  const product = productLookup.get(movement.product_id);
+                  return (
+                    <tr key={movement.id} className="rounded-2xl bg-white/4">
+                      <td className="rounded-l-2xl px-4 py-4 font-semibold text-white">
+                        {product?.name || `Product ${movement.product_id.slice(0, 8)}`}
+                      </td>
+                      <td className="px-4 py-4"><Badge tone={meta.tone}>{meta.label}</Badge></td>
+                      <td className="px-4 py-4 text-white/62">{formatNumber(movement.quantity_before)}</td>
+                      <td className="px-4 py-4 text-white">{formatNumber(movement.quantity_after)}</td>
+                      <td className="px-4 py-4 text-white/62">{movement.reason || movement.notes || "No reason recorded"}</td>
+                      <td className="rounded-r-2xl px-4 py-4 text-white/56">{formatDateTime(movement.created_at)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </Surface>
     </div>
   );
 }
