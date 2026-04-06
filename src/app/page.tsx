@@ -220,11 +220,11 @@ export default function Home() {
               </Link>
             </div>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <div className="mt-5 grid gap-2.5 sm:grid-cols-3">
               {HERO_METRICS.map((item) => (
                 <div
                   key={item}
-                  className="rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm font-medium text-white/88 backdrop-blur"
+                  className="rounded-[18px] border border-white/6 bg-white/[0.05] px-3.5 py-3 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/10 hover:bg-white/8"
                 >
                   {item}
                 </div>
@@ -253,14 +253,14 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="grid h-full grid-cols-2 gap-3 pt-28 sm:gap-4 sm:pt-20">
+            <div className="grid h-full grid-cols-2 gap-2.5 pt-24 sm:gap-3 sm:pt-16">
               {heroPreview.length > 0 ? (
                 heroPreview.map((product, index) => (
                   <Link
                     key={product.id}
                     href={`/product/${product.slug}`}
-                    className={`group relative overflow-hidden rounded-[24px] border border-white/10 bg-[#101418] shadow-[0_20px_40px_rgba(0,0,0,0.24)] transition-transform duration-300 hover:-translate-y-1 ${
-                      index === 0 ? "col-span-2 aspect-[16/10]" : "aspect-[5/6]"
+                    className={`group relative overflow-hidden rounded-[20px] border border-white/8 bg-black shadow-[0_12px_32px_rgba(0,0,0,0.32)] transition-all duration-300 hover:border-white/12 hover:shadow-[0_16px_48px_rgba(0,0,0,0.4)] hover:-translate-y-0.5 ${
+                      index === 0 ? "col-span-2 aspect-[16/9]" : "aspect-[5/6]"
                     }`}
                   >
                     <Image
@@ -268,34 +268,34 @@ export default function Home() {
                       alt={product.name}
                       fill
                       sizes={index === 0 ? "(max-width: 1024px) 100vw, 42vw" : "(max-width: 1024px) 50vw, 20vw"}
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="object-cover transition-transform duration-500 group-hover:scale-[1.08]"
                     />
-                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,11,0.08),rgba(10,10,11,0.84))]" />
-                    <div className="absolute inset-x-0 bottom-0 p-4">
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/65">
+                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,11,0.08),rgba(10,10,11,0.72))]" />
+                    <div className="absolute inset-x-0 bottom-0 p-3.5 sm:p-4">
+                      <div className="text-[9px] font-semibold uppercase tracking-[0.24em] text-white/56">
                         {product.category.replace("-", " ")}
                       </div>
-                      <div className="mt-2 text-base font-semibold text-white sm:text-lg">
+                      <div className="mt-1.5 text-sm font-semibold text-white sm:text-base">
                         {product.name}
                       </div>
                     </div>
                   </Link>
                 ))
               ) : (
-                <div className="col-span-2 flex h-full min-h-[260px] flex-col justify-between rounded-[24px] border border-dashed border-white/14 bg-black/24 p-5">
+                <div className="col-span-2 flex h-full min-h-[240px] flex-col justify-between rounded-[22px] border border-dashed border-white/12 bg-white/[0.02] p-4 sm:p-5">
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[color:var(--glow)]">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/48">
                       Zora mix
                     </div>
-                    <div className="mt-3 max-w-sm text-2xl font-semibold text-white">
+                    <div className="mt-3 max-w-sm text-xl font-semibold text-white sm:text-2xl">
                       Everyday shopping first, with VoltHub electronics inside the same store.
                     </div>
                   </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-white/10 bg-white/6 p-4 text-sm text-[color:var(--muted)]">
+                  <div className="grid gap-2.5 sm:grid-cols-2">
+                    <div className="rounded-[18px] border border-white/6 bg-white/[0.04] p-3.5 text-xs text-white/64">
                       Groceries, drinks, household items, and personal care.
                     </div>
-                    <div className="rounded-2xl border border-white/10 bg-white/6 p-4 text-sm text-[color:var(--muted)]">
+                    <div className="rounded-[18px] border border-white/6 bg-white/[0.04] p-3.5 text-xs text-white/64">
                       Chargers, audio, and electronics from VoltHub when you need them.
                     </div>
                   </div>
@@ -315,29 +315,29 @@ export default function Home() {
           ctaLabel="Browse full shop"
         />
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {CATEGORY_CARDS.map((category) => (
             <Link
               key={category.slug}
               href={category.href}
-              className={`group relative overflow-hidden rounded-[28px] border border-[color:var(--border)] p-5 transition-transform duration-300 hover:-translate-y-1 ${category.className}`}
+              className={`group relative overflow-hidden rounded-[24px] border border-white/8 p-5 transition-all duration-300 hover:border-white/12 hover:-translate-y-0.5 hover:shadow-[0_16px_48px_rgba(0,0,0,0.28)] ${category.className}`}
             >
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(10,10,11,0.34))]" />
-              <div className="relative flex h-full min-h-[220px] flex-col justify-between">
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(10,10,11,0.52))]" />
+              <div className="relative flex h-full min-h-[200px] flex-col justify-between">
                 <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.26em] text-white/65">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/52">
                     {category.eyebrow}
                   </div>
-                  <h3 className="mt-3 max-w-[12ch] font-serif text-3xl leading-tight text-white">
+                  <h3 className="mt-2.5 max-w-[11ch] font-serif text-2xl leading-tight text-white sm:text-[1.75rem]">
                     {category.title}
                   </h3>
-                  <p className="mt-3 max-w-sm text-sm leading-6 text-[#d2d8e0]">
+                  <p className="mt-2.5 max-w-xs text-[13px] leading-5 text-white/72">
                     {category.description}
                   </p>
                 </div>
-                <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white">
-                  Browse category
-                  <span className="transition-transform group-hover:translate-x-1">-&gt;</span>
+                <div className="mt-5 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/88 transition-colors group-hover:text-white">
+                  Browse
+                  <span className="transition-transform group-hover:translate-x-1">→</span>
                 </div>
               </div>
             </Link>
@@ -345,17 +345,17 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="delivery" className="mt-10 rounded-[30px] border border-[color:var(--border)] bg-[linear-gradient(180deg,rgba(24,28,32,0.96),rgba(18,20,23,0.98))] px-5 py-6 sm:mt-12 sm:px-7 sm:py-7">
+      <section id="delivery" className="mt-10 rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,rgba(24,28,32,0.88),rgba(18,20,23,0.96))] px-5 py-6 sm:mt-12 sm:px-6 sm:py-7">
         <SectionHeader
           eyebrow="Fast delivery and trust"
           title="Built for convenience-first shopping"
           description="Zora is set up for fast Nairobi ordering first, then dependable next-day delivery outside the city as coverage expands."
         />
-        <div className="mt-6 grid gap-4 lg:grid-cols-3">
+        <div className="mt-6 grid gap-3 lg:grid-cols-3">
           {TRUST_STRIP.map((item) => (
-            <div key={item.title} className="rounded-[24px] border border-white/8 bg-white/4 p-5">
-              <div className="text-lg font-semibold text-white">{item.title}</div>
-              <p className="mt-3 text-sm leading-6 text-[color:var(--muted)]">{item.description}</p>
+            <div key={item.title} className="rounded-[20px] border border-white/6 bg-white/[0.03] p-5 backdrop-blur-sm transition-all duration-300 hover:border-white/10 hover:bg-white/[0.06]">
+              <div className="text-base font-semibold text-white">{item.title}</div>
+              <p className="mt-2.5 text-xs leading-5 text-white/64">{item.description}</p>
             </div>
           ))}
         </div>
@@ -370,33 +370,33 @@ export default function Home() {
           ctaLabel="Shop essentials"
         />
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-[0.92fr_1.08fr]">
-          <div className="rounded-[30px] border border-[color:var(--border)] bg-[linear-gradient(155deg,rgba(47,107,255,0.18),rgba(18,20,23,0.98))] p-6">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[color:var(--glow)]">
+        <div className="mt-6 grid gap-3 lg:grid-cols-[0.92fr_1.08fr]">
+          <div className="rounded-[28px] border border-white/8 bg-[linear-gradient(155deg,rgba(47,107,255,0.14),rgba(18,20,23,0.96))] p-5 sm:p-6">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/48">
               Everyday mission
             </div>
-            <h3 className="mt-3 max-w-[12ch] font-serif text-4xl leading-tight text-white">
+            <h3 className="mt-2.5 max-w-[12ch] font-serif text-3xl leading-tight text-white sm:text-4xl">
               Stock the kitchen, top up the fridge, keep the week moving.
             </h3>
-            <p className="mt-4 max-w-md text-sm leading-6 text-[#d7dde6]">
+            <p className="mt-3.5 max-w-md text-xs leading-5 text-white/72 sm:text-sm sm:leading-6">
               Zora is designed to make repeat shopping feel fast and reliable, not overwhelming. Browse cleanly, pay quickly, and get a clear delivery promise.
             </p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/10 bg-white/6 p-4 text-sm text-white/88">
+            <div className="mt-5 grid gap-2.5 sm:grid-cols-2">
+              <div className="rounded-[20px] border border-white/6 bg-white/[0.04] p-3.5 text-xs leading-5 text-white/72">
                 Same-day Nairobi delivery on daily essentials when ordered before 6PM.
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/6 p-4 text-sm text-white/88">
+              <div className="rounded-[20px] border border-white/6 bg-white/[0.04] p-3.5 text-xs leading-5 text-white/72">
                 WhatsApp support and real-time order updates after confirmation.
               </div>
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
             {(dailyEssentials.length > 0 ? dailyEssentials : bestSellers.slice(0, 4)).map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
             {!loading && dailyEssentials.length === 0 && bestSellers.length === 0 ? (
-              <div className="sm:col-span-2 rounded-[24px] border border-dashed border-[color:var(--border)] bg-white/3 p-8 text-sm text-[color:var(--muted)]">
+              <div className="sm:col-span-2 rounded-[22px] border border-dashed border-white/12 bg-white/[0.02] p-6 text-xs text-white/56">
                 Product cards will populate here once catalog data is available from Supabase.
               </div>
             ) : null}
@@ -413,32 +413,34 @@ export default function Home() {
           ctaLabel="Shop snacks"
         />
 
-        <div className="mt-6 flex snap-x gap-4 overflow-x-auto pb-2">
+        <div className="mt-6 flex snap-x gap-3 overflow-x-auto pb-2">
           {(fastPicks.length > 0 ? fastPicks : bestSellers.slice(0, 6)).map((product) => (
             <Link
               key={product.id}
               href={`/product/${product.slug}`}
-              className="group min-w-[260px] snap-start rounded-[26px] border border-[color:var(--border)] bg-[linear-gradient(180deg,rgba(24,28,32,0.96),rgba(18,20,23,0.98))] p-4 transition-transform duration-300 hover:-translate-y-1 sm:min-w-[300px]"
+              className="group min-w-[240px] snap-start rounded-[22px] border border-white/8 bg-[linear-gradient(180deg,rgba(24,28,32,0.92),rgba(18,20,23,0.96))] p-3.5 transition-all duration-300 hover:border-white/12 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(0,0,0,0.32)] sm:min-w-[280px]"
             >
-              <div className="relative aspect-[5/4] overflow-hidden rounded-[22px]">
+              <div className="relative aspect-[4/3.2] overflow-hidden rounded-[18px] bg-black">
                 <Image
                   src={getProductImage(product)}
                   alt={product.name}
                   fill
-                  sizes="(max-width: 640px) 80vw, 280px"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 640px) 70vw, 250px"
+                  className="object-cover transition-transform duration-500 group-hover:scale-[1.08]"
                 />
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,11,0.04),rgba(10,10,11,0.7))]" />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,11,0.04),rgba(10,10,11,0.6))]" />
               </div>
-              <div className="mt-4 flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--warning)]">
+              <div className="mt-3 flex items-start justify-between gap-2">
+                <div className="flex-1">
+                  <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-white/48">
                     {product.category.replace("-", " ")}
                   </div>
-                  <div className="mt-2 text-lg font-semibold text-white">{product.name}</div>
+                  <div className="mt-1.5 text-sm font-semibold leading-tight text-white">
+                    {product.name}
+                  </div>
                 </div>
-                <div className="text-sm font-semibold text-white">
-                  KES {product.priceKes.toLocaleString()}
+                <div className="flex-shrink-0 text-xs font-semibold text-white/88">
+                  {Math.floor(product.priceKes / 1000)}K
                 </div>
               </div>
             </Link>
@@ -446,8 +448,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mt-10 grid gap-4 sm:mt-12 lg:grid-cols-[1.02fr_0.98fr]">
-        <div className="rounded-[30px] border border-[color:var(--border)] bg-[linear-gradient(180deg,rgba(24,28,32,0.94),rgba(18,20,23,0.98))] p-6">
+      <section className="mt-10 grid gap-3.5 sm:mt-12 lg:grid-cols-[1.02fr_0.98fr]">
+        <div className="rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,rgba(24,28,32,0.88),rgba(18,20,23,0.96))] p-5 sm:p-6">
           <SectionHeader
             eyebrow="Household and personal care"
             title="Practical basics for home and routine"
@@ -456,82 +458,85 @@ export default function Home() {
             ctaLabel="Shop home basics"
           />
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-[24px] border border-white/8 bg-white/4 p-5">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[color:var(--success)]">
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-[20px] border border-white/6 bg-white/[0.03] p-4 backdrop-blur-sm">
+              <div className="text-xs font-semibold uppercase tracking-[0.24em] text-white/48">
                 Service areas
               </div>
-              <p className="mt-3 text-sm leading-6 text-[color:var(--muted)]">
+              <p className="mt-2.5 text-xs leading-5 text-white/64">
                 Nairobi orders move same-day, while deliveries outside Nairobi roll out next-day through dependable courier coverage.
               </p>
             </div>
-            <div className="rounded-[24px] border border-white/8 bg-white/4 p-5">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[color:var(--success)]">
+            <div className="rounded-[20px] border border-white/6 bg-white/[0.03] p-4 backdrop-blur-sm">
+              <div className="text-xs font-semibold uppercase tracking-[0.24em] text-white/48">
                 Payment flexibility
               </div>
-              <p className="mt-3 text-sm leading-6 text-[color:var(--muted)]">
+              <p className="mt-2.5 text-xs leading-5 text-white/64">
                 Use M-Pesa, card payments, pay on pickup, or cash on delivery where the route supports it.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2">
           {(householdPicks.length > 0 ? householdPicks : bestSellers.slice(0, 4)).map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
-      <section className="mt-10 rounded-[32px] border border-[color:var(--border)] bg-[linear-gradient(145deg,rgba(33,212,253,0.12),rgba(24,28,32,0.98))] px-5 py-6 sm:mt-12 sm:px-7 sm:py-8">
-        <div className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
+      <section className="mt-10 rounded-[28px] border border-white/8 bg-[linear-gradient(145deg,rgba(33,212,253,0.08),rgba(24,28,32,0.96))] px-5 py-6 sm:mt-12 sm:px-6 sm:py-7">
+        <div className="grid gap-5 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
           <div className="max-w-xl">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[color:var(--glow)]">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/48">
               VoltHub electronics department
             </div>
-            <h2 className="mt-3 max-w-[12ch] font-serif text-4xl leading-tight text-white">
+            <h2 className="mt-2.5 max-w-[12ch] font-serif text-3xl leading-tight text-white sm:text-4xl">
               Electronics stay premium, but clearly inside the Zora store.
             </h2>
-            <p className="mt-4 text-sm leading-6 text-[#d7dde6] sm:text-base">
+            <p className="mt-3.5 text-xs leading-5 text-white/72 sm:text-sm sm:leading-6">
               VoltHub remains the partner-led electronics department for chargers, audio, power, wearables, and quick-access tech. It supports the basket without taking over the brand.
             </p>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <div className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
               <Link
                 href="/category/electronics"
-                className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-5 text-sm font-semibold text-[#101418] transition-opacity hover:opacity-90"
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 text-xs font-semibold text-[#101418] transition-all hover:scale-[1.02]"
               >
-                Shop VoltHub electronics
+                Shop VoltHub
               </Link>
               <Link
                 href="/category/chargers-cables"
-                className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/12 bg-white/6 px-5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/5 px-5 text-xs font-semibold text-white transition-colors hover:bg-white/10 hover:border-white/12"
               >
-                Browse chargers and cables
+                Chargers &amp; cables
               </Link>
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-3">
             {(electronicsPicks.length > 0 ? electronicsPicks : bestSellers.slice(0, 3)).map((product) => (
               <Link
                 key={product.id}
                 href={`/product/${product.slug}`}
-                className="group rounded-[26px] border border-white/10 bg-[#11161b]/90 p-4 transition-transform duration-300 hover:-translate-y-1"
+                className="group relative overflow-hidden rounded-[22px] border border-white/8 bg-black transition-all duration-300 hover:border-white/12 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(0,0,0,0.32)]"
               >
-                <div className="relative aspect-[4/5] overflow-hidden rounded-[20px]">
+                <div className="relative aspect-[4/5] overflow-hidden">
                   <Image
                     src={getProductImage(product)}
                     alt={product.name}
                     fill
                     sizes="(max-width: 640px) 90vw, 240px"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.08]"
                   />
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(10,10,11,0.6))]" />
                 </div>
-                <div className="mt-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[color:var(--glow)]">
-                  {product.category.replace("-", " ")}
+                <div className="absolute inset-x-0 bottom-0 p-3">
+                  <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-white/56">
+                    {product.category.replace("-", " ")}
+                  </div>
+                  <div className="mt-1.5 text-xs font-semibold text-white">{product.name}</div>
+                  <div className="mt-1.5 text-[11px] text-white/88">KES {product.priceKes.toLocaleString()}</div>
                 </div>
-                <div className="mt-2 text-lg font-semibold text-white">{product.name}</div>
-                <div className="mt-2 text-sm text-[#d7dde6]">KES {product.priceKes.toLocaleString()}</div>
               </Link>
             ))}
           </div>
@@ -547,62 +552,62 @@ export default function Home() {
           ctaLabel="See all products"
         />
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {bestSellers.slice(0, 8).map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
           {!loading && bestSellers.length === 0 ? (
-            <div className="sm:col-span-2 xl:col-span-4 rounded-[24px] border border-dashed border-[color:var(--border)] bg-white/3 p-8 text-sm text-[color:var(--muted)]">
+            <div className="sm:col-span-2 xl:col-span-4 rounded-[22px] border border-dashed border-white/12 bg-white/[0.02] p-6 text-xs text-white/56">
               The storefront is ready; featured products will appear here as soon as catalog data is available.
             </div>
           ) : null}
         </div>
       </section>
 
-      <section id="support" className="mt-10 rounded-[32px] border border-[color:var(--border)] bg-[linear-gradient(180deg,rgba(24,28,32,0.96),rgba(18,20,23,0.98))] px-5 py-6 sm:mt-12 sm:px-7 sm:py-8">
+      <section id="support" className="mt-10 rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,rgba(24,28,32,0.88),rgba(18,20,23,0.96))] px-5 py-6 sm:mt-12 sm:px-6 sm:py-7">
         <SectionHeader
           eyebrow="Reassurance"
           title="Clear promises, real local support"
           description="Trust comes from how the store works: clear service areas, verified payment options, direct support, and fast order updates after checkout."
         />
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {[
             "M-Pesa STK push, card payments, pay on pickup, and cash on delivery",
             "Instant order confirmation with real-time WhatsApp delivery updates",
             "No-fakes policy and fast issue resolution from the local team",
             "Nairobi-based operations with same-day focus and nationwide expansion",
           ].map((item) => (
-            <div key={item} className="rounded-[24px] border border-white/8 bg-white/4 p-5 text-sm leading-6 text-[#d7dde6]">
+            <div key={item} className="rounded-[20px] border border-white/6 bg-white/[0.03] p-4 text-xs leading-5 text-white/72 backdrop-blur-sm">
               {item}
             </div>
           ))}
         </div>
       </section>
 
-      <section className="mt-10 rounded-[32px] border border-[color:var(--border)] bg-[linear-gradient(135deg,rgba(47,107,255,0.24),rgba(18,20,23,0.98))] px-5 py-8 sm:mt-12 sm:px-7 sm:py-10">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+      <section className="mt-10 rounded-[28px] border border-white/8 bg-[linear-gradient(135deg,rgba(47,107,255,0.18),rgba(18,20,23,0.96))] px-5 py-7 sm:mt-12 sm:px-6 sm:py-8">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[color:var(--glow)]">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/48">
               Ready to order
             </div>
-            <h2 className="mt-3 max-w-[14ch] font-serif text-4xl leading-tight text-white sm:text-5xl">
+            <h2 className="mt-2.5 max-w-[14ch] font-serif text-3xl leading-tight text-white sm:text-4xl lg:text-5xl">
               Start shopping with a cleaner, faster Nairobi-first store.
             </h2>
-            <p className="mt-4 text-sm leading-6 text-[#d7dde6] sm:text-base">
+            <p className="mt-3.5 text-xs leading-5 text-white/72 sm:text-sm sm:leading-6">
               Shop essentials first, add VoltHub electronics when needed, and check out with M-Pesa or the payment method that works best for your order.
             </p>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex flex-col gap-2.5 sm:flex-row">
             <Link
               href="/shop"
-              className="inline-flex min-h-13 items-center justify-center rounded-full bg-white px-6 text-sm font-semibold text-[#101418] transition-opacity hover:opacity-90"
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-6 text-xs font-semibold text-[#101418] transition-all hover:scale-[1.02]"
             >
               Start shopping
             </Link>
             <Link
               href="#categories"
-              className="inline-flex min-h-13 items-center justify-center rounded-full border border-white/12 bg-white/6 px-6 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+              className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/5 px-6 text-xs font-semibold text-white transition-colors hover:bg-white/10 hover:border-white/12"
             >
               Browse categories
             </Link>
