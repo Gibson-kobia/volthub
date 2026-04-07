@@ -14,13 +14,13 @@ import {
   extractSupabaseErrorMessage,
   formatCompactDate,
   formatNumber,
-  ROLE_EMAILS,
   ROLE_LABELS,
 } from "@/lib/admin";
+import { resolveAccessForCurrentSession } from "@/lib/staff-session";
 import { getSupabase } from "@/lib/supabase";
 import type { StaffProfile, StaffRole } from "@/lib/types";
 
-const ROLE_OPTIONS: StaffRole[] = ["super_admin", "store_admin", "inventory_manager", "cashier"];
+const ROLE_OPTIONS: StaffRole[] = ["super_admin", "store_admin", "cashier", "rider"];
 
 type StaffFormState = {
   email: string;
@@ -46,6 +46,8 @@ export default function AdminStaffPage() {
   const [warning, setWarning] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [form, setForm] = useState<StaffFormState>(DEFAULT_FORM);
+  const [viewerRole, setViewerRole] = useState<StaffRole | null>(null);
+  const [viewerStoreCode, setViewerStoreCode] = useState("main");
 
   useEffect(() => {
     void loadProfiles();
@@ -56,10 +58,27 @@ export default function AdminStaffPage() {
     setWarning(null);
 
     try {
-      const { data, error } = await supabase
+      const access = await resolveAccessForCurrentSession(supabase);
+      if (!access.isStaff || !access.role || !access.storeCode) {
+        setProfiles([]);
+        setTableReady(false);
+        setWarning("No active staff profile was found for this account.");
+        return;
+      }
+
+      setViewerRole(access.role);
+      setViewerStoreCode(access.storeCode);
+
+      let query = supabase
         .from("staff_profiles")
         .select("*")
         .order("created_at", { ascending: false });
+
+      if (access.role !== "super_admin") {
+        query = query.eq("store_code", access.storeCode);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         if (error.message.includes("staff_profiles")) {
@@ -85,8 +104,8 @@ export default function AdminStaffPage() {
     const counts: Record<StaffRole, number> = {
       super_admin: 0,
       store_admin: 0,
-      inventory_manager: 0,
       cashier: 0,
+      rider: 0,
     };
 
     profiles.forEach((profile) => {
@@ -118,9 +137,14 @@ export default function AdminStaffPage() {
         email,
         full_name: form.full_name.trim() || null,
         role: form.role,
-        store_code: form.store_code.trim() || "main",
+        store_code: viewerRole === "super_admin" ? form.store_code.trim() || "main" : viewerStoreCode,
         is_active: true,
       };
+
+      if (viewerRole !== "super_admin" && form.role === "super_admin") {
+        setWarning("Only super admins can assign the super_admin role.");
+        return;
+      }
 
       const { error } = await supabase.from("staff_profiles").upsert([payload], { onConflict: "email" });
       if (error) throw error;
@@ -137,6 +161,10 @@ export default function AdminStaffPage() {
 
   async function toggleActive(profile: StaffProfile) {
     if (!tableReady) return;
+    if (viewerRole !== "super_admin" && profile.store_code !== viewerStoreCode) {
+      setWarning("You can only manage staff in your own store.");
+      return;
+    }
 
     const { error } = await supabase
       .from("staff_profiles")
@@ -164,7 +192,7 @@ export default function AdminStaffPage() {
       <AdminPageHeader
         eyebrow="Staff and roles"
         title="Operational team structure"
-        description="Manage role-aware staff records today while preparing for future server-side RBAC enforcement."
+        description="Manage active staff identity by email, role, and store assignment. Signup alone does not grant staff access."
       />
 
       {warning ? (
@@ -177,13 +205,13 @@ export default function AdminStaffPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <MetricCard label="Super admins" value={formatNumber(roleCoverage.super_admin)} tone="sky" />
         <MetricCard label="Store admins" value={formatNumber(roleCoverage.store_admin)} tone="indigo" />
-        <MetricCard label="Inventory managers" value={formatNumber(roleCoverage.inventory_manager)} tone="amber" />
         <MetricCard label="Cashiers" value={formatNumber(roleCoverage.cashier)} tone="emerald" />
+        <MetricCard label="Riders" value={formatNumber(roleCoverage.rider)} tone="amber" />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
         <Surface>
-          <SurfaceHeader title="Add or update staff" description="Creates a profile row by email. Security enforcement remains future server-side work." />
+          <SurfaceHeader title="Add or update staff" description="Creates or updates a role-bearing staff identity by email and store." />
           {tableReady ? (
             <form onSubmit={submitProfile} className="space-y-4 px-5 py-5 sm:px-6">
               <label className="space-y-2 text-sm text-white/70 block">
@@ -224,6 +252,8 @@ export default function AdminStaffPage() {
                   value={form.store_code}
                   onChange={(event) => setForm((current) => ({ ...current, store_code: event.target.value }))}
                   className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none"
+                  placeholder="main or volthub"
+                  disabled={viewerRole !== "super_admin"}
                 />
               </label>
               <ActionButton type="submit" disabled={saving}>{saving ? "Saving..." : "Save staff profile"}</ActionButton>
@@ -267,24 +297,6 @@ export default function AdminStaffPage() {
           </div>
         </Surface>
       </div>
-
-      <Surface>
-        <SurfaceHeader title="Current env-based role mapping" description="Client-side email allowlist currently used by admin shell. Replace with server-side auth checks later." />
-        <div className="grid gap-4 px-5 py-5 md:grid-cols-2 lg:grid-cols-4 sm:px-6">
-          {ROLE_OPTIONS.map((role) => (
-            <div key={role} className="rounded-2xl border border-white/8 bg-white/4 px-4 py-4">
-              <div className="text-sm font-semibold text-white">{ROLE_LABELS[role]}</div>
-              <div className="mt-2 space-y-1 text-xs text-white/56">
-                {ROLE_EMAILS[role].length > 0 ? (
-                  ROLE_EMAILS[role].map((email) => <div key={email}>{email}</div>)
-                ) : (
-                  <div>No configured emails</div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </Surface>
     </div>
   );
 }

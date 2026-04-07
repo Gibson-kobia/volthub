@@ -14,13 +14,13 @@ import {
   buildSalesTrend,
   buildTopSellingProducts,
   estimateGrossProfit,
-  extractSupabaseErrorMessage,
   formatCompactDate,
   formatCurrency,
   formatNumber,
   getInventoryStatus,
   normalizeOrderItems,
 } from "@/lib/admin";
+import { resolveAccessForCurrentSession } from "@/lib/staff-session";
 import { getSupabase } from "@/lib/supabase";
 import type { DBProduct, InventoryMovement, Order } from "@/lib/types";
 
@@ -32,49 +32,80 @@ export default function AdminReportsPage() {
   const [movements, setMovements] = useState<InventoryMovement[]>([]);
   const [loading, setLoading] = useState(true);
   const [warning, setWarning] = useState<string | null>(null);
+  const [viewerStoreCode, setViewerStoreCode] = useState("main");
+  const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
+    let active = true;
+
+    async function loadData() {
+      setLoading(true);
+      setWarning(null);
+
+      const access = await resolveAccessForCurrentSession(supabase);
+      const storeCode = access.storeCode || "main";
+      const isSuperAdmin = access.role === "super_admin";
+      if (active) setViewerStoreCode(storeCode);
+
+      const [productsResult, ordersResult, movementsResult] = await Promise.allSettled([
+        (isSuperAdmin
+          ? supabase.from("products").select("*").order("created_at", { ascending: false })
+          : supabase.from("products").select("*").eq("store_code", storeCode).order("created_at", { ascending: false })),
+        (isSuperAdmin
+          ? supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(1200)
+          : supabase
+              .from("orders")
+              .select("*")
+              .eq("store_code", storeCode)
+              .order("created_at", { ascending: false })
+              .limit(1200)),
+        (isSuperAdmin
+          ? supabase.from("inventory_movements").select("*").order("created_at", { ascending: false }).limit(600)
+          : supabase
+              .from("inventory_movements")
+              .select("*")
+              .eq("store_code", storeCode)
+              .order("created_at", { ascending: false })
+              .limit(600)),
+      ]);
+
+      if (!active) return;
+
+      if (productsResult.status === "fulfilled") {
+        if (!productsResult.value.error) {
+          setProducts((productsResult.value.data || []) as DBProduct[]);
+        } else {
+          setWarning(`Products could not be loaded: ${productsResult.value.error.message}`);
+        }
+      }
+
+      if (ordersResult.status === "fulfilled") {
+        const ordersError = ordersResult.value.error;
+        if (!ordersError) {
+          setOrders((ordersResult.value.data || []) as Order[]);
+        } else {
+          setWarning((current) => current || `Orders could not be loaded: ${ordersError.message}`);
+        }
+      }
+
+      if (movementsResult.status === "fulfilled") {
+        const movementError = movementsResult.value.error;
+        if (!movementError) {
+          setMovements((movementsResult.value.data || []) as InventoryMovement[]);
+        } else if (!movementError.message.includes("inventory_movements")) {
+          setWarning((current) => current || `Inventory movements unavailable: ${movementError.message}`);
+        }
+      }
+
+      setLoading(false);
+    }
+
     void loadData();
-  }, []);
 
-  async function loadData() {
-    setLoading(true);
-    setWarning(null);
-
-    const [productsResult, ordersResult, movementsResult] = await Promise.allSettled([
-      supabase.from("products").select("*").order("created_at", { ascending: false }),
-      supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(1200),
-      supabase.from("inventory_movements").select("*").order("created_at", { ascending: false }).limit(600),
-    ]);
-
-    if (productsResult.status === "fulfilled") {
-      if (!productsResult.value.error) {
-        setProducts((productsResult.value.data || []) as DBProduct[]);
-      } else {
-        setWarning(`Products could not be loaded: ${productsResult.value.error.message}`);
-      }
-    }
-
-    if (ordersResult.status === "fulfilled") {
-      const ordersError = ordersResult.value.error;
-      if (!ordersError) {
-        setOrders((ordersResult.value.data || []) as Order[]);
-      } else {
-        setWarning((current) => current || `Orders could not be loaded: ${ordersError.message}`);
-      }
-    }
-
-    if (movementsResult.status === "fulfilled") {
-      const movementError = movementsResult.value.error;
-      if (!movementError) {
-        setMovements((movementsResult.value.data || []) as InventoryMovement[]);
-      } else if (!movementError.message.includes("inventory_movements")) {
-        setWarning((current) => current || `Inventory movements unavailable: ${movementError.message}`);
-      }
-    }
-
-    setLoading(false);
-  }
+    return () => {
+      active = false;
+    };
+  }, [reloadToken, supabase]);
 
   const normalizedOrders = useMemo(
     () =>
@@ -132,8 +163,8 @@ export default function AdminReportsPage() {
       <AdminPageHeader
         eyebrow="Reporting"
         title="Business performance and inventory pressure."
-        description="Revenue, estimated gross profit, order outcomes, and stock movement insights built from live store data."
-        actions={<ActionButton variant="secondary" onClick={() => void loadData()}>Refresh data</ActionButton>}
+        description={`Revenue, estimated gross profit, order outcomes, and stock movement insights built from live store data. Scope: ${viewerStoreCode}.`}
+        actions={<ActionButton variant="secondary" onClick={() => setReloadToken((current) => current + 1)}>Refresh data</ActionButton>}
       />
 
       {warning ? (

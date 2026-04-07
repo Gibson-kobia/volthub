@@ -22,6 +22,7 @@ import {
   ORDER_STATUSES,
   PAYMENT_STATUSES,
 } from "@/lib/admin";
+import { resolveAccessForCurrentSession } from "@/lib/staff-session";
 import { getSupabase } from "@/lib/supabase";
 import type { Order, OrderPaymentStatus, OrderStatus } from "@/lib/types";
 
@@ -41,6 +42,8 @@ export default function AdminOrdersPage() {
   const [paymentFilter, setPaymentFilter] = useState<OrderPaymentStatus | "ALL">("ALL");
   const [sourceFilter, setSourceFilter] = useState<"ALL" | "online" | "pos">("ALL");
   const [selectedOrder, setSelectedOrder] = useState<OrderWithNormalizedItems | null>(null);
+  const [viewerRole, setViewerRole] = useState<string | null>(null);
+  const [viewerStoreCode, setViewerStoreCode] = useState("main");
 
   useEffect(() => {
     void loadOrders();
@@ -51,11 +54,22 @@ export default function AdminOrdersPage() {
     setWarning(null);
 
     try {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(500);
+      const access = await resolveAccessForCurrentSession(supabase);
+      if (!access.isStaff || !access.role || !access.storeCode) {
+        setWarning("No active staff profile found for this account.");
+        setOrders([]);
+        return;
+      }
+
+      setViewerRole(access.role);
+      setViewerStoreCode(access.storeCode);
+
+      let query = supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(500);
+      if (access.role !== "super_admin") {
+        query = query.eq("store_code", access.storeCode);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -185,7 +199,7 @@ export default function AdminOrdersPage() {
       <AdminPageHeader
         eyebrow="Order operations"
         title="Fulfilment, payment, and customer flow control."
-        description="Track every order from NEW to DELIVERED, monitor payment states, and keep customer detail visibility centralized for operations teams."
+        description={`Track every order from NEW to DELIVERED, monitor payment states, and keep customer detail visibility centralized for operations teams. Scope: ${viewerStoreCode}.`}
       />
 
       {warning ? (
@@ -355,7 +369,7 @@ export default function AdminOrdersPage() {
                   <span>Status</span>
                   <select
                     value={selectedOrder.status}
-                    disabled={savingOrderId === selectedOrder.id}
+                    disabled={savingOrderId === selectedOrder.id || viewerRole === "cashier"}
                     onChange={(event) =>
                       void updateOrder(selectedOrder, { status: event.target.value as OrderStatus })
                     }
@@ -372,7 +386,7 @@ export default function AdminOrdersPage() {
                   <span>Payment status</span>
                   <select
                     value={selectedOrder.payment_status || "PENDING"}
-                    disabled={savingOrderId === selectedOrder.id}
+                    disabled={savingOrderId === selectedOrder.id || viewerRole === "cashier"}
                     onChange={(event) =>
                       void updateOrder(selectedOrder, {
                         payment_status: event.target.value as OrderPaymentStatus,
@@ -394,6 +408,7 @@ export default function AdminOrdersPage() {
                 <textarea
                   rows={3}
                   defaultValue={selectedOrder.admin_note || ""}
+                  disabled={viewerRole === "cashier"}
                   onBlur={(event) =>
                     void updateOrder(selectedOrder, {
                       admin_note: event.target.value,

@@ -20,6 +20,7 @@ import {
   getProductReorderLevel,
   INVENTORY_MOVEMENT_TYPES,
 } from "@/lib/admin";
+import { resolveAccessForCurrentSession } from "@/lib/staff-session";
 import { getSupabase } from "@/lib/supabase";
 import type { DBProduct, InventoryMovement, InventoryMovementType } from "@/lib/types";
 
@@ -70,6 +71,7 @@ export default function AdminInventoryPage() {
   const [selectedProduct, setSelectedProduct] = useState<DBProduct | null>(null);
   const [adjustment, setAdjustment] = useState<AdjustmentState>(DEFAULT_ADJUSTMENT);
   const [activeTab, setActiveTab] = useState<"products" | "movements">("products");
+  const [viewerStoreCode, setViewerStoreCode] = useState("main");
   const supabase = getSupabase();
 
   useEffect(() => {
@@ -80,13 +82,27 @@ export default function AdminInventoryPage() {
     setLoading(true);
     setWarning(null);
 
+    const access = await resolveAccessForCurrentSession(supabase);
+    const storeCode = access.storeCode || "main";
+    const isSuperAdmin = access.role === "super_admin";
+    setViewerStoreCode(storeCode);
+
     const [productsResult, movementsResult] = await Promise.allSettled([
-      supabase.from("products").select("*").order("name", { ascending: true }),
-      supabase
-        .from("inventory_movements")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(200),
+      (isSuperAdmin
+        ? supabase.from("products").select("*").order("name", { ascending: true })
+        : supabase.from("products").select("*").eq("store_code", storeCode).order("name", { ascending: true })),
+      (isSuperAdmin
+        ? supabase
+            .from("inventory_movements")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .limit(200)
+        : supabase
+            .from("inventory_movements")
+            .select("*")
+            .eq("store_code", storeCode)
+            .order("created_at", { ascending: false })
+            .limit(200)),
     ]);
 
     if (productsResult.status === "fulfilled" && !productsResult.value.error) {
@@ -199,6 +215,7 @@ export default function AdminInventoryPage() {
             reason: adjustment.reason.trim(),
             notes: adjustment.notes.trim() || null,
             actor_email: actorEmail,
+            store_code: viewerStoreCode,
           },
         ]);
         if (movementError) throw movementError;
@@ -229,7 +246,7 @@ export default function AdminInventoryPage() {
       <AdminPageHeader
         eyebrow="Inventory control"
         title="Stock truth lives here."
-        description="Manage every product's real stock position, log every movement, and catch low-stock before it becomes a missed sale. Movements build a durable audit trail automatically."
+        description={`Manage every product's real stock position, log every movement, and catch low-stock before it becomes a missed sale. Movements build a durable audit trail automatically. Scope: ${viewerStoreCode}.`}
       />
 
       {warning ? (

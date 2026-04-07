@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabase } from "../../../lib/supabase";
+import { getActiveStaffByEmail, getPostLoginPath } from "../../../lib/access-control";
 
 type AuthCallbackStatus = "loading" | "success" | "error" | "reset";
 type EmailOtpType = "email" | "magiclink" | "recovery" | "email_change";
@@ -21,6 +22,7 @@ export default function AuthCallbackContent() {
   const [errorText, setErrorText] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
+  const [redirectPath, setRedirectPath] = useState("/account");
 
   const query = useMemo(() => searchParams.toString(), [searchParams]);
   const code = searchParams.get("code");
@@ -34,10 +36,16 @@ export default function AuthCallbackContent() {
     let active = true;
     let timeoutId: NodeJS.Timeout;
 
-    const handleSuccess = () => {
+    const handleSuccess = async () => {
       if (!active) return;
+      const {
+        data: { session },
+      } = await getSupabase().auth.getSession();
+      const staff = await getActiveStaffByEmail(getSupabase(), session?.user.email || null);
+      const nextPath = getPostLoginPath(staff);
+      setRedirectPath(nextPath);
       setStatus("success");
-      timeoutId = setTimeout(() => router.push("/account"), 1800);
+      timeoutId = setTimeout(() => router.push(nextPath), 1800);
     };
 
     const handleRecovery = () => {
@@ -95,7 +103,7 @@ export default function AuthCallbackContent() {
       }
 
       // existing profile verification + magic links
-      handleSuccess();
+      await handleSuccess();
     };
 
     finalize().catch((error) => {
@@ -130,7 +138,13 @@ export default function AuthCallbackContent() {
       const { error } = await getSupabase().auth.updateUser({ password: newPassword });
       if (error) throw error;
       setStatus("success");
-      setTimeout(() => router.push("/account"), 2600);
+      const {
+        data: { session },
+      } = await getSupabase().auth.getSession();
+      const staff = await getActiveStaffByEmail(getSupabase(), session?.user.email || null);
+      const nextPath = getPostLoginPath(staff);
+      setRedirectPath(nextPath);
+      setTimeout(() => router.push(nextPath), 2600);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to update password.";
       setErrorText(message);
@@ -190,13 +204,13 @@ export default function AuthCallbackContent() {
               </div>
               <h1 className="text-2xl font-semibold">Welcome to VoltHub</h1>
               <p className="text-sm text-zinc-300">
-                Your account is verified and ready. Taking you to your dashboard.
+                Your account is verified and ready. Taking you to your interface.
               </p>
               <button
-                onClick={() => router.push("/account")}
+                onClick={() => router.push(redirectPath)}
                 className="mt-3 rounded-full bg-[color:var(--accent)] px-5 py-2 text-sm font-medium text-white hover:opacity-90"
               >
-                Go to account
+                Continue
               </button>
             </>
           )}

@@ -2,9 +2,11 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "../../../components/auth/auth-provider";
+import { getSupabase } from "../../../lib/supabase";
+import { getActiveStaffByEmail, getPostLoginPath } from "../../../lib/access-control";
 
 export default function LoginPage() {
-  const { login, signup } = useAuth();
+  const { login, resendConfirmation } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -24,14 +26,15 @@ export default function LoginPage() {
     const res = await login(email.trim(), password);
     setLoading(false);
     if (!res.ok) {
-      if (res.error?.includes("Email not confirmed")) {
+      if (res.code === "unconfirmed" || res.error?.toLowerCase().includes("confirm")) {
         setError("Please check your email and click the verification link before logging in.");
       } else {
         setError(res.error || "Invalid credentials");
       }
       return;
     }
-    window.location.href = "/account";
+    const staff = await getActiveStaffByEmail(getSupabase(), email);
+    window.location.href = getPostLoginPath(staff);
   };
 
   const handleResend = async (e: FormEvent) => {
@@ -42,11 +45,12 @@ export default function LoginPage() {
       return;
     }
     setResendLoading(true);
-    // Use signup with empty password to trigger resend
-    const res = await signup("", resendEmail.trim(), "", "dummy");
+    const res = await resendConfirmation(resendEmail.trim());
     setResendLoading(false);
     if (res.ok) {
       setResendStatus("Verification email sent. Check your inbox.");
+    } else if (res.code === "already_confirmed") {
+      setResendStatus("This email is already confirmed. Please log in or reset your password.");
     } else {
       setResendStatus(res.error || "Failed to send email.");
     }

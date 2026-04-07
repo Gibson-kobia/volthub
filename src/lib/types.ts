@@ -131,7 +131,7 @@ export type InventoryMovement = {
   created_at: string;
 };
 
-export type StaffRole = 'super_admin' | 'store_admin' | 'inventory_manager' | 'cashier';
+export type StaffRole = 'super_admin' | 'store_admin' | 'cashier' | 'rider';
 
 export type StaffProfile = {
   id: string;

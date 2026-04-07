@@ -12,10 +12,16 @@ type PublicUser = {
 
 type AuthContextValue = {
   user: PublicUser | null;
-  signup: (name: string, email: string, phone: string, password: string) => Promise<{ ok: boolean; error?: string }>;
-  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  signup: (
+    name: string,
+    email: string,
+    phone: string,
+    password: string
+  ) => Promise<{ ok: boolean; error?: string; code?: "confirmation_sent" | "confirmation_resent" | "already_confirmed" }>;
+  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string; code?: "unconfirmed" }>;
   logout: () => void;
   resetPassword: (email: string) => Promise<{ ok: boolean; error?: string }>;
+  resendConfirmation: (email: string) => Promise<{ ok: boolean; error?: string; code?: "resent" | "already_confirmed" }>;
   refreshSession: () => Promise<void>;
 };
 
@@ -28,6 +34,10 @@ function toPublicFromSupabase(u: User): PublicUser {
     email: u.email || "",
     phone: (u.user_metadata?.phone as string) || "",
   };
+}
+
+function isEmailConfirmed(user: User | null | undefined) {
+  return Boolean(user?.email_confirmed_at);
 }
 
 const getAuthRedirectUrl = () => {
@@ -55,11 +65,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       getSupabase().auth.getUser().then((res) => {
         const u = res.data.user;
-        if (mounted) setUser(u ? toPublicFromSupabase(u) : null);
+        if (mounted) setUser(u && isEmailConfirmed(u) ? toPublicFromSupabase(u) : null);
       });
       const { data } = getSupabase().auth.onAuthStateChange(async (_event, session) => {
         const u = session?.user || null;
-        if (mounted) setUser(u ? toPublicFromSupabase(u) : null);
+        if (mounted) setUser(u && isEmailConfirmed(u) ? toPublicFromSupabase(u) : null);
       });
       sub = data;
     } catch (error) {
@@ -77,18 +87,65 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       signup: async (name, email, phone, password) => {
         try {
+          const normalizedEmail = email.trim().toLowerCase();
           const redirectTo = getAuthRedirectUrl();
           const { data, error } = await getSupabase().auth.signUp({
-            email,
+            email: normalizedEmail,
             password,
             options: {
               emailRedirectTo: redirectTo,
               data: { name, phone },
             },
           });
-          if (error) return { ok: false, error: error.message };
-          if (data.user) setUser(toPublicFromSupabase(data.user));
-          return { ok: true };
+          if (error) {
+            if (error.message.toLowerCase().includes("already") || error.message.toLowerCase().includes("registered")) {
+              const resend = await getSupabase().auth.resend({
+                type: "signup",
+                email: normalizedEmail,
+                options: { emailRedirectTo: redirectTo },
+              });
+              if (!resend.error) {
+                return { ok: true, code: "confirmation_resent" };
+              }
+              if (resend.error.message.toLowerCase().includes("confirmed")) {
+                return {
+                  ok: false,
+                  code: "already_confirmed",
+                  error: "This email is already confirmed. Log in or reset your password.",
+                };
+              }
+            }
+            return { ok: false, error: error.message };
+          }
+
+          const existingUserReplay = Array.isArray(data.user?.identities) && data.user.identities.length === 0;
+          if (existingUserReplay) {
+            const resend = await getSupabase().auth.resend({
+              type: "signup",
+              email: normalizedEmail,
+              options: { emailRedirectTo: redirectTo },
+            });
+
+            if (!resend.error) {
+              return { ok: true, code: "confirmation_resent" };
+            }
+
+            if (resend.error.message.toLowerCase().includes("confirmed")) {
+              return {
+                ok: false,
+                code: "already_confirmed",
+                error: "This email is already confirmed. Log in or reset your password.",
+              };
+            }
+
+            return { ok: false, error: resend.error.message };
+          }
+
+          if (data.user && data.session && isEmailConfirmed(data.user)) {
+            setUser(toPublicFromSupabase(data.user));
+          }
+
+          return { ok: true, code: "confirmation_sent" };
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : "Supabase not initialized";
           return { ok: false, error: message };
@@ -97,7 +154,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login: async (email, password) => {
         try {
           const { data, error } = await getSupabase().auth.signInWithPassword({ email, password });
-          if (error) return { ok: false, error: error.message };
+          if (error) {
+            if (error.message.toLowerCase().includes("not confirmed")) {
+              return { ok: false, code: "unconfirmed", error: "Please confirm your email before logging in." };
+            }
+            return { ok: false, error: error.message };
+          }
+
+          if (!isEmailConfirmed(data.user)) {
+            await getSupabase().auth.signOut();
+            setUser(null);
+            return { ok: false, code: "unconfirmed", error: "Please confirm your email before logging in." };
+          }
+
           if (data.user) setUser(toPublicFromSupabase(data.user));
           return { ok: true };
         } catch (error: unknown) {
@@ -126,6 +195,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return { ok: false, error: message };
         }
       },
+      resendConfirmation: async (email) => {
+        try {
+          const redirectTo = getAuthRedirectUrl();
+          const { error } = await getSupabase().auth.resend({
+            type: "signup",
+            email: email.trim().toLowerCase(),
+            options: { emailRedirectTo: redirectTo },
+          });
+
+          if (error) {
+            if (error.message.toLowerCase().includes("confirmed")) {
+              return {
+                ok: false,
+                code: "already_confirmed",
+                error: "This email is already confirmed. Log in or reset your password.",
+              };
+            }
+            return { ok: false, error: error.message };
+          }
+
+          return { ok: true, code: "resent" };
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : "Supabase not initialized";
+          return { ok: false, error: message };
+        }
+      },
       refreshSession: async () => {
         try {
           const { data, error } = await getSupabase().auth.getSession();
@@ -133,7 +228,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(null);
             return;
           }
-          setUser(toPublicFromSupabase(data.session.user));
+          setUser(isEmailConfirmed(data.session.user) ? toPublicFromSupabase(data.session.user) : null);
         } catch (error) {
           console.error("Failed to refresh session:", error);
           setUser(null);

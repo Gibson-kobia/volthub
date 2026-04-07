@@ -53,59 +53,12 @@ export const INVENTORY_MOVEMENT_TYPES: InventoryMovementType[] = [
   "WASTAGE",
 ];
 
-const DEFAULT_SUPER_ADMINS = ["virginiagatwiri7@gmail.com", "gibsonkobia@gmail.com"];
-
-function parseEmailList(rawValue: string | undefined, fallback: string[] = []) {
-  const source = rawValue && rawValue.trim().length > 0 ? rawValue.split(",") : fallback;
-  return source.map((item) => item.toLowerCase().trim()).filter(Boolean);
-}
-
-const SUPER_ADMIN_EMAILS = parseEmailList(
-  process.env.NEXT_PUBLIC_ADMIN_EMAILS,
-  DEFAULT_SUPER_ADMINS
-);
-const STORE_ADMIN_EMAILS = parseEmailList(process.env.NEXT_PUBLIC_STORE_ADMIN_EMAILS);
-const INVENTORY_MANAGER_EMAILS = parseEmailList(process.env.NEXT_PUBLIC_INVENTORY_MANAGER_EMAILS);
-const CASHIER_EMAILS = parseEmailList(process.env.NEXT_PUBLIC_CASHIER_EMAILS);
-
-export const ROLE_EMAILS = {
-  super_admin: SUPER_ADMIN_EMAILS,
-  store_admin: STORE_ADMIN_EMAILS,
-  inventory_manager: INVENTORY_MANAGER_EMAILS,
-  cashier: CASHIER_EMAILS,
-};
-
 export const ROLE_LABELS: Record<StaffRole, string> = {
   super_admin: "Super admin",
   store_admin: "Store admin",
-  inventory_manager: "Inventory manager",
   cashier: "Cashier",
+  rider: "Rider",
 };
-
-export function getAllowedAdminEmails() {
-  return Array.from(
-    new Set([
-      ...SUPER_ADMIN_EMAILS,
-      ...STORE_ADMIN_EMAILS,
-      ...INVENTORY_MANAGER_EMAILS,
-      ...CASHIER_EMAILS,
-    ])
-  );
-}
-
-export function getAdminRoleFromEmail(email?: string | null): StaffRole | null {
-  const normalized = (email || "").toLowerCase().trim();
-  if (!normalized) return null;
-  if (SUPER_ADMIN_EMAILS.includes(normalized)) return "super_admin";
-  if (STORE_ADMIN_EMAILS.includes(normalized)) return "store_admin";
-  if (INVENTORY_MANAGER_EMAILS.includes(normalized)) return "inventory_manager";
-  if (CASHIER_EMAILS.includes(normalized)) return "cashier";
-  return null;
-}
-
-export function canAccessAdmin(email?: string | null) {
-  return getAdminRoleFromEmail(email) !== null;
-}
 
 export function formatCurrency(value?: number | string | null) {
   const amount = Number(value ?? 0);

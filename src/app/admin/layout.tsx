@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Badge } from "@/components/admin/admin-ui";
-import { canAccessAdmin, getAdminRoleFromEmail, ROLE_LABELS } from "@/lib/admin";
+import { ROLE_LABELS } from "@/lib/admin";
+import { canRoleAccessPath, getActiveStaffByEmail, getHomePathForRole, type StoreCode } from "@/lib/access-control";
 import { getSupabase } from "@/lib/supabase";
 import type { StaffRole } from "@/lib/types";
 
@@ -19,19 +20,19 @@ const NAV_ITEMS: NavItem[] = [
   {
     name: "Overview",
     href: "/admin",
-    roles: ["super_admin", "store_admin", "inventory_manager", "cashier"],
+    roles: ["super_admin", "store_admin"],
     description: "Revenue, orders, and stock visibility.",
   },
   {
     name: "Products",
     href: "/admin/products",
-    roles: ["super_admin", "store_admin", "inventory_manager"],
+    roles: ["super_admin", "store_admin"],
     description: "Catalogue, pricing, barcodes, and product readiness.",
   },
   {
     name: "Inventory",
     href: "/admin/inventory",
-    roles: ["super_admin", "store_admin", "inventory_manager"],
+    roles: ["super_admin", "store_admin"],
     description: "Stock levels, movements, losses, and adjustments.",
   },
   {
@@ -39,6 +40,12 @@ const NAV_ITEMS: NavItem[] = [
     href: "/admin/orders",
     roles: ["super_admin", "store_admin", "cashier"],
     description: "Customer orders, payment states, and fulfilment flow.",
+  },
+  {
+    name: "Rider queue",
+    href: "/admin/rider",
+    roles: ["super_admin", "rider"],
+    description: "Assigned delivery flow and dispatch progress.",
   },
   {
     name: "Reports",
@@ -74,6 +81,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [role, setRole] = useState<StaffRole | null>(null);
+  const [storeCode, setStoreCode] = useState<StoreCode | null>(null);
   const [userEmail, setUserEmail] = useState("");
   const router = useRouter();
   const pathname = usePathname();
@@ -98,13 +106,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const email = (session.user.email ?? "").toLowerCase().trim();
       setUserEmail(email);
 
-      if (!canAccessAdmin(email)) {
+      const staff = await getActiveStaffByEmail(supabase, email);
+
+      if (!staff) {
         setAccessDenied(true);
         setLoading(false);
         return;
       }
 
-      setRole(getAdminRoleFromEmail(email));
+      if (!canRoleAccessPath(staff.role, pathname)) {
+        router.push(getHomePathForRole(staff.role));
+        setLoading(false);
+        return;
+      }
+
+      setRole(staff.role);
+      setStoreCode(staff.store_code);
       setLoading(false);
     }
 
@@ -113,7 +130,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return () => {
       active = false;
     };
-  }, [router, supabase]);
+  }, [pathname, router, supabase]);
 
   const navItems = useMemo(() => NAV_ITEMS.filter((item) => hasRoleAccess(item, role)), [role]);
 
@@ -137,7 +154,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/42">Admin access</div>
           <h1 className="mt-4 font-serif text-4xl text-white">Account is not on the operations allowlist.</h1>
           <p className="mt-4 text-sm leading-7 text-white/62">
-            The current admin gate is still client-side and based on approved email lists. Move the role model to the database and server-side checks when backend enforcement is introduced.
+            This account is not linked to an active staff record. Staff access requires an active match on email, role, and store assignment.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <button
@@ -193,12 +210,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         <div className="rounded-[24px] border border-amber-400/18 bg-amber-400/10 p-4 text-sm leading-6 text-amber-100/88">
-          Access is still protected by client-side email allowlists. Build server-side RBAC before treating this as production-grade security.
+          Staff access is tied to active staff records. Role and store scope are enforced per route.
         </div>
 
         <div className="mt-4 rounded-[24px] border border-white/8 bg-white/4 p-4 text-sm text-white/60">
           <div className="font-semibold text-white">Signed in</div>
           <div className="mt-1 break-all">{userEmail}</div>
+          {storeCode ? <div className="mt-1">Store scope: {storeCode}</div> : null}
           <button
             onClick={handleLogout}
             className="mt-4 rounded-full border border-white/12 px-4 py-2 font-semibold text-white hover:bg-white/8"

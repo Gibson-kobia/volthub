@@ -27,6 +27,7 @@ import {
   sortMovementsByNewest,
   sumOrderRevenue,
 } from "@/lib/admin";
+import { resolveAccessForCurrentSession } from "@/lib/staff-session";
 import { getSupabase } from "@/lib/supabase";
 import type { DBProduct, InventoryMovement, Order } from "@/lib/types";
 
@@ -45,6 +46,7 @@ export default function AdminDashboard() {
     warnings: [],
   });
   const [loading, setLoading] = useState(true);
+  const [viewerStoreCode, setViewerStoreCode] = useState("main");
   const supabase = getSupabase();
 
   useEffect(() => {
@@ -54,14 +56,35 @@ export default function AdminDashboard() {
       setLoading(true);
       const warnings: string[] = [];
 
+      const access = await resolveAccessForCurrentSession(supabase);
+      const storeCode = access.storeCode || "main";
+      const isSuperAdmin = access.role === "super_admin";
+      setViewerStoreCode(storeCode);
+
       const [productsResult, ordersResult, movementsResult] = await Promise.allSettled([
-        supabase.from("products").select("*").order("created_at", { ascending: false }),
-        supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(300),
-        supabase
-          .from("inventory_movements")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(12),
+        (isSuperAdmin
+          ? supabase.from("products").select("*").order("created_at", { ascending: false })
+          : supabase.from("products").select("*").eq("store_code", storeCode).order("created_at", { ascending: false })),
+        (isSuperAdmin
+          ? supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(300)
+          : supabase
+              .from("orders")
+              .select("*")
+              .eq("store_code", storeCode)
+              .order("created_at", { ascending: false })
+              .limit(300)),
+        (isSuperAdmin
+          ? supabase
+              .from("inventory_movements")
+              .select("*")
+              .order("created_at", { ascending: false })
+              .limit(12)
+          : supabase
+              .from("inventory_movements")
+              .select("*")
+              .eq("store_code", storeCode)
+              .order("created_at", { ascending: false })
+              .limit(12)),
       ]);
 
       const products =
@@ -174,7 +197,7 @@ export default function AdminDashboard() {
       <AdminPageHeader
         eyebrow="Operations dashboard"
         title="The store should be runnable from here."
-        description="Live operational visibility for revenue, order pressure, product readiness, and stock movement. Metrics only use available store data and fall back cleanly when schema upgrades have not been applied yet."
+        description={`Live operational visibility for revenue, order pressure, product readiness, and stock movement. Metrics only use available store data and fall back cleanly when schema upgrades have not been applied yet. Scope: ${viewerStoreCode}.`}
         actions={
           <>
             <Link href="/admin/inventory">

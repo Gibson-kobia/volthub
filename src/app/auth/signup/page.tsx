@@ -14,10 +14,12 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
 
   const [state, setState] = useState<"idle" | "sent" | "error">("idle");
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    setInfoMessage(null);
     setState("idle");
 
     if (!name.trim() || !email.trim() || !password) {
@@ -39,12 +41,18 @@ export default function SignupPage() {
 
     if (!res.ok) {
       setState("error");
-      if (res.error?.includes("already registered")) {
-        setError("An account with this email already exists. Try logging in instead.");
+      if (res.code === "already_confirmed") {
+        setError("This email is already confirmed. Please log in or reset your password.");
+      } else if (res.error?.toLowerCase().includes("already")) {
+        setError("An account with this email already exists. If unconfirmed, request a new confirmation email from login.");
       } else {
         setError(res.error || "Could not create account.");
       }
       return;
+    }
+
+    if (res.code === "confirmation_resent") {
+      setInfoMessage("This email already has a pending account. We sent a fresh confirmation link.");
     }
 
     setState("sent");
@@ -105,7 +113,7 @@ export default function SignupPage() {
         {error && <div className="text-sm text-red-600">{error}</div>}
         {state === "sent" && (
           <div className="text-sm text-emerald-500">
-            Check your email for a confirmation link. If you don’t see it in a few minutes, check spam.
+            {infoMessage || "Check your email for a confirmation link. If you don’t see it in a few minutes, check spam."}
           </div>
         )}
         <button

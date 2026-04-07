@@ -18,6 +18,7 @@ import {
   getInventoryStatus,
   getProductSearchText,
 } from "@/lib/admin";
+import { resolveAccessForCurrentSession } from "@/lib/staff-session";
 import { getSupabase } from "@/lib/supabase";
 import type { DBProduct, StoreSale, StoreSaleItem } from "@/lib/types";
 
@@ -41,6 +42,7 @@ export default function AdminPosPage() {
   const [customerName, setCustomerName] = useState("");
   const [notes, setNotes] = useState("");
   const [cart, setCart] = useState<CartLine[]>([]);
+  const [viewerStoreCode, setViewerStoreCode] = useState("main");
 
   useEffect(() => {
     void loadData();
@@ -50,9 +52,28 @@ export default function AdminPosPage() {
     setLoading(true);
     setWarning(null);
 
+    const access = await resolveAccessForCurrentSession(supabase);
+    const storeCode = access.storeCode || "main";
+    setViewerStoreCode(storeCode);
+    const isSuperAdmin = access.role === "super_admin";
+
     const [productsResult, salesResult] = await Promise.allSettled([
-      supabase.from("products").select("*").eq("is_active", true).order("name", { ascending: true }),
-      supabase.from("store_sales").select("*").order("created_at", { ascending: false }).limit(40),
+      (isSuperAdmin
+        ? supabase.from("products").select("*").eq("is_active", true).order("name", { ascending: true })
+        : supabase
+            .from("products")
+            .select("*")
+            .eq("is_active", true)
+            .eq("store_code", storeCode)
+            .order("name", { ascending: true })),
+      (isSuperAdmin
+        ? supabase.from("store_sales").select("*").order("created_at", { ascending: false }).limit(40)
+        : supabase
+            .from("store_sales")
+            .select("*")
+            .eq("store_code", storeCode)
+            .order("created_at", { ascending: false })
+            .limit(40)),
     ]);
 
     if (productsResult.status === "fulfilled") {
@@ -167,7 +188,7 @@ export default function AdminPosPage() {
         total: subtotal,
         gross_profit_estimate: estimatedProfit,
         notes: notes.trim() || null,
-        store_code: "main",
+        store_code: viewerStoreCode,
       };
 
       const { data: saleData, error: saleError } = await supabase
@@ -215,6 +236,7 @@ export default function AdminPosPage() {
             actor_email: operatorEmail,
             reference_type: "store_sale",
             reference_id: saleId,
+            store_code: viewerStoreCode,
           },
         ]);
 

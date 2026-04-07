@@ -10,6 +10,7 @@ import {
   SurfaceHeader,
 } from "@/components/admin/admin-ui";
 import { extractSupabaseErrorMessage, formatDateTime } from "@/lib/admin";
+import { resolveAccessForCurrentSession } from "@/lib/staff-session";
 import { getSupabase } from "@/lib/supabase";
 import type { StoreSettings } from "@/lib/types";
 
@@ -102,6 +103,7 @@ export default function AdminSettingsPage() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [tableReady, setTableReady] = useState(false);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  const [viewerStoreCode, setViewerStoreCode] = useState("main");
 
   useEffect(() => {
     void loadSettings();
@@ -112,9 +114,14 @@ export default function AdminSettingsPage() {
     setWarning(null);
 
     try {
+      const access = await resolveAccessForCurrentSession(supabase);
+      const storeCode = access.storeCode || "main";
+      setViewerStoreCode(storeCode);
+
       const { data, error } = await supabase
         .from("store_settings")
         .select("*")
+        .eq("store_code", storeCode)
         .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -159,7 +166,7 @@ export default function AdminSettingsPage() {
     setWarning(null);
 
     const payload: StoreSettings = {
-      store_code: "main",
+      store_code: viewerStoreCode,
       store_name: form.store_name.trim() || null,
       public_brand_name: form.public_brand_name.trim() || null,
       support_phone: form.support_phone.trim() || null,
@@ -219,7 +226,7 @@ export default function AdminSettingsPage() {
       <AdminPageHeader
         eyebrow="Store settings"
         title="Operational defaults and business identity."
-        description="Configure store information, support contacts, inventory defaults, and delivery preferences used across admin workflows."
+        description={`Configure store information, support contacts, inventory defaults, and delivery preferences used across admin workflows. Scope: ${viewerStoreCode}.`}
       />
 
       {warning ? (

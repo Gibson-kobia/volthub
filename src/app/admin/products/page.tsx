@@ -21,6 +21,7 @@ import {
   getMovementMeta,
   getProductSearchText,
 } from "@/lib/admin";
+import { resolveAccessForCurrentSession } from "@/lib/staff-session";
 import { getSupabase } from "@/lib/supabase";
 import type { DBProduct } from "@/lib/types";
 
@@ -135,6 +136,7 @@ export default function AdminProductsPage() {
   const [stockProduct, setStockProduct] = useState<DBProduct | null>(null);
   const [stockAdjustment, setStockAdjustment] = useState<StockAdjustmentState>(DEFAULT_ADJUSTMENT);
   const [movementTableReady, setMovementTableReady] = useState(false);
+  const [viewerStoreCode, setViewerStoreCode] = useState("main");
   const supabase = getSupabase();
 
   useEffect(() => {
@@ -145,9 +147,18 @@ export default function AdminProductsPage() {
     setLoading(true);
     setWarning(null);
 
+    const access = await resolveAccessForCurrentSession(supabase);
+    const storeCode = access.storeCode || "main";
+    const isSuperAdmin = access.role === "super_admin";
+    setViewerStoreCode(storeCode);
+
     const [productsResult, movementProbe] = await Promise.allSettled([
-      supabase.from("products").select("*").order("created_at", { ascending: false }),
-      supabase.from("inventory_movements").select("id").limit(1),
+      (isSuperAdmin
+        ? supabase.from("products").select("*").order("created_at", { ascending: false })
+        : supabase.from("products").select("*").eq("store_code", storeCode).order("created_at", { ascending: false })),
+      (isSuperAdmin
+        ? supabase.from("inventory_movements").select("id").limit(1)
+        : supabase.from("inventory_movements").select("id").eq("store_code", storeCode).limit(1)),
     ]);
 
     if (productsResult.status === "fulfilled") {
@@ -278,6 +289,7 @@ export default function AdminProductsPage() {
       track_inventory: form.track_inventory,
       is_archived: false,
       archived_at: null,
+      store_code: viewerStoreCode,
     });
 
     try {
@@ -309,6 +321,7 @@ export default function AdminProductsPage() {
             quantity_before: previousStock,
             quantity_after: nextStock,
             reason: editingProduct ? "Product edit stock sync" : "Opening stock on product creation",
+            store_code: viewerStoreCode,
           },
         ]);
       }
@@ -397,6 +410,7 @@ export default function AdminProductsPage() {
             reason: stockAdjustment.reason.trim(),
             notes: stockAdjustment.notes.trim() || null,
             actor_email: actorEmail,
+            store_code: viewerStoreCode,
           },
         ]);
         if (movementError) throw movementError;
@@ -418,7 +432,7 @@ export default function AdminProductsPage() {
       <AdminPageHeader
         eyebrow="Catalogue control"
         title="Product management with operational depth."
-        description="Manage pricing, barcode-ready identifiers, stock position, reorder thresholds, and legacy-product completeness without breaking storefront product reads."
+        description={`Manage pricing, barcode-ready identifiers, stock position, reorder thresholds, and legacy-product completeness without breaking storefront product reads. Scope: ${viewerStoreCode}.`}
         actions={<ActionButton onClick={openCreateModal}>Add product</ActionButton>}
       />
 
