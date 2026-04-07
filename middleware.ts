@@ -9,6 +9,12 @@ function buildLoginRedirect(request: NextRequest) {
   return loginUrl;
 }
 
+function safeRedirectPath(value: string | null) {
+  if (!value || !value.startsWith("/")) return null;
+  if (value.startsWith("//")) return null;
+  return value;
+}
+
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
     request: {
@@ -44,6 +50,7 @@ export async function middleware(request: NextRequest) {
   const isAuthPage = pathname.startsWith("/auth/login") || pathname.startsWith("/auth/signup");
 
   if (isAuthPage && user?.email && isConfirmedUser) {
+    const requestedRedirect = safeRedirectPath(request.nextUrl.searchParams.get("redirect"));
     const { data: staff } = await supabase
       .from("staff_profiles")
       .select("role,is_active")
@@ -51,7 +58,14 @@ export async function middleware(request: NextRequest) {
       .ilike("email", user.email.toLowerCase().trim())
       .maybeSingle();
 
-    const target = staff?.role ? getHomePathForRole(staff.role) : "/account";
+    let target = staff?.role ? getHomePathForRole(staff.role) : "/account";
+    if (requestedRedirect) {
+      if (staff?.role && canRoleAccessPath(staff.role, requestedRedirect)) {
+        target = requestedRedirect;
+      } else if (!staff?.role && !isStaffRoute(requestedRedirect)) {
+        target = requestedRedirect;
+      }
+    }
     return NextResponse.redirect(new URL(target, request.url));
   }
 

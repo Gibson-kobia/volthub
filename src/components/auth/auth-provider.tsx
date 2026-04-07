@@ -41,19 +41,18 @@ function isEmailConfirmed(user: User | null | undefined) {
   return Boolean(user?.email_confirmed_at);
 }
 
-const getAuthRedirectUrl = () => {
-  const callbackPath = "/auth/callback";
+const getAuthRedirectUrl = (path = "/auth/callback") => {
 
   if (typeof window !== "undefined") {
     const localHost = /(localhost|127\.0\.0\.1)/i;
     if (localHost.test(window.location.hostname)) {
-      return `${window.location.origin}${callbackPath}`;
+      return `${window.location.origin}${path}`;
     }
-    return `${window.location.origin}${callbackPath}`; // for all non-production local host setups
+    return `${window.location.origin}${path}`; // for all non-production local host setups
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://volthub1.vercel.app";
-  return `${baseUrl.replace(/\/*$/, "")}${callbackPath}`;
+  return `${baseUrl.replace(/\/*$/, "")}${path}`;
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -109,7 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signup: async (name, email, phone, password) => {
         try {
           const normalizedEmail = email.trim().toLowerCase();
-          const redirectTo = getAuthRedirectUrl();
+          const redirectTo = getAuthRedirectUrl("/auth/confirm");
           const { data, error } = await getSupabase().auth.signUp({
             email: normalizedEmail,
             password,
@@ -199,7 +198,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
       resetPassword: async (email) => {
         try {
-          const redirectTo = getAuthRedirectUrl();
+          const redirectTo = getAuthRedirectUrl("/auth/callback");
           const { error } = await getSupabase().auth.resetPasswordForEmail(email, {
             redirectTo,
           });
@@ -212,7 +211,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
       resendConfirmation: async (email) => {
         try {
-          const redirectTo = getAuthRedirectUrl();
+          const redirectTo = getAuthRedirectUrl("/auth/confirm");
           const { error } = await getSupabase().auth.resend({
             type: "signup",
             email: email.trim().toLowerCase(),

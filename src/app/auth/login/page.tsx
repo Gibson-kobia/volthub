@@ -1,5 +1,5 @@
 "use client";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "../../../components/auth/auth-provider";
 import { getSupabase } from "../../../lib/supabase";
@@ -14,6 +14,22 @@ export default function LoginPage() {
   const [resendEmail, setResendEmail] = useState("");
   const [resendStatus, setResendStatus] = useState<string | null>(null);
   const [resendLoading, setResendLoading] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+  const [confirmError, setConfirmError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setConfirmed(params.get("confirmed") === "1");
+    setConfirmError(params.get("confirm_error"));
+  }, []);
+
+  const confirmErrorText = (() => {
+    if (!confirmError) return null;
+    if (confirmError === "invalid_link") return "This confirmation link is invalid. Request a new verification email.";
+    if (confirmError === "verification_failed") return "We could not verify that link. Request a new verification email and try again.";
+    if (confirmError === "session_missing") return "Email confirmed, but automatic sign-in did not complete. Please log in.";
+    return "Could not complete email confirmation. Please request a new verification email.";
+  })();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -63,6 +79,16 @@ export default function LoginPage() {
       <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">
         Welcome back to Zora.
       </p>
+      {confirmed && (
+        <div className="mb-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-300">
+          Email verified successfully. You can log in now.
+        </div>
+      )}
+      {confirmErrorText && (
+        <div className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-200">
+          {confirmErrorText}
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4 text-sm">
         <div>
           <label className="block mb-1">Email</label>
