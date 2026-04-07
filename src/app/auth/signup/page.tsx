@@ -62,7 +62,7 @@ export default function SignupPage() {
     <div className="mx-auto max-w-md px-6 py-10">
       <h1 className="font-serif text-3xl mb-2">Create account</h1>
       <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">
-        Create a VoltHub account for faster checkout, order tracking, and wishlist sync.
+        Create a Zora account for faster checkout, order tracking, and wishlist sync.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4 text-sm">
         <div>

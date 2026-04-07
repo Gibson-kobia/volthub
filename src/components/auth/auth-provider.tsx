@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { getSupabase } from "../../lib/supabase";
 import type { User } from "@supabase/supabase-js";
 
@@ -12,6 +12,7 @@ type PublicUser = {
 
 type AuthContextValue = {
   user: PublicUser | null;
+  authReady: boolean;
   signup: (
     name: string,
     email: string,
@@ -19,7 +20,7 @@ type AuthContextValue = {
     password: string
   ) => Promise<{ ok: boolean; error?: string; code?: "confirmation_sent" | "confirmation_resent" | "already_confirmed" }>;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string; code?: "unconfirmed" }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ ok: boolean; error?: string }>;
   resendConfirmation: (email: string) => Promise<{ ok: boolean; error?: string; code?: "resent" | "already_confirmed" }>;
   refreshSession: () => Promise<void>;
@@ -57,34 +58,54 @@ const getAuthRedirectUrl = () => {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<PublicUser | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+
+  const refreshSession = useCallback(async () => {
+    try {
+      const { data, error } = await getSupabase().auth.getSession();
+      if (error || !data.session?.user) {
+        setUser(null);
+        return;
+      }
+      setUser(isEmailConfirmed(data.session.user) ? toPublicFromSupabase(data.session.user) : null);
+    } catch (error) {
+      console.error("Failed to refresh session:", error);
+      setUser(null);
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
     let sub: { subscription: { unsubscribe: () => void } } | null = null;
 
     try {
-      getSupabase().auth.getUser().then((res) => {
-        const u = res.data.user;
-        if (mounted) setUser(u && isEmailConfirmed(u) ? toPublicFromSupabase(u) : null);
+      refreshSession().finally(() => {
+        if (mounted) setAuthReady(true);
       });
+
       const { data } = getSupabase().auth.onAuthStateChange(async (_event, session) => {
         const u = session?.user || null;
-        if (mounted) setUser(u && isEmailConfirmed(u) ? toPublicFromSupabase(u) : null);
+        if (mounted) {
+          setUser(u && isEmailConfirmed(u) ? toPublicFromSupabase(u) : null);
+          setAuthReady(true);
+        }
       });
       sub = data;
     } catch (error) {
       console.error("Supabase client not initialized in AuthProvider:", error);
+      if (mounted) setAuthReady(true);
     }
 
     return () => {
       mounted = false;
       sub?.subscription.unsubscribe();
     };
-  }, []);
+  }, [refreshSession]);
 
   const value = useMemo<AuthContextValue>(() => {
     return {
       user,
+      authReady,
       signup: async (name, email, phone, password) => {
         try {
           const normalizedEmail = email.trim().toLowerCase();
@@ -153,7 +174,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
       login: async (email, password) => {
         try {
-          const { data, error } = await getSupabase().auth.signInWithPassword({ email, password });
+          const normalizedEmail = email.trim().toLowerCase();
+          const { data, error } = await getSupabase().auth.signInWithPassword({ email: normalizedEmail, password });
           if (error) {
             if (error.message.toLowerCase().includes("not confirmed")) {
               return { ok: false, code: "unconfirmed", error: "Please confirm your email before logging in." };
@@ -168,18 +190,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
 
           if (data.user) setUser(toPublicFromSupabase(data.user));
+
+          // Ensure provider state reflects the persisted browser session before redirecting.
+          await refreshSession();
+
           return { ok: true };
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : "Supabase not initialized";
           return { ok: false, error: message };
         }
       },
-      logout: () => {
+      logout: async () => {
         try {
-          getSupabase().auth.signOut();
-          setUser(null);
+          await getSupabase().auth.signOut({ scope: "local" });
         } catch (error) {
           console.error("Supabase not initialized", error);
+        } finally {
+          setUser(null);
         }
       },
       resetPassword: async (email) => {
@@ -221,21 +248,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return { ok: false, error: message };
         }
       },
-      refreshSession: async () => {
-        try {
-          const { data, error } = await getSupabase().auth.getSession();
-          if (error || !data.session) {
-            setUser(null);
-            return;
-          }
-          setUser(isEmailConfirmed(data.session.user) ? toPublicFromSupabase(data.session.user) : null);
-        } catch (error) {
-          console.error("Failed to refresh session:", error);
-          setUser(null);
-        }
-      },
+      refreshSession,
     };
-  }, [user]);
+  }, [user, authReady, refreshSession]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

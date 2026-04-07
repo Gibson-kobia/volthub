@@ -36,7 +36,7 @@ type Review = {
 };
 
 export default function AccountPage() {
-  const { user, logout, refreshSession } = useAuth();
+  const { user, authReady, logout, refreshSession } = useAuth();
   const [section, setSection] = useState<"profile" | "addresses" | "orders" | "wishlist" | "reviews">("profile");
   const [orders, setOrders] = useState<Order[]>([]);
   const [wishlistIds, setWishlistIds] = useState<string[]>(() => {
@@ -132,6 +132,15 @@ export default function AccountPage() {
     };
   }, [user]);
 
+  if (!authReady) {
+    return (
+      <div className="mx-auto max-w-md px-6 py-10">
+        <h1 className="font-serif text-3xl mb-4">Account</h1>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">Checking your session...</p>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
       <div className="mx-auto max-w-md px-6 py-10">
@@ -166,7 +175,9 @@ export default function AccountPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-serif text-3xl">Welcome, {user.name}</h1>
         <button
-          onClick={logout}
+          onClick={() => {
+            void logout();
+          }}
           className="text-sm rounded-full px-4 py-2 border"
         >
           Log out

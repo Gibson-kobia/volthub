@@ -6,7 +6,7 @@ import { getSupabase } from "../../../lib/supabase";
 import { getActiveStaffByEmail, getPostLoginPath } from "../../../lib/access-control";
 
 export default function LoginPage() {
-  const { login, resendConfirmation } = useAuth();
+  const { login, refreshSession, resendConfirmation } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +33,8 @@ export default function LoginPage() {
       }
       return;
     }
-    const staff = await getActiveStaffByEmail(getSupabase(), email);
+    await refreshSession();
+    const staff = await getActiveStaffByEmail(getSupabase(), email.trim().toLowerCase());
     window.location.href = getPostLoginPath(staff);
   };
 
@@ -60,7 +61,7 @@ export default function LoginPage() {
     <div className="mx-auto max-w-md px-6 py-10">
       <h1 className="font-serif text-3xl mb-2">Log in</h1>
       <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">
-        Welcome back to VoltHub.
+        Welcome back to Zora.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4 text-sm">
         <div>
@@ -96,7 +97,7 @@ export default function LoginPage() {
         </Link>
       </div>
       <div className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
-        New to VoltHub?{" "}
+        New to Zora?{" "}
         <Link href="/auth/signup" className="underline">
           Create account
         </Link>
