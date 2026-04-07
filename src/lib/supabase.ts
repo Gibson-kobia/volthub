@@ -1,3 +1,4 @@
+import { createBrowserClient } from "@supabase/ssr";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 let client: SupabaseClient | null = null;
@@ -18,7 +19,7 @@ export function getSupabase(): SupabaseClient {
       }
       client = createClient("https://placeholder.supabase.co", "placeholder-key");
     } else {
-      client = createClient(supabaseUrl, supabaseKey);
+      client = createBrowserClient(supabaseUrl, supabaseKey);
     }
   }
   return client;
