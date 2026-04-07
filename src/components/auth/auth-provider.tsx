@@ -132,7 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 return {
                   ok: false,
                   code: "already_confirmed",
-                  error: "This email is already confirmed. Log in or reset your password.",
+                  error: "This email is already registered. Please log in or reset your password.",
                 };
               }
             }
@@ -141,25 +141,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           const existingUserReplay = Array.isArray(data.user?.identities) && data.user.identities.length === 0;
           if (existingUserReplay) {
-            const resend = await getSupabase().auth.resend({
-              type: "signup",
-              email: normalizedEmail,
-              options: { emailRedirectTo: redirectTo },
-            });
-
-            if (!resend.error) {
-              return { ok: true, code: "confirmation_resent" };
-            }
-
-            if (resend.error.message.toLowerCase().includes("confirmed")) {
-              return {
-                ok: false,
-                code: "already_confirmed",
-                error: "This email is already confirmed. Log in or reset your password.",
-              };
-            }
-
-            return { ok: false, error: resend.error.message };
+            // Existing-user replay is intentionally treated as already-registered.
+            // Do not auto-resend here because it can mislabel confirmed accounts as pending.
+            return {
+              ok: false,
+              code: "already_confirmed",
+              error: "This email is already registered. Please log in or reset your password.",
+            };
           }
 
           if (data.user && data.session && isEmailConfirmed(data.user)) {

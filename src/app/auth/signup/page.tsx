@@ -42,7 +42,7 @@ export default function SignupPage() {
     if (!res.ok) {
       setState("error");
       if (res.code === "already_confirmed") {
-        setError("This email is already confirmed. Please log in or reset your password.");
+        setError("This email is already registered. Please log in or reset your password.");
       } else if (res.error?.toLowerCase().includes("already")) {
         setError("An account with this email already exists. If unconfirmed, request a new confirmation email from login.");
       } else {
