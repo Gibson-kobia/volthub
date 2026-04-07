@@ -27,6 +27,7 @@ export default function AuthCallbackContent() {
   const query = useMemo(() => searchParams.toString(), [searchParams]);
   const code = searchParams.get("code");
   const token = searchParams.get("token");
+  const tokenHash = searchParams.get("token_hash");
   const type = searchParams.get("type");
 
   useEffect(() => {
@@ -53,25 +54,31 @@ export default function AuthCallbackContent() {
       setStatus("reset");
     };
 
+    const handleConfirmedWithoutSession = () => {
+      if (!active) return;
+      const nextPath = "/auth/login?confirmed=1";
+      setRedirectPath(nextPath);
+      setStatus("success");
+      timeoutId = setTimeout(() => router.push(nextPath), 1800);
+    };
+
     const exchangeCode = async () => {
       const { data, error } = await getSupabase().auth.exchangeCodeForSession(code!);
       if (error) throw error;
       return data;
     };
 
-    const verifyToken = async () => {
-      if (!isValidEmailOtpType(type)) {
-        throw new Error(`Invalid OTP type for token verification: "${type}". Expected one of: email, magiclink, recovery, email_change.`);
-      }
-      const { data, error } = await getSupabase().auth.verifyOtp({
-        token_hash: token!,
-        type,
-      });
-      if (error) throw error;
-      return data;
-    };
-
     const finalize = async () => {
+      const hashParams =
+        typeof window !== "undefined" ? new URLSearchParams(window.location.hash.replace(/^#/, "")) : null;
+      const hashType = hashParams?.get("type") ?? null;
+      const hashTokenHash = hashParams?.get("token_hash") ?? null;
+      const hashErrorDescription = hashParams?.get("error_description") ?? null;
+      const hasHashSessionHints = Boolean(hashParams?.get("access_token") || hashParams?.get("refresh_token"));
+
+      const resolvedType = type ?? hashType;
+      const resolvedTokenHash = tokenHash ?? token ?? hashTokenHash;
+
       let lastError: Error | null = null;
       let result: unknown = null;
 
@@ -83,9 +90,19 @@ export default function AuthCallbackContent() {
         }
       }
 
-      if ((!code || lastError) && token && type) {
+      if ((!code || lastError) && resolvedTokenHash && resolvedType) {
         try {
-          result = await verifyToken();
+          if (!isValidEmailOtpType(resolvedType)) {
+            throw new Error(
+              `Invalid OTP type for token verification: "${resolvedType}". Expected one of: email, magiclink, recovery, email_change.`
+            );
+          }
+          const { data, error } = await getSupabase().auth.verifyOtp({
+            token_hash: resolvedTokenHash,
+            type: resolvedType,
+          });
+          if (error) throw error;
+          result = data;
           lastError = null;
         } catch (err) {
           lastError = err instanceof Error ? err : new Error("Email verification failed via token.");
@@ -94,10 +111,37 @@ export default function AuthCallbackContent() {
 
       if (!result) {
         if (lastError) throw lastError;
-        throw new Error("No authorization code or token/type provided. The link may be invalid.");
+
+        // Supabase can complete auth via URL hash/session hydration without query params.
+        if (hasHashSessionHints) {
+          await new Promise((resolve) => setTimeout(resolve, 350));
+        }
+
+        const {
+          data: { session },
+        } = await getSupabase().auth.getSession();
+
+        if (session?.user) {
+          if (resolvedType === "recovery") {
+            handleRecovery();
+            return;
+          }
+          await handleSuccess();
+          return;
+        }
+
+        const queryErrorDescription = searchParams.get("error_description");
+        if (queryErrorDescription || hashErrorDescription) {
+          throw new Error(decodeURIComponent(queryErrorDescription || hashErrorDescription || "Authentication failed."));
+        }
+
+        // Some providers/user agents strip callback params after confirmation.
+        // If we have no explicit auth error, avoid false-failure UX and guide user to login.
+        handleConfirmedWithoutSession();
+        return;
       }
 
-      if (type === "recovery") {
+      if (resolvedType === "recovery") {
         handleRecovery();
         return;
       }
@@ -124,7 +168,7 @@ export default function AuthCallbackContent() {
       active = false;
       clearTimeout(timeoutId);
     };
-  }, [query, router, type, code, token, status]);
+  }, [query, router, type, code, token, tokenHash, status, searchParams]);
 
   const handlePasswordReset = async (e: FormEvent) => {
     e.preventDefault();
