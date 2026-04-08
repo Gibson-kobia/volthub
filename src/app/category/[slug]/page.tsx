@@ -81,7 +81,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
           </div>
         </div>
       ) : (
-        <div className="mt-8 grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
           {products.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}

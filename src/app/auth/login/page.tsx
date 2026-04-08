@@ -1,5 +1,5 @@
 "use client";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "../../../components/auth/auth-provider";
 import { getSupabase } from "../../../lib/supabase";
@@ -7,6 +7,8 @@ import { getActiveStaffByEmail, getPostLoginPath } from "../../../lib/access-con
 
 export default function LoginPage() {
   const { login, refreshSession, resendConfirmation } = useAuth();
+  const urlParams =
+    typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -14,14 +16,8 @@ export default function LoginPage() {
   const [resendEmail, setResendEmail] = useState("");
   const [resendStatus, setResendStatus] = useState<string | null>(null);
   const [resendLoading, setResendLoading] = useState(false);
-  const [confirmed, setConfirmed] = useState(false);
-  const [confirmError, setConfirmError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setConfirmed(params.get("confirmed") === "1");
-    setConfirmError(params.get("confirm_error"));
-  }, []);
+  const [confirmed] = useState(() => urlParams?.get("confirmed") === "1");
+  const [confirmError] = useState<string | null>(() => urlParams?.get("confirm_error") || null);
 
   const confirmErrorText = (() => {
     if (!confirmError) return null;
