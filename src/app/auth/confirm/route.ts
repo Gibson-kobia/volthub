@@ -19,7 +19,20 @@ export async function GET(request: Request) {
 	const requestUrl = new URL(request.url);
 	const tokenHash = requestUrl.searchParams.get("token_hash");
 	const typeParam = requestUrl.searchParams.get("type");
+	const code = requestUrl.searchParams.get("code");
 	const nextParam = safeNextPath(requestUrl.searchParams.get("next"));
+
+	// Supabase default email template sends `?code=` (PKCE) rather than `?token_hash=`.
+	// Forward to the client-side callback handler which can do PKCE exchange in the same browser.
+	// Cross-browser confirmation (e.g. email app) requires the Supabase email template to be
+	// updated to use token_hash — see README or Supabase dashboard instructions.
+	if (code && !tokenHash) {
+		const callbackUrl = new URL("/auth/callback", requestUrl.origin);
+		callbackUrl.searchParams.set("code", code);
+		if (typeParam) callbackUrl.searchParams.set("type", typeParam);
+		if (nextParam) callbackUrl.searchParams.set("next", nextParam);
+		return NextResponse.redirect(callbackUrl);
+	}
 
 	if (!tokenHash || !isVerifyType(typeParam)) {
 		const loginUrl = new URL("/auth/login", requestUrl.origin);
