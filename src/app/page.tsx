@@ -391,12 +391,12 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             {(dailyEssentials.length > 0 ? dailyEssentials : bestSellers.slice(0, 4)).map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
             {!loading && dailyEssentials.length === 0 && bestSellers.length === 0 ? (
-              <div className="sm:col-span-2 rounded-[22px] border border-dashed border-white/12 bg-white/[0.02] p-6 text-xs text-white/56">
+              <div className="col-span-2 rounded-[22px] border border-dashed border-white/12 bg-white/[0.02] p-6 text-xs text-white/56">
                 Product cards will populate here once catalog data is available from Supabase.
               </div>
             ) : null}
@@ -478,7 +478,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
           {(householdPicks.length > 0 ? householdPicks : bestSellers.slice(0, 4)).map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
@@ -552,12 +552,12 @@ export default function Home() {
           ctaLabel="See all products"
         />
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4">
           {bestSellers.slice(0, 8).map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
           {!loading && bestSellers.length === 0 ? (
-            <div className="sm:col-span-2 xl:col-span-4 rounded-[22px] border border-dashed border-white/12 bg-white/[0.02] p-6 text-xs text-white/56">
+            <div className="col-span-2 xl:col-span-4 rounded-[22px] border border-dashed border-white/12 bg-white/[0.02] p-6 text-xs text-white/56">
               The storefront is ready; featured products will appear here as soon as catalog data is available.
             </div>
           ) : null}
