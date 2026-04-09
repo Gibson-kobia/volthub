@@ -152,24 +152,37 @@ export default function CheckoutPage() {
       qty: i.qty,
       price: i.product.priceKes,
     }));
-    const payload = {
-      user_id: user ? user.id : null,
-      customer_name: name,
-      customer_email: email,
-      customer_phone: phone,
-      items: orderItems,
-      total,
-      delivery_method: deliveryMethod,
-      status: "NEW",
-      delivery_location: hasMap ? mapSelected : null,
-      address_text: hasAddress ? addressText.trim() : null,
-      payment_method: paymentMode,
-      mpesa_phone: paymentMode === "mpesa" ? mpesa : null,
-    };
 
-    const { error: insertError } = await getSupabase().from("orders").insert([payload]).select("*");
-    if (insertError) {
-      setError(insertError.message || "Order could not be placed. Check your Supabase connection.");
+    const { data: rpcData, error: rpcError } = await getSupabase().rpc("place_order_with_inventory", {
+      p_customer_name: name,
+      p_customer_phone: phone,
+      p_customer_email: email,
+      p_items: orderItems,
+      p_total: total,
+      p_delivery_method: deliveryMethod,
+      p_delivery_location: hasMap ? mapSelected : null,
+      p_address_text: hasAddress ? addressText.trim() : null,
+      p_payment_method: paymentMode,
+      p_mpesa_phone: paymentMode === "mpesa" ? mpesa : null,
+    });
+
+    if (rpcError) {
+      setError(rpcError.message || "Order could not be placed. Check your Supabase connection.");
+      return;
+    }
+
+    if (!rpcData?.success) {
+      if (rpcData?.error === "insufficient_stock") {
+        setError("Some items are out of stock. Please refresh your cart and try again.");
+      } else if (rpcData?.error === "total_mismatch") {
+        setError("Cart total changed. Please refresh and try again.");
+      } else if (rpcData?.error === "missing_delivery_destination") {
+        setError("Add a text address or select a map location.");
+      } else if (rpcData?.error === "missing_mpesa_phone") {
+        setError("Enter a valid M-Pesa phone number.");
+      } else {
+        setError(rpcData?.error || "Order could not be placed.");
+      }
       return;
     }
     setLastOrder({

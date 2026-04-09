@@ -186,6 +186,54 @@ export default function AdminOrdersPage() {
     }
   }
 
+  function canCancelOrder(status: OrderStatus) {
+    return status === "NEW" || status === "CONFIRMED";
+  }
+
+  async function handleCancelOrder(order: OrderWithNormalizedItems) {
+    setSavingOrderId(order.id);
+    setWarning(null);
+    setFeedback(null);
+
+    try {
+      const { data, error } = await supabase.rpc("cancel_order_with_inventory", {
+        p_order_id: order.id,
+        p_admin_note: "Cancelled from admin orders panel",
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data?.success) {
+        if (data?.error === "order_not_cancellable") {
+          setWarning(`Order cannot be cancelled from status ${order.status}.`);
+        } else if (data?.error === "order_items_missing_for_cancellation") {
+          setWarning(
+            "This order was created before stock-safe line-item tracking was added. It cannot be cancelled through the automated stock-restoration flow."
+          );
+        } else if (data?.error === "order_not_found") {
+          setWarning("Order was not found.");
+        } else if (data?.error === "auth_required") {
+          setWarning("Your session is no longer authorized to cancel orders.");
+        } else if (data?.error === "guest_order_admin_only_cancellation") {
+          setWarning("This guest order can only be cancelled by an admin.");
+        } else {
+          setWarning(data?.error || "Failed to cancel order.");
+        }
+        return;
+      }
+
+      await loadOrders();
+      setSelectedOrder(null);
+      setFeedback("Order cancelled and stock restored.");
+    } catch (error) {
+      setWarning(extractSupabaseErrorMessage(error));
+    } finally {
+      setSavingOrderId(null);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -402,6 +450,18 @@ export default function AdminOrdersPage() {
                   </select>
                 </label>
               </div>
+
+              {canCancelOrder(selectedOrder.status) ? (
+                <div className="flex items-center justify-end">
+                  <ActionButton
+                    variant="secondary"
+                    disabled={savingOrderId === selectedOrder.id || viewerRole === "cashier"}
+                    onClick={() => void handleCancelOrder(selectedOrder)}
+                  >
+                    Cancel order
+                  </ActionButton>
+                </div>
+              ) : null}
 
               <label className="space-y-2 text-sm text-white/70 block">
                 <span>Admin note</span>
