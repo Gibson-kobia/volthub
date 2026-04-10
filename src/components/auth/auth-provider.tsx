@@ -41,6 +41,32 @@ function isEmailConfirmed(user: User | null | undefined) {
   return Boolean(user?.email_confirmed_at);
 }
 
+function clearSupabaseAuthStorage() {
+  if (typeof window === "undefined") return;
+
+  try {
+    const storage = window.localStorage;
+    const keysToRemove: string[] = [];
+
+    for (let i = 0; i < storage.length; i += 1) {
+      const key = storage.key(i);
+      if (!key) continue;
+      if (key.startsWith("sb-") && key.endsWith("-auth-token")) {
+        keysToRemove.push(key);
+      }
+    }
+
+    keysToRemove.push("supabase.auth.token");
+
+    keysToRemove.forEach((key) => {
+      storage.removeItem(key);
+      window.sessionStorage.removeItem(key);
+    });
+  } catch (error) {
+    console.error("Failed to clear persisted Supabase auth storage:", error);
+  }
+}
+
 const getAuthRedirectUrl = (path = "/auth/callback") => {
 
   if (typeof window !== "undefined") {
@@ -188,11 +214,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       },
       logout: async () => {
+        const supabase = getSupabase();
         try {
-          await getSupabase().auth.signOut({ scope: "local" });
+          const { error } = await supabase.auth.signOut({ scope: "local" });
+          if (error) {
+            console.error("Supabase signOut returned an error:", error);
+          }
         } catch (error) {
-          console.error("Supabase not initialized", error);
+          console.error("Supabase signOut threw an exception:", error);
         } finally {
+          clearSupabaseAuthStorage();
           setUser(null);
         }
       },

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ProductCard } from "../components/product-card";
+import { useAuth } from "../components/auth/auth-provider";
 import { fetchProducts, type Product } from "../lib/products";
 import type { CategorySlug } from "../lib/types";
 
@@ -130,18 +131,29 @@ function SectionHeader({
 }
 
 export default function Home() {
+  const { authReady, user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!authReady) return;
+
+    let mounted = true;
+
     async function load() {
       const data = await fetchProducts();
+      if (!mounted) return;
       setProducts(data);
       setLoading(false);
     }
 
+    setLoading(true);
     load();
-  }, []);
+
+    return () => {
+      mounted = false;
+    };
+  }, [authReady, user?.id]);
 
   const heroPreview = useMemo(() => {
     const priority: CategorySlug[] = ["groceries", "beverages", "household", "electronics"];

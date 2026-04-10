@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { fetchProducts, type Product } from "../../lib/products";
+import { useAuth } from "../../components/auth/auth-provider";
 import { ProductCard } from "../../components/product-card";
 import type { CategorySlug } from "../../lib/types";
 
@@ -22,18 +23,30 @@ const CATEGORIES: { slug: CategorySlug; label: string }[] = [
 ];
 
 export default function ShopPage() {
+  const { authReady, user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<CategorySlug | "all">("all");
 
   useEffect(() => {
+    if (!authReady) return;
+
+    let mounted = true;
+
     async function load() {
       const data = await fetchProducts();
+      if (!mounted) return;
       setProducts(data);
       setLoading(false);
     }
+
+    setLoading(true);
     load();
-  }, []);
+
+    return () => {
+      mounted = false;
+    };
+  }, [authReady, user?.id]);
 
   const filtered = useMemo(() => {
     if (activeCategory === "all") return products;

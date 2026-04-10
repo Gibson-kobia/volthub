@@ -205,21 +205,37 @@ export default function AdminOrdersPage() {
         throw error;
       }
 
-      if (!data?.success) {
-        if (data?.error === "order_not_cancellable") {
+      const result = (data ?? null) as
+        | { success?: boolean; ok?: boolean; error?: string; status?: string }
+        | boolean
+        | null;
+
+      const isSuccess =
+        result === true ||
+        (typeof result === "object" && result !== null
+          ? result.success === true || result.ok === true || result.status === "CANCELLED"
+          : false);
+
+      if (!isSuccess) {
+        const rpcError =
+          typeof result === "object" && result !== null && typeof result.error === "string"
+            ? result.error
+            : null;
+
+        if (rpcError === "order_not_cancellable") {
           setWarning(`Order cannot be cancelled from status ${order.status}.`);
-        } else if (data?.error === "order_items_missing_for_cancellation") {
+        } else if (rpcError === "order_items_missing_for_cancellation") {
           setWarning(
             "This order was created before stock-safe line-item tracking was added. It cannot be cancelled through the automated stock-restoration flow."
           );
-        } else if (data?.error === "order_not_found") {
+        } else if (rpcError === "order_not_found") {
           setWarning("Order was not found.");
-        } else if (data?.error === "auth_required") {
+        } else if (rpcError === "auth_required") {
           setWarning("Your session is no longer authorized to cancel orders.");
-        } else if (data?.error === "guest_order_admin_only_cancellation") {
+        } else if (rpcError === "guest_order_admin_only_cancellation") {
           setWarning("This guest order can only be cancelled by an admin.");
         } else {
-          setWarning(data?.error || "Failed to cancel order.");
+          setWarning(rpcError || "Failed to cancel order.");
         }
         return;
       }
@@ -397,6 +413,17 @@ export default function AdminOrdersPage() {
             </div>
 
             <div className="space-y-6 px-6 py-6">
+              {warning ? (
+                <Surface className="border-amber-400/18 bg-amber-400/10 p-4 text-sm leading-6 text-amber-50/90">
+                  {warning}
+                </Surface>
+              ) : null}
+              {feedback ? (
+                <Surface className="border-emerald-400/18 bg-emerald-400/10 p-4 text-sm leading-6 text-emerald-50/90">
+                  {feedback}
+                </Surface>
+              ) : null}
+
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="rounded-2xl border border-white/8 bg-white/4 px-4 py-4">
                   <div className="text-xs uppercase tracking-[0.18em] text-white/42">Total</div>

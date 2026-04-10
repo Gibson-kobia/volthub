@@ -58,14 +58,22 @@ export async function fetchProducts(): Promise<Product[]> {
       .from("products")
       .select("*")
       .eq("is_active", true)
+      .or("is_archived.is.null,is_archived.eq.false")
       .gt("stock", 0);
 
     if (error) {
+      console.error("fetchProducts failed:", {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      });
       return [];
     }
 
     return (data || []).map(mapDBProductToProduct);
-  } catch {
+  } catch (error) {
+    console.error("fetchProducts threw an exception:", error);
     return [];
   }
 }
@@ -81,6 +89,7 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
       .select("*")
       .eq("slug", slug)
       .eq("is_active", true)
+      .or("is_archived.is.null,is_archived.eq.false")
       .limit(1)
       .maybeSingle();
 
@@ -110,11 +119,25 @@ export async function fetchProductsByCategory(category: string): Promise<Product
       .select("*")
       .eq("category", normalized)
       .eq("is_active", true)
+      .or("is_archived.is.null,is_archived.eq.false")
       .gt("stock", 0);
 
-    if (error) return [];
+    if (error) {
+      console.error("fetchProductsByCategory failed:", {
+        category: normalized,
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      });
+      return [];
+    }
     return (data || []).map(mapDBProductToProduct);
-  } catch {
+  } catch (error) {
+    console.error("fetchProductsByCategory threw an exception:", {
+      category: normalized,
+      error,
+    });
     return [];
   }
 }
