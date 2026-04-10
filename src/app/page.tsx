@@ -3,18 +3,20 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ProductCard } from "../components/product-card";
 import { useAuth } from "../components/auth/auth-provider";
 import { fetchProducts, type Product } from "../lib/products";
 import type { CategorySlug } from "../lib/types";
 
-type CategoryCard = {
-  slug: CategorySlug;
-  title: string;
-  eyebrow: string;
+type CategoryIconName = "leaf" | "cup" | "package" | "milk" | "sparkles" | "heart" | "cookie" | "baby" | "zap" | "tag";
+
+type CategoryLane = {
+  label: string;
   description: string;
   href: string;
-  className: string;
+  icon: CategoryIconName;
+  accentColor: string;
 };
 
 const HERO_METRICS = [
@@ -38,38 +40,76 @@ const TRUST_STRIP = [
   },
 ];
 
-const CATEGORY_CARDS: CategoryCard[] = [
+const CATEGORY_LANES: CategoryLane[] = [
   {
-    slug: "groceries",
-    title: "Daily essentials",
-    eyebrow: "Pantry and restock",
-    description: "Fresh top-ups, staples, and the basics you need to keep the week moving.",
+    label: "Fresh Food",
+    description: "Produce and pantry",
     href: "/category/groceries",
-    className: "sm:col-span-2 bg-[linear-gradient(135deg,rgba(47,107,255,0.22),rgba(24,28,32,0.92))]",
+    icon: "leaf",
+    accentColor: "rgba(46,211,160,0.18)",
   },
   {
-    slug: "beverages",
-    title: "Drinks and quick picks",
-    eyebrow: "Fast consumption",
-    description: "Water, juices, sodas, and cold-stock favourites for easy replenishment.",
+    label: "Beverages",
+    description: "Water, juice, sodas",
     href: "/category/beverages",
-    className: "bg-[linear-gradient(180deg,rgba(255,184,77,0.18),rgba(24,28,32,0.94))]",
+    icon: "cup",
+    accentColor: "rgba(33,212,253,0.18)",
   },
   {
-    slug: "household",
-    title: "Home basics",
-    eyebrow: "Practical everyday",
-    description: "Cleaning, utility, and household essentials laid out for fast browsing.",
+    label: "Pantry Refill",
+    description: "Dry goods, staples",
+    href: "/category/groceries",
+    icon: "package",
+    accentColor: "rgba(255,184,77,0.18)",
+  },
+  {
+    label: "Dairy & Eggs",
+    description: "Milk, cheese, eggs",
+    href: "/category/groceries",
+    icon: "milk",
+    accentColor: "rgba(255,255,255,0.09)",
+  },
+  {
+    label: "Cleaning",
+    description: "Home and kitchen",
     href: "/category/household",
-    className: "bg-[linear-gradient(180deg,rgba(46,211,160,0.18),rgba(24,28,32,0.94))]",
+    icon: "sparkles",
+    accentColor: "rgba(47,107,255,0.18)",
   },
   {
-    slug: "electronics",
-    title: "VoltHub electronics",
-    eyebrow: "Partner department",
-    description: "Chargers, audio, and devices from VoltHub inside the same checkout flow.",
+    label: "Personal Care",
+    description: "Body and grooming",
+    href: "/category/personal-care",
+    icon: "heart",
+    accentColor: "rgba(255,100,130,0.16)",
+  },
+  {
+    label: "Bakery & Snacks",
+    description: "Bread, biscuits, crisps",
+    href: "/category/snacks",
+    icon: "cookie",
+    accentColor: "rgba(255,184,77,0.16)",
+  },
+  {
+    label: "Baby Picks",
+    description: "For little ones",
+    href: "/category/groceries",
+    icon: "baby",
+    accentColor: "rgba(180,130,255,0.16)",
+  },
+  {
+    label: "Electronics",
+    description: "VoltHub department",
     href: "/category/electronics",
-    className: "sm:col-span-2 lg:col-span-1 bg-[linear-gradient(135deg,rgba(33,212,253,0.22),rgba(24,28,32,0.92))]",
+    icon: "zap",
+    accentColor: "rgba(33,212,253,0.18)",
+  },
+  {
+    label: "Today's Picks",
+    description: "Value finds this week",
+    href: "/offers",
+    icon: "tag",
+    accentColor: "rgba(255,184,77,0.20)",
   },
 ];
 
@@ -91,6 +131,152 @@ function getProductImage(product: Product) {
     ? product.image
     : "/product-placeholder.png";
 }
+
+function HeroSearchBar() {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (query.trim()) {
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    }
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="flex items-center gap-2 rounded-[22px] border border-white/14 bg-white/6 pl-4 pr-1.5 py-1.5 backdrop-blur-sm"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="flex-shrink-0 text-white/48"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.3-4.3" />
+      </svg>
+      <input
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search groceries, drinks, household items..."
+        className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/40"
+        aria-label="Search products"
+      />
+      <button
+        type="submit"
+        className="inline-flex flex-shrink-0 items-center justify-center rounded-[18px] bg-[color:var(--accent)] px-4 py-2.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+      >
+        Search
+      </button>
+    </form>
+  );
+}
+
+function CategoryIcon({ icon }: { icon: CategoryIconName }) {
+  const cls = "w-6 h-6";
+  switch (icon) {
+    case "leaf":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+          <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+        </svg>
+      );
+    case "cup":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 8h1a4 4 0 0 1 0 8h-1" />
+          <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+          <line x1="6" x2="6" y1="2" y2="4" />
+          <line x1="10" x2="10" y1="2" y2="4" />
+          <line x1="14" x2="14" y1="2" y2="4" />
+        </svg>
+      );
+    case "package":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M16.5 9.4 7.55 4.24" />
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+          <path d="M3.27 6.96 12 12.01 20.73 6.96" />
+          <line x1="12" x2="12" y1="22.08" y2="12" />
+        </svg>
+      );
+    case "milk":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8 2h8" />
+          <path d="M9 2v2.789a4 4 0 0 1-.672 2.219l-.656.888A4 4 0 0 0 7 10.067V20a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-9.933a4 4 0 0 0-.672-2.219l-.656-.888A4 4 0 0 1 15 4.789V2" />
+          <path d="M7 15a6.472 6.472 0 0 1 5 0 6.47 6.47 0 0 0 5 0" />
+        </svg>
+      );
+    case "sparkles":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+          <path d="M20 3v4" />
+          <path d="M22 5h-4" />
+          <path d="M4 17v2" />
+          <path d="M5 18H3" />
+        </svg>
+      );
+    case "heart":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+        </svg>
+      );
+    case "cookie":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5" />
+          <path d="M8.5 8.5v.01" />
+          <path d="M16 15.5v.01" />
+          <path d="M12 12v.01" />
+          <path d="M11 17v.01" />
+          <path d="M7 14v.01" />
+        </svg>
+      );
+    case "baby":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="5" r="3" />
+          <path d="M12 8v7" />
+          <path d="m9 12-2 5h10l-2-5" />
+          <path d="M9 21h6" />
+        </svg>
+      );
+    case "zap":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" />
+        </svg>
+      );
+    case "tag":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" />
+          <circle cx="7.5" cy="7.5" r="1" fill="currentColor" stroke="none" />
+        </svg>
+      );
+    default: {
+      const _exhaustive: never = icon;
+      void _exhaustive;
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="9" />
+        </svg>
+      );
+    }
+  }
+}
+
 
 function SectionHeader({
   eyebrow,
@@ -250,6 +436,10 @@ export default function Home() {
               <span className="text-white/24">/</span>
               <span>WhatsApp updates</span>
             </div>
+
+            <div className="mt-6">
+              <HeroSearchBar />
+            </div>
           </div>
 
           <div className="relative min-h-[420px] rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] p-4 backdrop-blur sm:p-5">
@@ -319,41 +509,64 @@ export default function Home() {
       </section>
 
       <section id="categories" className="mt-10 sm:mt-12">
-        <SectionHeader
-          eyebrow="Quick category shortcuts"
-          title="Move straight to the aisle you came for"
-          description="The homepage is organised around the fast-moving parts of the store so you can shop essentials quickly without marketplace clutter."
-          ctaHref="/shop"
-          ctaLabel="Browse full shop"
-        />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.28em] text-[color:var(--muted)]">
+              Shop by category
+            </div>
+            <h2 className="mt-2 font-serif text-2xl leading-tight text-white sm:text-3xl">
+              Pick an aisle
+            </h2>
+          </div>
+          <Link
+            href="/shop"
+            className="inline-flex min-h-10 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-5 text-sm font-semibold text-white transition-colors hover:border-[color:var(--glow)] hover:bg-white/8"
+          >
+            Browse full shop
+          </Link>
+        </div>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {CATEGORY_CARDS.map((category) => (
+        <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-5 sm:gap-3">
+          {CATEGORY_LANES.map((lane) => (
             <Link
-              key={category.slug}
-              href={category.href}
-              className={`group relative overflow-hidden rounded-[24px] border border-white/8 p-5 transition-all duration-300 hover:border-white/12 hover:-translate-y-0.5 hover:shadow-[0_16px_48px_rgba(0,0,0,0.28)] ${category.className}`}
+              key={lane.label}
+              href={lane.href}
+              style={{ background: `linear-gradient(135deg, ${lane.accentColor}, rgba(24,28,32,0.96))` }}
+              className="group flex flex-col items-start gap-3 rounded-[20px] border border-white/8 p-4 transition-all duration-200 hover:border-white/14 hover:-translate-y-0.5 hover:shadow-[0_10px_32px_rgba(0,0,0,0.28)]"
             >
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(10,10,11,0.52))]" />
-              <div className="relative flex h-full min-h-[200px] flex-col justify-between">
-                <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/52">
-                    {category.eyebrow}
-                  </div>
-                  <h3 className="mt-2.5 max-w-[11ch] font-serif text-2xl leading-tight text-white sm:text-[1.75rem]">
-                    {category.title}
-                  </h3>
-                  <p className="mt-2.5 max-w-xs text-[13px] leading-5 text-white/72">
-                    {category.description}
-                  </p>
-                </div>
-                <div className="mt-5 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/88 transition-colors group-hover:text-white">
-                  Browse
-                  <span className="transition-transform group-hover:translate-x-1">→</span>
-                </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-white/10 bg-white/8 text-white">
+                <CategoryIcon icon={lane.icon} />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-white">{lane.label}</div>
+                <div className="mt-0.5 text-[11px] leading-4 text-white/54">{lane.description}</div>
               </div>
             </Link>
           ))}
+        </div>
+      </section>
+
+      <section className="mt-6 sm:mt-8">
+        <div className="rounded-[24px] border border-[color:var(--warning)]/24 bg-[linear-gradient(135deg,rgba(255,184,77,0.09),rgba(24,28,32,0.96))] px-5 py-5 sm:px-6 sm:py-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[color:var(--warning)]">
+                Value picks
+              </div>
+              <h2 className="mt-2 font-serif text-xl text-white sm:text-2xl">
+                Today&apos;s deals across the store
+              </h2>
+              <p className="mt-1.5 max-w-xl text-xs leading-5 text-white/64 sm:text-sm sm:leading-6">
+                Curated picks across groceries, household items, snacks, and electronics. Priced for fast movement.
+              </p>
+            </div>
+            <Link
+              href="/offers"
+              className="inline-flex min-h-10 flex-shrink-0 items-center justify-center rounded-full bg-[color:var(--warning)] px-6 text-xs font-semibold text-[#101418] transition-opacity hover:opacity-90"
+            >
+              See today&apos;s deals
+            </Link>
+          </div>
         </div>
       </section>
 

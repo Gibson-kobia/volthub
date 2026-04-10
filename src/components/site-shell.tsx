@@ -256,14 +256,22 @@ function Shell({ children }: { children: React.ReactNode }) {
       </footer>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[color:var(--border)] bg-[#0b0d10]/92 px-4 py-3 backdrop-blur lg:hidden">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2">
-          <button onClick={() => setSearchOpen(true)} className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white">
-            Search
+        <div className="mx-auto flex max-w-7xl items-center gap-2">
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="inline-flex min-h-11 flex-1 items-center gap-2 rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm text-white/50"
+            aria-label="Search"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <span className="truncate">Search products...</span>
           </button>
-          <Link href="/#categories" className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white">
+          <Link href="/#categories" className="inline-flex min-h-11 w-28 flex-shrink-0 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white">
             Categories
           </Link>
-          <button onClick={() => setMobileOpen(true)} className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white">
+          <button onClick={() => setMobileOpen(true)} className="inline-flex min-h-11 w-20 flex-shrink-0 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white">
             Menu
           </button>
         </div>
