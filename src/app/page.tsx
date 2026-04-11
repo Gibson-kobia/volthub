@@ -9,107 +9,68 @@ import { useAuth } from "../components/auth/auth-provider";
 import { fetchProducts, type Product } from "../lib/products";
 import type { CategorySlug } from "../lib/types";
 
-type CategoryIconName = "leaf" | "cup" | "package" | "milk" | "sparkles" | "heart" | "cookie" | "baby" | "zap" | "tag";
-
-type CategoryLane = {
-  label: string;
+type CategoryCard = {
+  slug: CategorySlug;
+  title: string;
+  eyebrow: string;
   description: string;
   href: string;
-  icon: CategoryIconName;
-  accentColor: string;
+  className: string;
 };
 
 const HERO_METRICS = [
-  "Same-day in Nairobi before 6PM",
-  "M-Pesa, cards, cash on delivery",
-  "WhatsApp updates after checkout",
+  "Same-day Nairobi before 6PM",
+  "M-Pesa, card, or COD",
+  "Live WhatsApp updates",
 ];
 
 const TRUST_STRIP = [
   {
     title: "2-4 hour express",
-    description: "Selected Nairobi zones for urgent top-ups and last-minute restocks.",
+    description: "Selected Nairobi zones.",
   },
   {
     title: "Secure checkout",
-    description: "M-Pesa STK push, cards, pay on pickup, and cash on delivery where available.",
+    description: "M-Pesa STK, card, pickup, or COD.",
   },
   {
     title: "Real local support",
-    description: "WhatsApp, phone, and email from a Nairobi-based team with quick issue resolution.",
+    description: "Nairobi team on WhatsApp and phone.",
   },
 ];
 
-const CATEGORY_LANES: CategoryLane[] = [
+const CATEGORY_CARDS: CategoryCard[] = [
   {
-    label: "Fresh Food",
-    description: "Produce and pantry",
+    slug: "groceries",
+    title: "Daily essentials",
+    eyebrow: "Pantry restock",
+    description: "Staples and fresh top-ups.",
     href: "/category/groceries",
-    icon: "leaf",
-    accentColor: "rgba(46,211,160,0.18)",
+    className: "sm:col-span-2 bg-[linear-gradient(135deg,rgba(47,107,255,0.28),rgba(24,28,32,0.92))]",
   },
   {
-    label: "Beverages",
-    description: "Water, juice, sodas",
+    slug: "beverages",
+    title: "Drinks and quick picks",
+    eyebrow: "Cold stock",
+    description: "Water, juice, soda, and add-ons.",
     href: "/category/beverages",
-    icon: "cup",
-    accentColor: "rgba(33,212,253,0.18)",
+    className: "bg-[linear-gradient(180deg,rgba(255,184,77,0.24),rgba(24,28,32,0.94))]",
   },
   {
-    label: "Pantry Refill",
-    description: "Dry goods, staples",
-    href: "/category/groceries",
-    icon: "package",
-    accentColor: "rgba(255,184,77,0.18)",
-  },
-  {
-    label: "Dairy & Eggs",
-    description: "Milk, cheese, eggs",
-    href: "/category/groceries",
-    icon: "milk",
-    accentColor: "rgba(255,255,255,0.09)",
-  },
-  {
-    label: "Cleaning",
-    description: "Home and kitchen",
+    slug: "household",
+    title: "Home basics",
+    eyebrow: "Practical everyday",
+    description: "Cleaning and utility essentials.",
     href: "/category/household",
-    icon: "sparkles",
-    accentColor: "rgba(47,107,255,0.18)",
+    className: "bg-[linear-gradient(180deg,rgba(46,211,160,0.24),rgba(24,28,32,0.94))]",
   },
   {
-    label: "Personal Care",
-    description: "Body and grooming",
-    href: "/category/personal-care",
-    icon: "heart",
-    accentColor: "rgba(255,100,130,0.16)",
-  },
-  {
-    label: "Bakery & Snacks",
-    description: "Bread, biscuits, crisps",
-    href: "/category/snacks",
-    icon: "cookie",
-    accentColor: "rgba(255,184,77,0.16)",
-  },
-  {
-    label: "Baby Picks",
-    description: "For little ones",
-    href: "/category/groceries",
-    icon: "baby",
-    accentColor: "rgba(180,130,255,0.16)",
-  },
-  {
-    label: "Electronics",
-    description: "VoltHub department",
+    slug: "electronics",
+    title: "VoltHub electronics",
+    eyebrow: "Partner department",
+    description: "Chargers, audio, and devices in one checkout.",
     href: "/category/electronics",
-    icon: "zap",
-    accentColor: "rgba(33,212,253,0.18)",
-  },
-  {
-    label: "Today's Picks",
-    description: "Value finds this week",
-    href: "/offers",
-    icon: "tag",
-    accentColor: "rgba(255,184,77,0.20)",
+    className: "sm:col-span-2 lg:col-span-1 bg-[linear-gradient(135deg,rgba(33,212,253,0.28),rgba(24,28,32,0.92))]",
   },
 ];
 
@@ -178,105 +139,6 @@ function HeroSearchBar() {
     </form>
   );
 }
-
-function CategoryIcon({ icon }: { icon: CategoryIconName }) {
-  const cls = "w-6 h-6";
-  switch (icon) {
-    case "leaf":
-      return (
-        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
-          <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-        </svg>
-      );
-    case "cup":
-      return (
-        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M17 8h1a4 4 0 0 1 0 8h-1" />
-          <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
-          <line x1="6" x2="6" y1="2" y2="4" />
-          <line x1="10" x2="10" y1="2" y2="4" />
-          <line x1="14" x2="14" y1="2" y2="4" />
-        </svg>
-      );
-    case "package":
-      return (
-        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M16.5 9.4 7.55 4.24" />
-          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-          <path d="M3.27 6.96 12 12.01 20.73 6.96" />
-          <line x1="12" x2="12" y1="22.08" y2="12" />
-        </svg>
-      );
-    case "milk":
-      return (
-        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M8 2h8" />
-          <path d="M9 2v2.789a4 4 0 0 1-.672 2.219l-.656.888A4 4 0 0 0 7 10.067V20a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-9.933a4 4 0 0 0-.672-2.219l-.656-.888A4 4 0 0 1 15 4.789V2" />
-          <path d="M7 15a6.472 6.472 0 0 1 5 0 6.47 6.47 0 0 0 5 0" />
-        </svg>
-      );
-    case "sparkles":
-      return (
-        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
-          <path d="M20 3v4" />
-          <path d="M22 5h-4" />
-          <path d="M4 17v2" />
-          <path d="M5 18H3" />
-        </svg>
-      );
-    case "heart":
-      return (
-        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-        </svg>
-      );
-    case "cookie":
-      return (
-        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5" />
-          <path d="M8.5 8.5v.01" />
-          <path d="M16 15.5v.01" />
-          <path d="M12 12v.01" />
-          <path d="M11 17v.01" />
-          <path d="M7 14v.01" />
-        </svg>
-      );
-    case "baby":
-      return (
-        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="5" r="3" />
-          <path d="M12 8v7" />
-          <path d="m9 12-2 5h10l-2-5" />
-          <path d="M9 21h6" />
-        </svg>
-      );
-    case "zap":
-      return (
-        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" />
-        </svg>
-      );
-    case "tag":
-      return (
-        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" />
-          <circle cx="7.5" cy="7.5" r="1" fill="currentColor" stroke="none" />
-        </svg>
-      );
-    default: {
-      const _exhaustive: never = icon;
-      void _exhaustive;
-      return (
-        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="9" />
-        </svg>
-      );
-    }
-  }
-}
-
 
 function SectionHeader({
   eyebrow,
@@ -380,6 +242,16 @@ export default function Home() {
 
   const bestSellers = useMemo(() => products.slice(0, 8), [products]);
 
+  const categoryCounts = useMemo(() => {
+    return products.reduce(
+      (acc, product) => {
+        acc[product.category] = (acc[product.category] ?? 0) + 1;
+        return acc;
+      },
+      {} as Partial<Record<CategorySlug, number>>
+    );
+  }, [products]);
+
   return (
     <div className="mx-auto max-w-7xl px-4 pb-16 pt-4 sm:px-6 sm:pb-20 sm:pt-6">
       <section className="relative overflow-hidden rounded-[32px] border border-[color:var(--border)] bg-[linear-gradient(135deg,rgba(10,10,11,0.92),rgba(18,20,23,0.98))] px-5 py-6 shadow-[0_32px_120px_rgba(0,0,0,0.45)] sm:px-7 sm:py-8 lg:px-10 lg:py-10">
@@ -400,7 +272,7 @@ export default function Home() {
               Fast everyday shopping in Nairobi
             </h1>
             <p className="mt-5 max-w-2xl text-balance text-base leading-7 text-[#d7dde6] sm:text-lg">
-              Zora brings groceries, drinks, household essentials, personal care, and VoltHub electronics together for same-day delivery, M-Pesa checkout, and quick WhatsApp support.
+              Groceries, drinks, home basics, and VoltHub electronics in one checkout.
             </p>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -451,7 +323,7 @@ export default function Home() {
                 Same-day Nairobi delivery
               </div>
               <p className="mt-2 text-sm leading-6 text-[color:var(--muted)]">
-                Order everyday essentials before 6PM for same-day delivery. Express 2-4 hour coverage is available in selected areas.
+                Order before 6PM for same-day delivery. Express 2-4 hour zones available.
               </p>
             </div>
 
@@ -508,89 +380,81 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="categories" className="mt-10 sm:mt-12">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.28em] text-[color:var(--muted)]">
-              Shop by category
-            </div>
-            <h2 className="mt-2 font-serif text-2xl leading-tight text-white sm:text-3xl">
-              Pick an aisle
-            </h2>
-          </div>
-          <Link
-            href="/shop"
-            className="inline-flex min-h-10 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-5 text-sm font-semibold text-white transition-colors hover:border-[color:var(--glow)] hover:bg-white/8"
-          >
-            Browse full shop
-          </Link>
-        </div>
-
-        <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-5 sm:gap-3">
-          {CATEGORY_LANES.map((lane) => (
-            <Link
-              key={lane.label}
-              href={lane.href}
-              style={{ background: `linear-gradient(135deg, ${lane.accentColor}, rgba(24,28,32,0.96))` }}
-              className="group flex flex-col items-start gap-3 rounded-[20px] border border-white/8 p-4 transition-all duration-200 hover:border-white/14 hover:-translate-y-0.5 hover:shadow-[0_10px_32px_rgba(0,0,0,0.28)]"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-white/10 bg-white/8 text-white">
-                <CategoryIcon icon={lane.icon} />
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-white">{lane.label}</div>
-                <div className="mt-0.5 text-[11px] leading-4 text-white/54">{lane.description}</div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-6 sm:mt-8">
-        <div className="rounded-[24px] border border-[color:var(--warning)]/24 bg-[linear-gradient(135deg,rgba(255,184,77,0.09),rgba(24,28,32,0.96))] px-5 py-5 sm:px-6 sm:py-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[color:var(--warning)]">
-                Value picks
-              </div>
-              <h2 className="mt-2 font-serif text-xl text-white sm:text-2xl">
-                Today&apos;s deals across the store
-              </h2>
-              <p className="mt-1.5 max-w-xl text-xs leading-5 text-white/64 sm:text-sm sm:leading-6">
-                Curated picks across groceries, household items, snacks, and electronics. Priced for fast movement.
-              </p>
-            </div>
-            <Link
-              href="/offers"
-              className="inline-flex min-h-10 flex-shrink-0 items-center justify-center rounded-full bg-[color:var(--warning)] px-6 text-xs font-semibold text-[#101418] transition-opacity hover:opacity-90"
-            >
-              See today&apos;s deals
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section id="delivery" className="mt-10 rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,rgba(24,28,32,0.88),rgba(18,20,23,0.96))] px-5 py-6 sm:mt-12 sm:px-6 sm:py-7">
+      <section className="mt-10 sm:mt-12">
         <SectionHeader
-          eyebrow="Fast delivery and trust"
-          title="Built for convenience-first shopping"
-          description="Zora is set up for fast Nairobi ordering first, then dependable next-day delivery outside the city as coverage expands."
+          eyebrow="Popular now"
+          title="Fast-moving picks"
+          description="Top products shoppers add first."
+          ctaHref="/shop"
+          ctaLabel="See all products"
         />
-        <div className="mt-6 grid gap-3 lg:grid-cols-3">
-          {TRUST_STRIP.map((item) => (
-            <div key={item.title} className="rounded-[20px] border border-white/6 bg-white/[0.03] p-5 backdrop-blur-sm transition-all duration-300 hover:border-white/10 hover:bg-white/[0.06]">
-              <div className="text-base font-semibold text-white">{item.title}</div>
-              <p className="mt-2.5 text-xs leading-5 text-white/64">{item.description}</p>
-            </div>
+
+        <div className="mt-6 grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4">
+          {bestSellers.slice(0, 8).map((product) => (
+            <ProductCard key={product.id} product={product} />
           ))}
+          {!loading && bestSellers.length === 0 ? (
+            <div className="col-span-2 xl:col-span-4 rounded-[22px] border border-dashed border-white/12 bg-white/[0.02] p-6 text-xs text-white/56">
+              Featured products appear here once catalog data is available.
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      <section id="categories" className="mt-10 sm:mt-12">
+        <SectionHeader
+          eyebrow="Quick category shortcuts"
+          title="Go straight to your aisle"
+          description="Tap a category and add to basket fast."
+          ctaHref="/shop"
+          ctaLabel="Browse full shop"
+        />
+
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {CATEGORY_CARDS.map((category) => {
+            const itemCount = categoryCounts[category.slug] ?? 0;
+
+            return (
+              <Link
+                key={category.slug}
+                href={category.href}
+                className={`group relative overflow-hidden rounded-[24px] border border-white/8 p-5 transition-all duration-300 active:scale-[0.985] hover:border-white/16 hover:-translate-y-0.5 hover:shadow-[0_16px_48px_rgba(0,0,0,0.28)] ${category.className}`}
+              >
+                <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/10 blur-2xl transition-opacity group-hover:opacity-90" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(180deg,transparent,rgba(10,10,11,0.58))]" />
+                <div className="relative flex h-full min-h-[220px] flex-col justify-between">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/52">
+                        {category.eyebrow}
+                      </div>
+                      <h3 className="mt-2.5 max-w-[11ch] font-serif text-2xl leading-tight text-white sm:text-[1.75rem]">
+                        {category.title}
+                      </h3>
+                      <p className="mt-2.5 max-w-xs text-[13px] leading-5 text-white/72">
+                        {category.description}
+                      </p>
+                    </div>
+                    <div className="rounded-full border border-white/14 bg-white/8 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/84">
+                      {itemCount > 0 ? `${itemCount} items` : "Shop"}
+                    </div>
+                  </div>
+                  <div className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-full border border-white/14 bg-white/8 px-3.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90 transition-colors group-hover:border-white/24 group-hover:bg-white/14 group-hover:text-white">
+                    Tap to shop
+                    <span className="transition-transform group-hover:translate-x-1">→</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
       <section className="mt-10 sm:mt-12">
         <SectionHeader
-          eyebrow="Featured daily essentials"
-          title="The core store, curated for quick decisions"
-          description="Start with the everyday side of Zora: pantry restocks, drinks, snacks, and fast-moving staples that belong in a minimart first."
+          eyebrow="Featured essentials"
+          title="Your core minimart basket"
+          description="Restock everyday essentials fast."
           ctaHref="/category/groceries"
           ctaLabel="Shop essentials"
         />
@@ -601,17 +465,17 @@ export default function Home() {
               Everyday mission
             </div>
             <h3 className="mt-2.5 max-w-[12ch] font-serif text-3xl leading-tight text-white sm:text-4xl">
-              Stock the kitchen, top up the fridge, keep the week moving.
+              Stock the kitchen. Top up the fridge.
             </h3>
             <p className="mt-3.5 max-w-md text-xs leading-5 text-white/72 sm:text-sm sm:leading-6">
-              Zora is designed to make repeat shopping feel fast and reliable, not overwhelming. Browse cleanly, pay quickly, and get a clear delivery promise.
+              Built for repeat orders: browse fast, pay fast, clear delivery windows.
             </p>
             <div className="mt-5 grid gap-2.5 sm:grid-cols-2">
               <div className="rounded-[20px] border border-white/6 bg-white/[0.04] p-3.5 text-xs leading-5 text-white/72">
-                Same-day Nairobi delivery on daily essentials when ordered before 6PM.
+                Same-day Nairobi delivery before 6PM.
               </div>
               <div className="rounded-[20px] border border-white/6 bg-white/[0.04] p-3.5 text-xs leading-5 text-white/72">
-                WhatsApp support and real-time order updates after confirmation.
+                WhatsApp support with live order updates.
               </div>
             </div>
           </div>
@@ -632,8 +496,8 @@ export default function Home() {
       <section className="mt-10 sm:mt-12">
         <SectionHeader
           eyebrow="Snacks and beverages"
-          title="Fast picks for quick consumption"
-          description="A lighter, swipe-friendly row for the products shoppers usually want to add quickly without slowing down the rest of the basket."
+          title="Quick add-ons"
+          description="Swipe and add in seconds."
           ctaHref="/category/snacks"
           ctaLabel="Shop snacks"
         />
@@ -673,12 +537,28 @@ export default function Home() {
         </div>
       </section>
 
+      <section id="delivery" className="mt-10 rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,rgba(24,28,32,0.88),rgba(18,20,23,0.96))] px-5 py-6 sm:mt-12 sm:px-6 sm:py-7">
+        <SectionHeader
+          eyebrow="Fast delivery and trust"
+          title="Fast, clear, reliable"
+          description="Short promises that hold."
+        />
+        <div className="mt-6 grid gap-3 lg:grid-cols-3">
+          {TRUST_STRIP.map((item) => (
+            <div key={item.title} className="rounded-[20px] border border-white/6 bg-white/[0.03] p-5 backdrop-blur-sm transition-all duration-300 hover:border-white/10 hover:bg-white/[0.06]">
+              <div className="text-base font-semibold text-white">{item.title}</div>
+              <p className="mt-2.5 text-xs leading-5 text-white/64">{item.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section className="mt-10 grid gap-3.5 sm:mt-12 lg:grid-cols-[1.02fr_0.98fr]">
         <div className="rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,rgba(24,28,32,0.88),rgba(18,20,23,0.96))] p-5 sm:p-6">
           <SectionHeader
             eyebrow="Household and personal care"
-            title="Practical basics for home and routine"
-            description="This part of the store stays clear and no-nonsense: cleaning, household restocks, and personal care without unnecessary clutter."
+            title="Home and routine basics"
+            description="Cleaning and care essentials, quickly."
             ctaHref="/category/household"
             ctaLabel="Shop home basics"
           />
@@ -689,7 +569,7 @@ export default function Home() {
                 Service areas
               </div>
               <p className="mt-2.5 text-xs leading-5 text-white/64">
-                Nairobi orders move same-day, while deliveries outside Nairobi roll out next-day through dependable courier coverage.
+                Nairobi same-day, next-day outside the city.
               </p>
             </div>
             <div className="rounded-[20px] border border-white/6 bg-white/[0.03] p-4 backdrop-blur-sm">
@@ -697,7 +577,7 @@ export default function Home() {
                 Payment flexibility
               </div>
               <p className="mt-2.5 text-xs leading-5 text-white/64">
-                Use M-Pesa, card payments, pay on pickup, or cash on delivery where the route supports it.
+                M-Pesa, card, pickup, or COD.
               </p>
             </div>
           </div>
@@ -717,10 +597,10 @@ export default function Home() {
               VoltHub electronics department
             </div>
             <h2 className="mt-2.5 max-w-[12ch] font-serif text-3xl leading-tight text-white sm:text-4xl">
-              Electronics stay premium, but clearly inside the Zora store.
+              Premium electronics, same Zora basket.
             </h2>
             <p className="mt-3.5 text-xs leading-5 text-white/72 sm:text-sm sm:leading-6">
-              VoltHub remains the partner-led electronics department for chargers, audio, power, wearables, and quick-access tech. It supports the basket without taking over the brand.
+              Chargers, audio, power, and wearables in the same checkout.
             </p>
             <div className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
               <Link
@@ -768,48 +648,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mt-10 sm:mt-12">
-        <SectionHeader
-          eyebrow="Popular now"
-          title="Best sellers and fast-moving picks"
-          description="Use this section when you already know you want the products other shoppers reach for first across the store."
-          ctaHref="/shop"
-          ctaLabel="See all products"
-        />
-
-        <div className="mt-6 grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4">
-          {bestSellers.slice(0, 8).map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-          {!loading && bestSellers.length === 0 ? (
-            <div className="col-span-2 xl:col-span-4 rounded-[22px] border border-dashed border-white/12 bg-white/[0.02] p-6 text-xs text-white/56">
-              The storefront is ready; featured products will appear here as soon as catalog data is available.
-            </div>
-          ) : null}
-        </div>
-      </section>
-
-      <section id="support" className="mt-10 rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,rgba(24,28,32,0.88),rgba(18,20,23,0.96))] px-5 py-6 sm:mt-12 sm:px-6 sm:py-7">
-        <SectionHeader
-          eyebrow="Reassurance"
-          title="Clear promises, real local support"
-          description="Trust comes from how the store works: clear service areas, verified payment options, direct support, and fast order updates after checkout."
-        />
-
-        <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {[
-            "M-Pesa STK push, card payments, pay on pickup, and cash on delivery",
-            "Instant order confirmation with real-time WhatsApp delivery updates",
-            "No-fakes policy and fast issue resolution from the local team",
-            "Nairobi-based operations with same-day focus and nationwide expansion",
-          ].map((item) => (
-            <div key={item} className="rounded-[20px] border border-white/6 bg-white/[0.03] p-4 text-xs leading-5 text-white/72 backdrop-blur-sm">
-              {item}
-            </div>
-          ))}
-        </div>
-      </section>
-
       <section className="mt-10 rounded-[28px] border border-white/8 bg-[linear-gradient(135deg,rgba(47,107,255,0.18),rgba(18,20,23,0.96))] px-5 py-7 sm:mt-12 sm:px-6 sm:py-8">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
@@ -817,10 +655,10 @@ export default function Home() {
               Ready to order
             </div>
             <h2 className="mt-2.5 max-w-[14ch] font-serif text-3xl leading-tight text-white sm:text-4xl lg:text-5xl">
-              Start shopping with a cleaner, faster Nairobi-first store.
+              Start your basket now.
             </h2>
             <p className="mt-3.5 text-xs leading-5 text-white/72 sm:text-sm sm:leading-6">
-              Shop essentials first, add VoltHub electronics when needed, and check out with M-Pesa or the payment method that works best for your order.
+              Shop essentials first, then add electronics.
             </p>
           </div>
           <div className="flex flex-col gap-2.5 sm:flex-row">
