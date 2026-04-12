@@ -5,18 +5,58 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ProductCard } from "../components/product-card";
+import { CategoryBannerCard, type CategoryBannerCardProps } from "../components/category-banner-card";
 import { useAuth } from "../components/auth/auth-provider";
 import { fetchProducts, type Product } from "../lib/products";
 import type { CategorySlug } from "../lib/types";
 
-type CategoryCard = {
-  slug: CategorySlug;
-  title: string;
-  eyebrow: string;
-  description: string;
-  href: string;
-  className: string;
-};
+const IMAGE_CATEGORY_CARDS: CategoryBannerCardProps[] = [
+  {
+    title: "Fresh Food",
+    subtitle: "Avocados, tomatoes, greens",
+    href: "/category/groceries",
+    image: "https://ik.imagekit.io/0iaahkrcv/freshfoods.png",
+  },
+  {
+    title: "Beverages",
+    subtitle: "Water, juice, sodas",
+    href: "/category/beverages",
+    image: "https://ik.imagekit.io/0iaahkrcv/beverages.png",
+  },
+  {
+    title: "Pantry Refill",
+    subtitle: "Flour, rice, sugar, cooking basics",
+    href: "/category/groceries",
+    gradient:
+      "linear-gradient(145deg,rgba(14,19,28,1) 0%,rgba(18,24,34,1) 60%,rgba(10,14,20,1) 100%)",
+  },
+  {
+    title: "Bakery & Snacks",
+    subtitle: "Biscuits, cakes, crisps",
+    href: "/category/snacks",
+    image:
+      "https://ik.imagekit.io/0iaahkrcv/snacks.png?updatedAt=1775961216246",
+  },
+  {
+    title: "Personal Care",
+    subtitle: "Body, bath, oral care",
+    href: "/category/personal-care",
+    image: "https://ik.imagekit.io/0iaahkrcv/bodycare.png",
+  },
+  {
+    title: "Cleaning",
+    subtitle: "Laundry, dish, toilet care",
+    href: "/category/household",
+    image: "https://ik.imagekit.io/0iaahkrcv/cleaning.png",
+  },
+  {
+    title: "Baby Picks",
+    subtitle: "Diapers, wipes, gentle care",
+    href: "/shop",
+    image: "https://ik.imagekit.io/0iaahkrcv/babypicks.png",
+    featured: true,
+  },
+];
 
 const HERO_METRICS = [
   "Same-day Nairobi before 6PM",
@@ -36,41 +76,6 @@ const TRUST_STRIP = [
   {
     title: "Real local support",
     description: "Nairobi team on WhatsApp and phone.",
-  },
-];
-
-const CATEGORY_CARDS: CategoryCard[] = [
-  {
-    slug: "groceries",
-    title: "Daily essentials",
-    eyebrow: "Pantry restock",
-    description: "Staples and fresh top-ups.",
-    href: "/category/groceries",
-    className: "sm:col-span-2 bg-[linear-gradient(135deg,rgba(47,107,255,0.28),rgba(24,28,32,0.92))]",
-  },
-  {
-    slug: "beverages",
-    title: "Drinks and quick picks",
-    eyebrow: "Cold stock",
-    description: "Water, juice, soda, and add-ons.",
-    href: "/category/beverages",
-    className: "bg-[linear-gradient(180deg,rgba(255,184,77,0.24),rgba(24,28,32,0.94))]",
-  },
-  {
-    slug: "household",
-    title: "Home basics",
-    eyebrow: "Practical everyday",
-    description: "Cleaning and utility essentials.",
-    href: "/category/household",
-    className: "bg-[linear-gradient(180deg,rgba(46,211,160,0.24),rgba(24,28,32,0.94))]",
-  },
-  {
-    slug: "electronics",
-    title: "VoltHub electronics",
-    eyebrow: "Partner department",
-    description: "Chargers, audio, and devices in one checkout.",
-    href: "/category/electronics",
-    className: "sm:col-span-2 lg:col-span-1 bg-[linear-gradient(135deg,rgba(33,212,253,0.28),rgba(24,28,32,0.92))]",
   },
 ];
 
@@ -242,16 +247,6 @@ export default function Home() {
 
   const bestSellers = useMemo(() => products.slice(0, 8), [products]);
 
-  const categoryCounts = useMemo(() => {
-    return products.reduce(
-      (acc, product) => {
-        acc[product.category] = (acc[product.category] ?? 0) + 1;
-        return acc;
-      },
-      {} as Partial<Record<CategorySlug, number>>
-    );
-  }, [products]);
-
   return (
     <div className="mx-auto max-w-7xl px-4 pb-16 pt-4 sm:px-6 sm:pb-20 sm:pt-6">
       <section className="relative overflow-hidden rounded-[32px] border border-[color:var(--border)] bg-[linear-gradient(135deg,rgba(10,10,11,0.92),rgba(18,20,23,0.98))] px-5 py-6 shadow-[0_32px_120px_rgba(0,0,0,0.45)] sm:px-7 sm:py-8 lg:px-10 lg:py-10">
@@ -403,50 +398,17 @@ export default function Home() {
 
       <section id="categories" className="mt-10 sm:mt-12">
         <SectionHeader
-          eyebrow="Quick category shortcuts"
-          title="Go straight to your aisle"
-          description="Tap a category and add to basket fast."
+          eyebrow="Shop by category"
+          title="Your everyday aisles"
+          description="Tap a category to browse and add to basket."
           ctaHref="/shop"
           ctaLabel="Browse full shop"
         />
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {CATEGORY_CARDS.map((category) => {
-            const itemCount = categoryCounts[category.slug] ?? 0;
-
-            return (
-              <Link
-                key={category.slug}
-                href={category.href}
-                className={`group relative overflow-hidden rounded-[24px] border border-white/8 p-5 transition-all duration-300 active:scale-[0.985] hover:border-white/16 hover:-translate-y-0.5 hover:shadow-[0_16px_48px_rgba(0,0,0,0.28)] ${category.className}`}
-              >
-                <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/10 blur-2xl transition-opacity group-hover:opacity-90" />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(180deg,transparent,rgba(10,10,11,0.58))]" />
-                <div className="relative flex h-full min-h-[220px] flex-col justify-between">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/52">
-                        {category.eyebrow}
-                      </div>
-                      <h3 className="mt-2.5 max-w-[11ch] font-serif text-2xl leading-tight text-white sm:text-[1.75rem]">
-                        {category.title}
-                      </h3>
-                      <p className="mt-2.5 max-w-xs text-[13px] leading-5 text-white/72">
-                        {category.description}
-                      </p>
-                    </div>
-                    <div className="rounded-full border border-white/14 bg-white/8 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/84">
-                      {itemCount > 0 ? `${itemCount} items` : "Shop"}
-                    </div>
-                  </div>
-                  <div className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-full border border-white/14 bg-white/8 px-3.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90 transition-colors group-hover:border-white/24 group-hover:bg-white/14 group-hover:text-white">
-                    Tap to shop
-                    <span className="transition-transform group-hover:translate-x-1">→</span>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {IMAGE_CATEGORY_CARDS.map((card) => (
+            <CategoryBannerCard key={card.title} {...card} />
+          ))}
         </div>
       </section>
 
