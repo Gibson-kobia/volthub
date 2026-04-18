@@ -57,12 +57,6 @@ const IMAGE_CATEGORY_CARDS: CategoryBannerCardProps[] = [
   },
 ];
 
-const COMPACT_TRUST_ITEMS = [
-  "Same-day Nairobi delivery",
-  "M-Pesa",
-  "WhatsApp support"
-];
-
 const TRUST_STRIP = [
   {
     title: "2-4 hour express",
@@ -207,7 +201,7 @@ export default function Home() {
             </p>
 
             {/* Primary & Secondary CTAs */}
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="mt-8 mb-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href="/shop"
                 className="inline-flex min-h-12 items-center justify-center rounded-full bg-[color:var(--accent)] px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(47,107,255,0.35)] transition-all hover:shadow-[0_22px_50px_rgba(47,107,255,0.45)] hover:scale-[1.02] active:scale-95"
@@ -220,20 +214,6 @@ export default function Home() {
               >
                 Browse categories
               </Link>
-            </div>
-
-            {/* Compact Trust Strip */}
-            <div className="mt-8 pt-6 border-t border-white/10">
-              <div className="flex flex-wrap gap-1 text-xs font-medium text-white/70">
-                {COMPACT_TRUST_ITEMS.map((item, index) => (
-                  <div key={item} className="flex items-center gap-1">
-                    <span>{item}</span>
-                    {index < COMPACT_TRUST_ITEMS.length - 1 && (
-                      <span className="text-white/30">·</span>
-                    )}
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
 
