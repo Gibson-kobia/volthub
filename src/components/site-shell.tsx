@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { CartProvider, useCart } from "./cart/cart-provider";
 import { AuthProvider, useAuth } from "./auth/auth-provider";
 import { CartDrawer } from "./cart/cart-drawer";
@@ -109,6 +109,11 @@ function Shell({ children }: { children: React.ReactNode }) {
     setMobileOpen(false);
     router.push(`/search?q=${encodeURIComponent(query.trim())}`);
   }
+
+  const pathname = usePathname();
+
+  // Hide bottom navigation on cart and checkout pages
+  const hideBottomNav = pathname === "/cart" || pathname === "/checkout";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -255,7 +260,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </footer>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[color:var(--border)] bg-[#0b0d10]/92 px-4 py-3 backdrop-blur lg:hidden">
+      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-[color:var(--border)] bg-[#0b0d10]/92 px-4 py-3 backdrop-blur lg:hidden ${hideBottomNav ? 'hidden' : ''}`}>
         <div className="mx-auto flex max-w-7xl items-center gap-2">
           <button
             onClick={() => setSearchOpen(true)}

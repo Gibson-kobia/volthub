@@ -10,7 +10,7 @@ function buildWhatsAppOrderUrl(message: string) {
 }
 
 export default function CartPage() {
-  const { items: cart, setQty, removeItem, addItem } = useCart();
+  const { items: cart, setQty, removeItem } = useCart();
   const { user } = useAuth();
   const [delivery, setDelivery] = useState<"nairobi" | "kenya">("nairobi");
   const [products, setProducts] = useState<Product[]>([]);
@@ -29,238 +29,167 @@ export default function CartPage() {
     .map((c) => ({ ...c, product: products.find((p) => p.id === c.productId) }))
     .filter((i) => i.product);
 
-  const total = items.reduce((sum, i) => sum + (i.product?.priceKes || 0) * i.qty, 0);
+  const subtotal = items.reduce((sum, i) => sum + (i.product?.priceKes || 0) * i.qty, 0);
   const waMessage =
     items.length === 0
       ? ""
       : `Hello VoltHub, I want to order: ${items
           .map((i) => `${i.product!.name} x${i.qty}`)
-          .join(", ")} - Total: KES ${total.toLocaleString()}${
+          .join(", ")} - Total: KES ${subtotal.toLocaleString()}${
           user?.name?.trim() ? ` - Name: ${user.name.trim()}` : ""
         }`;
   const waUrl = waMessage ? buildWhatsAppOrderUrl(waMessage) : "";
   const estimate = useMemo(() => {
-    return delivery === "nairobi" ? "Same‑day via bodaboda" : "1‑3 days via courier";
+    return delivery === "nairobi" ? "Same-day via bodaboda" : "1-3 days via courier";
   }, [delivery]);
 
-  const [wishlistIds, setWishlistIds] = useState<string[]>(() => {
-    const raw = typeof window !== "undefined" ? localStorage.getItem("wishlist") : null;
-    return raw ? (JSON.parse(raw) as string[]) : [];
-  });
-
-  const saveForLater = (id: string) => {
-    const current = cart.find((c) => c.productId === id);
-    if (current) {
-      setWishlistIds((prev) => {
-        const next = [...prev, id];
-        const unique = Array.from(new Set(next));
-        localStorage.setItem("wishlist", JSON.stringify(unique));
-        return unique;
-      });
-      removeItem(id);
-    }
-  };
-
-  const wishlistItems = wishlistIds
-    .map((id) => products.find((p) => p.id === id))
-    .filter((p) => p !== undefined);
-
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0a0b0c]">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
   }
 
-  const moveToCart = (id: string) => {
-    setWishlistIds((prev) => {
-      const next = prev.filter((pid) => pid !== id);
-      localStorage.setItem("wishlist", JSON.stringify(next));
-      return next;
-    });
-    addItem(id);
-  };
-
-  const removeWishlist = (id: string) => {
-    setWishlistIds((prev) => {
-      const next = prev.filter((pid) => pid !== id);
-      localStorage.setItem("wishlist", JSON.stringify(next));
-      return next;
-    });
-  };
-
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
-      <h1 className="font-serif text-3xl mb-6">Your Cart</h1>
-      {items.length === 0 ? (
-        <div>
-          <div>Your cart is empty.</div>
-          <Link
-            href="/"
-            className="mt-4 inline-block rounded-full px-4 py-2 border"
-          >
-            Back to Home
-          </Link>
+    <div className="min-h-screen bg-[#0a0b0c] text-white">
+      <div className="mx-auto max-w-2xl px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold">Your Cart</h1>
+          <p className="text-zinc-400 mt-1">
+            {items.length} item{items.length === 1 ? "" : "s"}
+          </p>
         </div>
-      ) : (
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 space-y-4">
-            {items.map((i) => (
-              <div
-                key={i.product?.id}
-                className="flex items-center gap-4 border rounded-xl p-4 bg-white dark:bg-black"
-              >
-                <div className="relative w-20 h-24 rounded-md overflow-hidden">
-                  <img
-                    src={
-                      i.product?.image && i.product?.image.startsWith("http")
-                        ? i.product?.image
-                        : "/product-placeholder.png"
-                    }
-                    alt={i.product?.name || ""}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm text-zinc-500">{i.product?.brand}</div>
-                  <div className="font-medium">{i.product?.name}</div>
-                  <div className="mt-1">
-                    KES {i.product?.priceKes.toLocaleString()}
-                  </div>
-                  <div className="mt-2 flex items-center gap-2">
-                    <button
-                      className="px-2 py-1 border rounded"
-                      onClick={() => setQty(i.product!.id, i.qty - 1)}
-                    >
-                      −
-                    </button>
-                    <span>{i.qty}</span>
-                    <button
-                      className="px-2 py-1 border rounded"
-                      onClick={() => setQty(i.product!.id, i.qty + 1)}
-                    >
-                      +
-                    </button>
-                    <button
-                      className="ml-4 text-red-600"
-                      onClick={() => removeItem(i.product!.id)}
-                    >
-                      Remove
-                    </button>
-                    <button
-                      className="ml-2 text-zinc-600 underline"
-                      onClick={() => saveForLater(i.product!.id)}
-                    >
-                      Save for later
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-            {wishlistItems.length > 0 && (
-              <div className="mt-6">
-                <div className="font-medium mb-2">Saved for later</div>
-                <div className="space-y-3">
-                  {wishlistItems.map((p) => (
-                    <div
-                      key={p!.id}
-                      className="flex items-center justify-between border rounded-xl p-3 bg-white dark:bg-black"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="relative w-12 h-16 rounded-md overflow-hidden">
-                          <img
-                            src={
-                              p!.image && p!.image.startsWith("http")
-                                ? p!.image
-                                : "/product-placeholder.png"
-                            }
-                            alt={p!.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div>
-                          <div className="text-xs text-zinc-500">
-                            {p!.brand}
-                          </div>
-                          <div className="text-sm font-medium">
-                            {p!.name}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button
-                          className="text-sm underline"
-                          onClick={() => moveToCart(p!.id)}
-                        >
-                          Move to cart
-                        </button>
-                        <button
-                          className="text-sm text-red-600"
-                          onClick={() => removeWishlist(p!.id)}
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="border rounded-xl p-4 bg-white dark:bg-black">
-            <div className="font-medium">Order Summary</div>
-            <div className="mt-2 flex justify-between">
-              <span>Total</span>
-              <span className="font-semibold">
-                KES {total.toLocaleString()}
-              </span>
-            </div>
-          <div className="mt-4">
-            <a
-              href={waUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`block rounded-full px-4 py-2 border text-center text-sm min-h-[48px] ${
-                items.length === 0 ? "pointer-events-none opacity-60" : ""
-              }`}
-            >
-              Prefer WhatsApp? Order directly here
-            </a>
-          </div>
-            <div className="mt-4">
-              <div className="text-sm font-medium">Estimated delivery</div>
-              <div className="mt-2 flex gap-2 text-sm">
-                <button
-                  className={`px-3 py-1 rounded-full border ${
-                    delivery === "nairobi"
-                      ? "bg-[color:var(--accent)] text-white"
-                      : ""
-                  }`}
-                  onClick={() => setDelivery("nairobi")}
-                >
-                  Nairobi (bodaboda)
-                </button>
-                <button
-                  className={`px-3 py-1 rounded-full border ${
-                    delivery === "kenya"
-                      ? "bg-[color:var(--accent)] text-white"
-                      : ""
-                  }`}
-                  onClick={() => setDelivery("kenya")}
-                >
-                  Rest of Kenya (courier)
-                </button>
-              </div>
-              <div className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
-                {estimate}
-              </div>
-            </div>
+
+        {items.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="text-zinc-400 mb-6">Your cart is empty</div>
             <Link
-              href="/checkout"
-              className="mt-4 block rounded-full px-4 py-2 bg-[color:var(--accent)] text-white text-center min-h-[48px]"
+              href="/shop"
+              className="inline-block rounded-full px-6 py-3 bg-[color:var(--accent)] text-white font-medium hover:opacity-90"
             >
-              Checkout
+              Browse products
             </Link>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="space-y-6">
+            {/* Cart Items */}
+            <div className="space-y-4">
+              {items.map((i) => (
+                <div
+                  key={i.product?.id}
+                  className="flex gap-4 p-4 rounded-xl border border-white/10 bg-white/5"
+                >
+                  <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-zinc-800 flex-shrink-0">
+                    <img
+                      src={
+                        i.product?.image && i.product?.image.startsWith("http")
+                          ? i.product?.image
+                          : "/product-placeholder.png"
+                      }
+                      alt={i.product?.name || ""}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-zinc-500 uppercase tracking-wide mb-1">
+                      {i.product?.brand}
+                    </div>
+                    <div className="text-white font-medium leading-tight mb-2">
+                      {i.product?.name}
+                    </div>
+                    <div className="text-white font-semibold mb-3">
+                      KES {i.product?.priceKes.toLocaleString()}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <button
+                          className="w-8 h-8 rounded-full border border-white/20 text-white hover:bg-white/10 flex items-center justify-center text-sm"
+                          onClick={() => setQty(i.product!.id, i.qty - 1)}
+                        >
+                          −
+                        </button>
+                        <span className="text-white min-w-[24px] text-center">{i.qty}</span>
+                        <button
+                          className="w-8 h-8 rounded-full border border-white/20 text-white hover:bg-white/10 flex items-center justify-center text-sm"
+                          onClick={() => setQty(i.product!.id, i.qty + 1)}
+                        >
+                          +
+                        </button>
+                      </div>
+                      <button
+                        className="text-xs text-zinc-400 hover:text-red-400"
+                        onClick={() => removeItem(i.product!.id)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Order Summary */}
+            <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+              <div className="text-lg font-semibold mb-4">Order Summary</div>
+
+              <div className="space-y-3 mb-6">
+                <div className="flex justify-between text-sm">
+                  <span className="text-zinc-400">Subtotal</span>
+                  <span className="text-white">KES {subtotal.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-zinc-400">Delivery</span>
+                  <span className="text-zinc-400">{estimate}</span>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <div className="text-sm font-medium mb-3">Delivery area</div>
+                <div className="flex gap-2">
+                  <button
+                    className={`flex-1 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                      delivery === "nairobi"
+                        ? "bg-[color:var(--accent)] text-white"
+                        : "border border-white/20 text-zinc-400 hover:text-white"
+                    }`}
+                    onClick={() => setDelivery("nairobi")}
+                  >
+                    Nairobi
+                  </button>
+                  <button
+                    className={`flex-1 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                      delivery === "kenya"
+                        ? "bg-[color:var(--accent)] text-white"
+                        : "border border-white/20 text-zinc-400 hover:text-white"
+                    }`}
+                    onClick={() => setDelivery("kenya")}
+                  >
+                    Rest of Kenya
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Link
+                  href="/checkout"
+                  className="block w-full rounded-full px-4 py-3 bg-[color:var(--accent)] text-white text-center font-medium hover:opacity-90"
+                >
+                  Checkout
+                </Link>
+                <a
+                  href={waUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full rounded-full px-4 py-3 border border-white/20 text-white text-center text-sm hover:bg-white/10"
+                >
+                  Order via WhatsApp
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

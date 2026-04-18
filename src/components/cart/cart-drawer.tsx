@@ -53,39 +53,55 @@ export function CartDrawer() {
       aria-hidden={!isDrawerOpen}
     >
       <div
-        className={`absolute inset-0 bg-black/40 transition-opacity ${
+        className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity ${
           isDrawerOpen ? "opacity-100" : "opacity-0"
         }`}
         onClick={closeDrawer}
       />
       <aside
-        className={`absolute right-0 top-0 h-full w-full max-w-md bg-white dark:bg-black border-l border-black/10 dark:border-white/10 transition-transform duration-300 ${
+        className={`absolute right-0 top-0 h-full w-full max-w-sm bg-[#0a0b0c] border-l border-white/10 shadow-2xl transition-transform duration-300 ${
           isDrawerOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="p-5 flex items-center justify-between border-b border-black/10 dark:border-white/10">
-          <div className="font-serif text-xl">Your Cart</div>
-          <button
-            className="rounded-full px-3 py-1 border border-black/10 dark:border-white/10"
-            onClick={closeDrawer}
-          >
-            Close
-          </button>
+        <div className="p-6 border-b border-white/10">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-lg font-semibold text-white">Cart</div>
+              <div className="text-sm text-zinc-400">
+                {lines.length} item{lines.length === 1 ? "" : "s"}
+              </div>
+            </div>
+            <button
+              className="rounded-full p-2 text-zinc-400 hover:text-white hover:bg-white/10"
+              onClick={closeDrawer}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        <div className="p-5 overflow-auto h-[calc(100%-168px)]">
+        <div className="flex-1 overflow-auto p-6">
           {lines.length === 0 ? (
-            <div className="text-sm text-zinc-600 dark:text-zinc-400">
-              Your cart is empty.
+            <div className="text-center py-12">
+              <div className="text-zinc-500">Your cart is empty</div>
+              <Link
+                href="/shop"
+                onClick={closeDrawer}
+                className="mt-4 inline-block text-sm text-white underline"
+              >
+                Browse products
+              </Link>
             </div>
           ) : (
             <div className="space-y-4">
               {lines.map((l) => (
                 <div
                   key={l.product!.id}
-                  className="flex gap-4 rounded-xl border border-black/10 dark:border-white/10 p-3"
+                  className="flex gap-4 p-4 rounded-xl border border-white/5 bg-white/5"
                 >
-                  <div className="relative w-20 h-24 rounded-lg overflow-hidden bg-white dark:bg-black">
+                  <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-zinc-800">
                     <Image
                       src={l.product!.image || "/product-placeholder.png"}
                       alt={l.product!.name}
@@ -93,43 +109,34 @@ export function CartDrawer() {
                       className="object-cover"
                     />
                   </div>
-                  <div className="flex-1">
-                    <div className="text-xs text-zinc-500">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-zinc-500 uppercase tracking-wide">
                       {l.product!.brand}
                     </div>
-                    <div className="text-sm font-medium leading-5">
+                    <div className="text-sm font-medium text-white leading-tight mt-1">
                       {l.product!.name}
                     </div>
-                    <div className="mt-2 flex items-center justify-between">
-                      <div className="text-sm font-semibold">
-                        KES {l.product!.priceKes.toLocaleString()}
-                      </div>
-                      <div className="text-sm text-zinc-600 dark:text-zinc-400">
-                        Subtotal:{" "}
-                        <span className="font-medium">
-                          KES {(l.product!.priceKes * l.qty).toLocaleString()}
-                        </span>
-                      </div>
+                    <div className="text-sm font-semibold text-white mt-2">
+                      KES {l.product!.priceKes.toLocaleString()}
                     </div>
-
-                    <div className="mt-3 flex items-center justify-between">
-                      <div className="inline-flex items-center rounded-full border border-black/10 dark:border-white/10 overflow-hidden">
+                    <div className="flex items-center justify-between mt-3">
+                      <div className="flex items-center gap-2">
                         <button
-                          className="px-3 py-1 hover:bg-black/5 dark:hover:bg-white/10"
+                          className="w-8 h-8 rounded-full border border-white/20 text-white hover:bg-white/10 flex items-center justify-center text-sm"
                           onClick={() => setQty(l.product!.id, l.qty - 1)}
                         >
                           −
                         </button>
-                        <div className="px-3 py-1 text-sm">{l.qty}</div>
+                        <span className="text-sm text-white min-w-[20px] text-center">{l.qty}</span>
                         <button
-                          className="px-3 py-1 hover:bg-black/5 dark:hover:bg-white/10"
+                          className="w-8 h-8 rounded-full border border-white/20 text-white hover:bg-white/10 flex items-center justify-center text-sm"
                           onClick={() => setQty(l.product!.id, l.qty + 1)}
                         >
                           +
                         </button>
                       </div>
                       <button
-                        className="text-sm text-zinc-500 hover:text-red-600"
+                        className="text-xs text-zinc-400 hover:text-red-400"
                         onClick={() => removeItem(l.product!.id)}
                       >
                         Remove
@@ -142,30 +149,32 @@ export function CartDrawer() {
           )}
         </div>
 
-        <div className="p-5 border-t border-black/10 dark:border-white/10">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-zinc-600 dark:text-zinc-400">Total</div>
-            <div className="text-lg font-semibold">
-              KES {total.toLocaleString()}
+        {lines.length > 0 && (
+          <div className="p-6 border-t border-white/10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-sm text-zinc-400">Total</div>
+              <div className="text-lg font-semibold text-white">
+                KES {total.toLocaleString()}
+              </div>
+            </div>
+            <div className="space-y-3">
+              <Link
+                href="/cart"
+                onClick={closeDrawer}
+                className="block w-full rounded-full px-4 py-3 border border-white/20 text-white text-center text-sm font-medium hover:bg-white/10"
+              >
+                View full cart
+              </Link>
+              <Link
+                href="/checkout"
+                onClick={closeDrawer}
+                className="block w-full rounded-full px-4 py-3 bg-[color:var(--accent)] text-white text-center text-sm font-medium hover:opacity-90"
+              >
+                Checkout
+              </Link>
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <Link
-              href="/cart"
-              onClick={() => closeDrawer()}
-              className="rounded-full px-4 py-2 border border-black/10 dark:border-white/10 text-center"
-            >
-              View cart
-            </Link>
-            <Link
-              href="/checkout"
-              onClick={() => closeDrawer()}
-              className="rounded-full px-4 py-2 bg-[color:var(--accent)] text-white text-center"
-            >
-              Checkout
-            </Link>
-          </div>
-        </div>
+        )}
       </aside>
     </div>
   );

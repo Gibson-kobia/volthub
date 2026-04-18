@@ -25,9 +25,9 @@ export default function CheckoutPage() {
     return cartRaw ? (JSON.parse(cartRaw) as CartItem[]) : [];
   });
   const [products, setProducts] = useState<Product[]>([]);
-  
+
   const [addressText, setAddressText] = useState("");
-  const [deliveryMethod, setDeliveryMethod] = useState<"bodaboda" | "courier">("bodaboda");
+  const [deliveryArea, setDeliveryArea] = useState<"nairobi" | "kenya">("nairobi");
   const [paymentMode, setPaymentMode] = useState<"mpesa" | "delivery">("mpesa");
   const [mpesaPhone, setMpesaPhone] = useState("");
   const [showMap, setShowMap] = useState(false);
@@ -83,8 +83,6 @@ export default function CheckoutPage() {
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
-  // savedAddresses derived from localStorage and current user
-
   const items = useMemo(() => {
     return cart
       .map((c) => {
@@ -94,9 +92,12 @@ export default function CheckoutPage() {
       .filter(Boolean) as { product: (typeof products)[number]; qty: number }[];
   }, [cart, products]);
 
-  const total = useMemo(() => {
+  const subtotal = useMemo(() => {
     return items.reduce((sum, i) => sum + i.product.priceKes * i.qty, 0);
   }, [items]);
+
+  const deliveryMethod = deliveryArea === "nairobi" ? "bodaboda" : "courier";
+  const deliveryEstimate = deliveryArea === "nairobi" ? "Same-day via bodaboda" : "1-3 days via courier";
 
   const confirmLocation = (loc: DeliveryLocation) => {
     setMapSelected(loc);
@@ -158,7 +159,7 @@ export default function CheckoutPage() {
       p_customer_phone: phone,
       p_customer_email: email,
       p_items: orderItems,
-      p_total: total,
+      p_total: subtotal,
       p_delivery_method: deliveryMethod,
       p_delivery_location: hasMap ? mapSelected : null,
       p_address_text: hasAddress ? addressText.trim() : null,
@@ -188,7 +189,7 @@ export default function CheckoutPage() {
     setLastOrder({
       customerName: name,
       itemsLabel: items.map((i) => `${i.product.name} x${i.qty}`).join(", "),
-      total,
+      total: subtotal,
     });
     localStorage.setItem("cart", JSON.stringify([]));
     setPlaced(true);
@@ -202,266 +203,293 @@ export default function CheckoutPage() {
       : "Hello VoltHub, I just placed an order and need help confirming it.";
     const waUrl = buildWhatsAppOrderUrl(waMessage);
     return (
-      <div className="mx-auto max-w-5xl px-6 py-10">
-        <div className="font-serif text-3xl">Order placed</div>
-        <div className="mt-3 text-zinc-600 dark:text-zinc-400">
-          We are processing your order. You can continue shopping.
-        </div>
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/" className="inline-block rounded-full px-5 py-2 bg-[color:var(--accent)] text-white">
-            Back to home
-          </Link>
-          <a
-            href={waUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block rounded-full px-5 py-2 border"
-          >
-            Prefer WhatsApp? Order directly here
-          </a>
+      <div className="min-h-screen bg-[#0a0b0c] text-white">
+        <div className="mx-auto max-w-2xl px-4 py-16 text-center">
+          <div className="text-2xl font-semibold mb-4">Order placed successfully</div>
+          <div className="text-zinc-400 mb-8">
+            We'll send payment and delivery details shortly.
+          </div>
+          <div className="space-y-4">
+            <Link href="/" className="block w-full rounded-full px-6 py-3 bg-[color:var(--accent)] text-white font-medium hover:opacity-90">
+              Continue shopping
+            </Link>
+            <a
+              href={waUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full rounded-full px-6 py-3 border border-white/20 text-white hover:bg-white/10"
+            >
+              Contact support
+            </a>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10">
-      <div className="font-serif text-3xl">Checkout</div>
-      <div className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-        Place your order and we’ll share payment and delivery confirmation details.
-      </div>
+    <div className="min-h-screen bg-[#0a0b0c] text-white">
+      <div className="mx-auto max-w-4xl px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold">Checkout</h1>
+          <p className="text-zinc-400 mt-1">Complete your order</p>
+        </div>
 
-      <div className="mt-8 grid md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 space-y-6">
-          <div className="rounded-xl border border-black/10 dark:border-white/10 p-6 bg-white dark:bg-black">
-            <div className="font-medium">Customer Details</div>
-            <div className="mt-4 grid sm:grid-cols-2 gap-3 text-sm">
-              <div className="sm:col-span-2">
-                <label className="block mb-1">Full name</label>
-                <input
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2 bg-transparent"
-                  placeholder="e.g. Alex Wanjiru"
-                />
-              </div>
-              <div>
-                <label className="block mb-1">Email</label>
-                <input
-                  value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2 bg-transparent"
-                  placeholder="e.g. alex@email.com"
-                />
-              </div>
-              <div>
-                <label className="block mb-1">Phone</label>
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Left Column - Form Sections */}
+          <div className="space-y-6">
+            {/* Delivery Method */}
+            <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+              <div className="text-lg font-semibold mb-4">Delivery method</div>
+              <div className="space-y-4">
+                <div className="text-sm text-zinc-400 mb-3">
+                  Choose your delivery area
+                </div>
                 <div className="flex gap-2">
-                  <span className="flex items-center px-3 border border-black/10 dark:border-white/10 rounded-lg bg-white dark:bg-black text-zinc-500 text-sm">
-                    +254
-                  </span>
-                  <input
-                    value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="flex-1 rounded-lg border border-black/10 dark:border-white/10 px-3 py-2 bg-white dark:bg-black"
-                    placeholder="712 345 678"
-                  />
+                  <button
+                    className={`flex-1 rounded-full px-4 py-3 text-sm font-medium transition-colors ${
+                      deliveryArea === "nairobi"
+                        ? "bg-[color:var(--accent)] text-white"
+                        : "border border-white/20 text-zinc-400 hover:text-white"
+                    }`}
+                    onClick={() => setDeliveryArea("nairobi")}
+                  >
+                    Nairobi
+                  </button>
+                  <button
+                    className={`flex-1 rounded-full px-4 py-3 text-sm font-medium transition-colors ${
+                      deliveryArea === "kenya"
+                        ? "bg-[color:var(--accent)] text-white"
+                        : "border border-white/20 text-zinc-400 hover:text-white"
+                    }`}
+                    onClick={() => setDeliveryArea("kenya")}
+                  >
+                    Rest of Kenya
+                  </button>
+                </div>
+                <div className="text-sm text-zinc-400">
+                  {deliveryEstimate}
                 </div>
               </div>
             </div>
-          </div>
-          <div className="rounded-xl border border-black/10 dark:border-white/10 p-6 bg-white dark:bg-black">
-            <div className="font-medium">Delivery Details</div>
-            <div className="mt-4 space-y-3">
-              <label className="block text-sm">Text address</label>
-              <input
-                value={addressText}
-                onChange={(e) => setAddressText(e.target.value)}
-                placeholder="e.g. Apartment, street, estate, landmarks"
-                className="w-full rounded-lg border px-3 py-2 bg-transparent"
-              />
-              {savedAddresses.length > 0 && (
-                <div className="mt-2">
-                  <div className="text-xs text-zinc-500 mb-1">Saved addresses</div>
-                  <select
-                    onChange={(e) => {
-                      const id = e.target.value;
-                      const found = savedAddresses.find((a) => a.id === id);
-                      if (found) setAddressText(found.addressText);
-                    }}
-                    className="w-full rounded-lg border px-3 py-2 bg-transparent"
-                  >
-                    <option value="">Select saved address</option>
-                    {savedAddresses.map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {a.label} — {a.addressText.slice(0, 40)}
-                        {a.addressText.length > 40 ? "…" : ""}
-                      </option>
-                    ))}
-                  </select>
+
+            {/* Delivery Location */}
+            <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+              <div className="text-lg font-semibold mb-4">Delivery location</div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Address</label>
+                  <input
+                    value={addressText}
+                    onChange={(e) => setAddressText(e.target.value)}
+                    placeholder="e.g. Apartment, street, estate, landmarks"
+                    className="w-full rounded-lg border border-white/20 bg-transparent px-4 py-3 text-white placeholder:text-zinc-500 focus:border-[color:var(--accent)] focus:outline-none"
+                  />
                 </div>
-              )}
-              <div className="mt-4">
-                <div className="text-sm mb-2">Delivery method</div>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="deliveryMethod"
-                      checked={deliveryMethod === "bodaboda"}
-                      onChange={() => setDeliveryMethod("bodaboda")}
-                    />
-                    <span>Bodaboda (Nairobi)</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="deliveryMethod"
-                      checked={deliveryMethod === "courier"}
-                      onChange={() => setDeliveryMethod("courier")}
-                    />
-                    <span>Courier (Kenya)</span>
-                  </label>
-                </div>
-              </div>
-              <div className="mt-4">
-                <button
-                  onClick={() => setShowMap((v) => !v)}
-                  className="rounded-full px-4 py-2 bg-[color:var(--accent)] text-white"
-                >
-                  Choose delivery location on map
-                </button>
-                {mapSelected && (
-                  <div className="mt-3 text-sm text-emerald-600">
-                    Delivery location selected ✔
-                    <button
-                      onClick={() => setShowMap(true)}
-                      className="ml-3 underline"
+                {savedAddresses.length > 0 && (
+                  <div>
+                    <div className="text-xs text-zinc-500 mb-2">Saved addresses</div>
+                    <select
+                      onChange={(e) => {
+                        const id = e.target.value;
+                        const found = savedAddresses.find((a) => a.id === id);
+                        if (found) setAddressText(found.addressText);
+                      }}
+                      className="w-full rounded-lg border border-white/20 bg-transparent px-4 py-3 text-white focus:border-[color:var(--accent)] focus:outline-none"
                     >
-                      Change location
-                    </button>
+                      <option value="" className="bg-[#0a0b0c]">Select saved address</option>
+                      {savedAddresses.map((a) => (
+                        <option key={a.id} value={a.id} className="bg-[#0a0b0c]">
+                          {a.label} — {a.addressText.slice(0, 40)}
+                          {a.addressText.length > 40 ? "…" : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                <div>
+                  <button
+                    onClick={() => setShowMap((v) => !v)}
+                    className="w-full rounded-full px-4 py-3 border border-white/20 text-white hover:bg-white/10 transition-colors"
+                  >
+                    {mapSelected ? "Change location on map" : "Choose location on map"}
+                  </button>
+                  {mapSelected && (
+                    <div className="mt-3 text-sm text-emerald-400">
+                      ✓ Location selected
+                    </div>
+                  )}
+                </div>
+                {showMap && (
+                  <div className="mt-4">
+                    <MapDeliverySelector
+                      deliveryMethod={deliveryMethod}
+                      value={mapSelected}
+                      onChange={(loc) => setMapSelected(loc)}
+                      onConfirm={confirmLocation}
+                    />
                   </div>
                 )}
               </div>
-              {showMap && (
-                <div className="mt-4">
-                  <MapDeliverySelector
-                    deliveryMethod={deliveryMethod}
-                    value={mapSelected}
-                    onChange={(loc) => setMapSelected(loc)}
-                    onConfirm={confirmLocation}
+            </div>
+
+            {/* Contact Details */}
+            <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+              <div className="text-lg font-semibold mb-4">Contact details</div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Full name</label>
+                  <input
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="e.g. Alex Wanjiru"
+                    className="w-full rounded-lg border border-white/20 bg-transparent px-4 py-3 text-white placeholder:text-zinc-500 focus:border-[color:var(--accent)] focus:outline-none"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <input
+                    value={customerEmail}
+                    onChange={(e) => setCustomerEmail(e.target.value)}
+                    placeholder="e.g. alex@email.com"
+                    className="w-full rounded-lg border border-white/20 bg-transparent px-4 py-3 text-white placeholder:text-zinc-500 focus:border-[color:var(--accent)] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Phone number</label>
+                  <div className="flex gap-2">
+                    <span className="flex items-center px-4 border border-white/20 rounded-lg bg-white/10 text-zinc-400 text-sm">
+                      +254
+                    </span>
+                    <input
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      placeholder="712345678"
+                      className="flex-1 rounded-lg border border-white/20 bg-transparent px-4 py-3 text-white placeholder:text-zinc-500 focus:border-[color:var(--accent)] focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Method */}
+            <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+              <div className="text-lg font-semibold mb-4">Payment method</div>
+              <div className="space-y-3">
+                <label className="flex items-center gap-4 p-4 border border-white/10 rounded-lg cursor-pointer hover:bg-white/5 transition-colors">
+                  <input
+                    type="radio"
+                    name="payment"
+                    checked={paymentMode === "mpesa"}
+                    onChange={() => setPaymentMode("mpesa")}
+                    className="accent-[color:var(--accent)]"
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium">M-Pesa Express</div>
+                    <div className="text-sm text-zinc-400">
+                      Pay instantly with your M-Pesa account
+                    </div>
+                  </div>
+                </label>
+                <label className="flex items-center gap-4 p-4 border border-white/10 rounded-lg cursor-pointer hover:bg-white/5 transition-colors">
+                  <input
+                    type="radio"
+                    name="payment"
+                    checked={paymentMode === "delivery"}
+                    onChange={() => setPaymentMode("delivery")}
+                    className="accent-[color:var(--accent)]"
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium">Pay on delivery</div>
+                    <div className="text-sm text-zinc-400">
+                      Pay cash when your order arrives
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              {paymentMode === "mpesa" && (
+                <div className="mt-4 p-4 bg-white/5 rounded-lg">
+                  <label className="block text-sm font-medium mb-2">
+                    M-Pesa phone number
+                  </label>
+                  <div className="flex gap-2">
+                    <span className="flex items-center px-4 border border-white/20 rounded-lg bg-white/10 text-zinc-400 text-sm">
+                      +254
+                    </span>
+                    <input
+                      value={mpesaPhone}
+                      onChange={(e) =>
+                        setMpesaPhone(
+                          e.target.value.replace(/\D/g, "").slice(0, 9)
+                        )
+                      }
+                      placeholder="712345678"
+                      className="flex-1 rounded-lg border border-white/20 bg-transparent px-4 py-3 text-white placeholder:text-zinc-500 focus:border-[color:var(--accent)] focus:outline-none"
+                    />
+                  </div>
+                  <div className="mt-2 text-xs text-zinc-500">
+                    Use a Safaricom number in 7XXXXXXXX format
+                  </div>
                 </div>
               )}
-              <div className="mt-3 text-xs text-zinc-600 dark:text-zinc-400">
-                If you select Bodaboda, a map location is recommended but not required.
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-black/10 dark:border-white/10 p-6 bg-white dark:bg-black">
-            <div className="font-medium">Payment Method</div>
-            <div className="mt-4 space-y-3">
-              <label className="flex items-center gap-3 p-3 border border-black/5 dark:border-white/5 rounded-lg cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                <input
-                  type="radio"
-                  name="payment"
-                  checked={paymentMode === "mpesa"}
-                  onChange={() => setPaymentMode("mpesa")}
-                  className="accent-[color:var(--accent)]"
-                />
-                <div className="flex-1">
-                  <div className="font-medium">M-Pesa Express</div>
-                  <div className="text-xs text-zinc-500">
-                    We’ll share payment instructions after you place the order
-                  </div>
-                </div>
-                <div className="font-bold text-green-600 text-sm tracking-wide">
-                  M-PESA
-                </div>
-              </label>
-              <label className="flex items-center gap-3 p-3 border border-black/5 dark:border-white/5 rounded-lg cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                <input
-                  type="radio"
-                  name="payment"
-                  checked={paymentMode === "delivery"}
-                  onChange={() => setPaymentMode("delivery")}
-                  className="accent-[color:var(--accent)]"
-                />
-                <div className="flex-1">
-                  <div className="font-medium">Pay on Delivery</div>
-                  <div className="text-xs text-zinc-500">
-                    Confirm payment when your delivery is arranged
-                  </div>
-                </div>
-              </label>
             </div>
 
-            {paymentMode === "mpesa" && (
-              <div className="mt-4 p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg animate-in fade-in slide-in-from-top-2">
-                <label className="block text-sm font-medium mb-2">
-                  M-Pesa Phone Number
-                </label>
-                <div className="flex gap-2">
-                  <span className="flex items-center px-3 border border-black/10 dark:border-white/10 rounded-lg bg-white dark:bg-black text-zinc-500 text-sm">
-                    +254
-                  </span>
-                  <input
-                    value={mpesaPhone}
-                    onChange={(e) =>
-                      setMpesaPhone(
-                        e.target.value.replace(/\D/g, "").slice(0, 9)
-                      )
-                    }
-                    placeholder="712 345 678"
-                    className="flex-1 rounded-lg border border-black/10 dark:border-white/10 px-3 py-2 bg-white dark:bg-black focus:outline-none focus:border-[color:var(--accent)]"
-                  />
-                </div>
-                <div className="mt-2 text-xs text-zinc-500">
-                  Use a Safaricom number in 7XXXXXXXX format.
-                </div>
+            {error && (
+              <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+                {error}
               </div>
             )}
+
+            <button
+              onClick={placeOrder}
+              disabled={
+                items.length === 0 ||
+                !customerName.trim() ||
+                !customerEmail.trim() ||
+                !customerPhone.trim() ||
+                (paymentMode === "mpesa" && !mpesaPhone.trim()) ||
+                !(addressText.trim().length > 0 || !!mapSelected)
+              }
+              className="w-full rounded-full px-6 py-4 bg-[color:var(--accent)] text-white font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              Place order
+            </button>
           </div>
 
-          {error && <div className="text-red-600 text-sm">{error}</div>}
-          
-          <button
-            onClick={placeOrder}
-            disabled={
-              items.length === 0 ||
-              !deliveryMethod ||
-              !customerName.trim() ||
-              !customerEmail.trim() ||
-              !customerPhone.trim() ||
-              (paymentMode === "mpesa" && !mpesaPhone.trim()) ||
-              !(addressText.trim().length > 0 || !!mapSelected)
-            }
-            className="w-full sm:w-auto rounded-full px-8 py-3 bg-[color:var(--accent)] text-white font-medium hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
-          >
-            Place order
-          </button>
-        </div>
-
-        <div className="rounded-xl border border-black/10 dark:border-white/10 p-6 bg-white dark:bg-black">
-          <div className="font-medium">Order Summary</div>
-          <div className="mt-4 space-y-3">
-            {items.length === 0 && (
-              <div className="text-sm text-zinc-600 dark:text-zinc-400">
-                Your cart is empty.
+          {/* Right Column - Order Summary */}
+          <div className="lg:sticky lg:top-8 h-fit">
+            <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+              <div className="text-lg font-semibold mb-4">Order summary</div>
+              <div className="space-y-3 mb-6">
+                {items.length === 0 && (
+                  <div className="text-sm text-zinc-400">
+                    Your cart is empty.
+                  </div>
+                )}
+                {items.map((i) => (
+                  <div key={i.product.id} className="flex items-center justify-between">
+                    <div className="text-sm text-zinc-400">{i.product.name}</div>
+                    <div className="text-sm text-zinc-400">x{i.qty}</div>
+                    <div className="text-sm text-white">KES {i.product.priceKes.toLocaleString()}</div>
+                  </div>
+                ))}
               </div>
-            )}
-            {items.map((i) => (
-              <div key={i.product.id} className="flex items-center justify-between">
-                <div className="text-sm">{i.product.name}</div>
-                <div className="text-sm">x{i.qty}</div>
-                <div className="text-sm">KES {i.product.priceKes.toLocaleString()}</div>
+              <div className="border-t border-white/10 pt-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-zinc-400">Subtotal</span>
+                  <span className="text-white">KES {subtotal.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-zinc-400">Delivery</span>
+                  <span className="text-zinc-400">{deliveryEstimate}</span>
+                </div>
               </div>
-            ))}
-          </div>
-          <div className="mt-4 border-t pt-4 flex items-center justify-between">
-            <div className="font-medium">Total</div>
-            <div className="font-semibold">KES {total.toLocaleString()}</div>
+              <div className="border-t border-white/10 mt-4 pt-4 flex items-center justify-between">
+                <div className="font-semibold">Total</div>
+                <div className="font-semibold text-white">KES {subtotal.toLocaleString()}</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
