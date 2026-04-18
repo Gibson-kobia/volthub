@@ -180,60 +180,22 @@ export default function Home() {
     <div className="mx-auto max-w-7xl px-4 pb-12 pt-4 sm:px-6 sm:pb-16 sm:pt-6">
       {/* Premium Hero Section */}
       <section className="relative overflow-hidden">
-        {/* Mobile-First Layout: Text above, Image below */}
-        <div className="flex flex-col gap-8 lg:grid lg:grid-cols-2 lg:gap-12 lg:items-center">
-          {/* Text Content - Mobile First Priority */}
-          <div className="flex flex-col justify-center order-first lg:order-first">
-            {/* Eyebrow */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/80 backdrop-blur w-fit">
-              <span className="h-2 w-2 rounded-full bg-[color:var(--success)]" />
-              Nairobi-first minimart
-            </div>
-
-            {/* Main Headline */}
-            <h1 className="mt-6 text-balance font-serif text-4xl leading-[1.1] text-white sm:text-5xl lg:text-6xl">
-              Fast everyday shopping in Nairobi
-            </h1>
-
-            {/* Supporting Text */}
-            <p className="mt-5 max-w-2xl text-base leading-7 text-[#d7dde6] sm:text-lg">
-              Groceries, drinks, home basics, and everyday essentials in one easy basket.
-            </p>
-
-            {/* Primary & Secondary CTAs */}
-            <div className="mt-8 mb-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link
-                href="/shop"
-                className="inline-flex min-h-12 items-center justify-center rounded-full bg-[color:var(--accent)] px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(47,107,255,0.35)] transition-all hover:shadow-[0_22px_50px_rgba(47,107,255,0.45)] hover:scale-[1.02] active:scale-95"
-              >
-                Start shopping
-              </Link>
-              <Link
-                href="#categories"
-                className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/12 bg-white/6 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-white/20 hover:bg-white/10 backdrop-blur-sm"
-              >
-                Browse categories
-              </Link>
-            </div>
-          </div>
-
-          {/* Hero Image - Premium Integration */}
-          <div className="relative order-last lg:order-last">
-            {/* Image Container with Elegant Framing */}
-            <div className="relative overflow-hidden rounded-2xl lg:rounded-3xl aspect-square sm:aspect-auto sm:h-[500px] lg:h-[600px]">
-              {/* Soft Gradient Overlay for Text Readability on Mobile */}
-              <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-              
-              {/* Hero Image */}
-              <Image
-                src="/images/zorahero.png"
-                alt="Nairobi skyline with everyday essentials basket"
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover"
-                priority
-              />
-            </div>
+        {/* Hero Image - Full Focus */}
+        <div className="relative">
+          {/* Image Container with Elegant Framing */}
+          <div className="relative overflow-hidden rounded-2xl lg:rounded-3xl aspect-square sm:aspect-auto sm:h-[500px] lg:h-[600px]">
+            {/* Soft Gradient Overlay for Depth */}
+            <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+            
+            {/* Hero Image */}
+            <Image
+              src="/images/zorahero.png"
+              alt="Nairobi skyline with everyday essentials basket"
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover"
+              priority
+            />
           </div>
         </div>
       </section>
