@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ProductCard } from "../components/product-card";
 import { CategoryBannerCard, type CategoryBannerCardProps } from "../components/category-banner-card";
 import { useAuth } from "../components/auth/auth-provider";
@@ -58,10 +57,10 @@ const IMAGE_CATEGORY_CARDS: CategoryBannerCardProps[] = [
   },
 ];
 
-const HERO_METRICS = [
-  "Same-day Nairobi before 6PM",
-  "M-Pesa, card, or COD",
-  "Live WhatsApp updates",
+const COMPACT_TRUST_ITEMS = [
+  "Same-day Nairobi delivery",
+  "M-Pesa",
+  "WhatsApp support"
 ];
 
 const TRUST_STRIP = [
@@ -96,53 +95,6 @@ function getProductImage(product: Product) {
   return product.image && product.image.startsWith("http")
     ? product.image
     : "/product-placeholder.png";
-}
-
-function HeroSearchBar() {
-  const router = useRouter();
-  const [query, setQuery] = useState("");
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (query.trim()) {
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
-    }
-  }
-
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex items-center gap-2 rounded-[22px] border border-white/14 bg-white/6 pl-4 pr-1.5 py-1.5 backdrop-blur-sm"
-    >
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="flex-shrink-0 text-white/48"
-      >
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.3-4.3" />
-      </svg>
-      <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search groceries, drinks, household items..."
-        className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/40"
-        aria-label="Search products"
-      />
-      <button
-        type="submit"
-        className="inline-flex flex-shrink-0 items-center justify-center rounded-[18px] bg-[color:var(--accent)] px-4 py-2.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
-      >
-        Search
-      </button>
-    </form>
-  );
 }
 
 function SectionHeader({
@@ -208,23 +160,6 @@ export default function Home() {
     };
   }, [authReady, user?.id]);
 
-  const heroPreview = useMemo(() => {
-    const priority: CategorySlug[] = ["groceries", "beverages", "household", "electronics"];
-    const selected: Product[] = [];
-
-    priority.forEach((slug) => {
-      const match = products.find(
-        (product) => product.category === slug && !selected.some((item) => item.id === product.id)
-      );
-
-      if (match) {
-        selected.push(match);
-      }
-    });
-
-    return selected.slice(0, 4);
-  }, [products]);
-
   const dailyEssentials = useMemo(
     () => products.filter((product) => DAILY_CATEGORIES.includes(product.category)).slice(0, 4),
     [products]
@@ -248,128 +183,76 @@ export default function Home() {
   const bestSellers = useMemo(() => products.slice(0, 8), [products]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-16 pt-4 sm:px-6 sm:pb-20 sm:pt-6">
-      <section className="relative overflow-hidden rounded-[32px] border border-[color:var(--border)] bg-[linear-gradient(135deg,rgba(10,10,11,0.92),rgba(18,20,23,0.98))] px-5 py-6 shadow-[0_32px_120px_rgba(0,0,0,0.45)] sm:px-7 sm:py-8 lg:px-10 lg:py-10">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-16 top-8 h-48 w-48 rounded-full bg-[color:var(--accent)]/18 blur-3xl" />
-          <div className="absolute right-0 top-0 h-56 w-56 rounded-full bg-[color:var(--glow)]/10 blur-3xl" />
-          <div className="absolute bottom-0 left-1/3 h-44 w-44 rounded-full bg-[color:var(--success)]/10 blur-3xl" />
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:24px_24px] opacity-25" />
-        </div>
-
-        <div className="relative grid gap-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/80 backdrop-blur">
+    <div className="mx-auto max-w-7xl px-4 pb-12 pt-4 sm:px-6 sm:pb-16 sm:pt-6">
+      {/* Premium Hero Section */}
+      <section className="relative overflow-hidden">
+        {/* Mobile-First Layout: Text above, Image below */}
+        <div className="flex flex-col gap-8 lg:grid lg:grid-cols-2 lg:gap-12 lg:items-center">
+          {/* Text Content - Mobile First Priority */}
+          <div className="flex flex-col justify-center order-first lg:order-first">
+            {/* Eyebrow */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/80 backdrop-blur w-fit">
               <span className="h-2 w-2 rounded-full bg-[color:var(--success)]" />
               Nairobi-first minimart
             </div>
-            <h1 className="mt-5 max-w-[12ch] text-balance font-serif text-[2.9rem] leading-[0.92] text-white sm:text-6xl lg:text-[4.5rem]">
+
+            {/* Main Headline */}
+            <h1 className="mt-6 text-balance font-serif text-4xl leading-[1.1] text-white sm:text-5xl lg:text-6xl">
               Fast everyday shopping in Nairobi
             </h1>
-            <p className="mt-5 max-w-2xl text-balance text-base leading-7 text-[#d7dde6] sm:text-lg">
-              Groceries, drinks, home basics, and VoltHub electronics in one checkout.
+
+            {/* Supporting Text */}
+            <p className="mt-5 max-w-2xl text-base leading-7 text-[#d7dde6] sm:text-lg">
+              Groceries, drinks, home basics, and everyday essentials in one easy basket.
             </p>
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            {/* Primary & Secondary CTAs */}
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href="/shop"
-                className="inline-flex min-h-13 items-center justify-center rounded-full bg-[color:var(--accent)] px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(47,107,255,0.35)] transition-transform hover:scale-[1.01]"
+                className="inline-flex min-h-12 items-center justify-center rounded-full bg-[color:var(--accent)] px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(47,107,255,0.35)] transition-all hover:shadow-[0_22px_50px_rgba(47,107,255,0.45)] hover:scale-[1.02] active:scale-95"
               >
                 Start shopping
               </Link>
               <Link
                 href="#categories"
-                className="inline-flex min-h-13 items-center justify-center rounded-full border border-white/12 bg-white/6 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/12 bg-white/6 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-white/20 hover:bg-white/10 backdrop-blur-sm"
               >
                 Browse categories
               </Link>
             </div>
 
-            <div className="mt-5 grid gap-2.5 sm:grid-cols-3">
-              {HERO_METRICS.map((item) => (
-                <div
-                  key={item}
-                  className="rounded-[18px] border border-white/6 bg-white/[0.05] px-3.5 py-3 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/10 hover:bg-white/8"
-                >
-                  {item}
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 flex flex-wrap gap-3 text-xs font-medium uppercase tracking-[0.22em] text-[#9fb3cf] sm:text-sm sm:tracking-[0.24em]">
-              <span>Order before 6PM</span>
-              <span className="text-white/24">/</span>
-              <span>M-Pesa STK push</span>
-              <span className="text-white/24">/</span>
-              <span>WhatsApp updates</span>
-            </div>
-
-            <div className="mt-6">
-              <HeroSearchBar />
+            {/* Compact Trust Strip */}
+            <div className="mt-8 pt-6 border-t border-white/10">
+              <div className="flex flex-wrap gap-1 text-xs font-medium text-white/70">
+                {COMPACT_TRUST_ITEMS.map((item, index) => (
+                  <div key={item} className="flex items-center gap-1">
+                    <span>{item}</span>
+                    {index < COMPACT_TRUST_ITEMS.length - 1 && (
+                      <span className="text-white/30">·</span>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="relative min-h-[420px] rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] p-4 backdrop-blur sm:p-5">
-            <div className="absolute right-4 top-4 z-20 max-w-[220px] rounded-[22px] border border-white/12 bg-[#11161b]/92 p-4 shadow-[0_22px_50px_rgba(0,0,0,0.32)] backdrop-blur">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[color:var(--warning)]">
-                Delivery window
-              </div>
-              <div className="mt-2 text-xl font-semibold text-white">
-                Same-day Nairobi delivery
-              </div>
-              <p className="mt-2 text-sm leading-6 text-[color:var(--muted)]">
-                Order before 6PM for same-day delivery. Express 2-4 hour zones available.
-              </p>
-            </div>
-
-            <div className="grid h-full grid-cols-2 gap-2.5 pt-24 sm:gap-3 sm:pt-16">
-              {heroPreview.length > 0 ? (
-                heroPreview.map((product, index) => (
-                  <Link
-                    key={product.id}
-                    href={`/product/${product.slug}`}
-                    className={`group relative overflow-hidden rounded-[20px] border border-white/8 bg-black shadow-[0_12px_32px_rgba(0,0,0,0.32)] transition-all duration-300 hover:border-white/12 hover:shadow-[0_16px_48px_rgba(0,0,0,0.4)] hover:-translate-y-0.5 ${
-                      index === 0 ? "col-span-2 aspect-[16/9]" : "aspect-[5/6]"
-                    }`}
-                  >
-                    <Image
-                      src={getProductImage(product)}
-                      alt={product.name}
-                      fill
-                      sizes={index === 0 ? "(max-width: 1024px) 100vw, 42vw" : "(max-width: 1024px) 50vw, 20vw"}
-                      className="object-cover transition-transform duration-500 group-hover:scale-[1.08]"
-                    />
-                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,11,0.08),rgba(10,10,11,0.72))]" />
-                    <div className="absolute inset-x-0 bottom-0 p-3.5 sm:p-4">
-                      <div className="text-[9px] font-semibold uppercase tracking-[0.24em] text-white/56">
-                        {product.category.replace("-", " ")}
-                      </div>
-                      <div className="mt-1.5 text-sm font-semibold text-white sm:text-base">
-                        {product.name}
-                      </div>
-                    </div>
-                  </Link>
-                ))
-              ) : (
-                <div className="col-span-2 flex h-full min-h-[240px] flex-col justify-between rounded-[22px] border border-dashed border-white/12 bg-white/[0.02] p-4 sm:p-5">
-                  <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/48">
-                      Zora mix
-                    </div>
-                    <div className="mt-3 max-w-sm text-xl font-semibold text-white sm:text-2xl">
-                      Everyday shopping first, with VoltHub electronics inside the same store.
-                    </div>
-                  </div>
-                  <div className="grid gap-2.5 sm:grid-cols-2">
-                    <div className="rounded-[18px] border border-white/6 bg-white/[0.04] p-3.5 text-xs text-white/64">
-                      Groceries, drinks, household items, and personal care.
-                    </div>
-                    <div className="rounded-[18px] border border-white/6 bg-white/[0.04] p-3.5 text-xs text-white/64">
-                      Chargers, audio, and electronics from VoltHub when you need them.
-                    </div>
-                  </div>
-                </div>
-              )}
+          {/* Hero Image - Premium Integration */}
+          <div className="relative order-last lg:order-last">
+            {/* Image Container with Elegant Framing */}
+            <div className="relative overflow-hidden rounded-2xl lg:rounded-3xl aspect-square sm:aspect-auto sm:h-[500px] lg:h-[600px]">
+              {/* Soft Gradient Overlay for Text Readability on Mobile */}
+              <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+              
+              {/* Hero Image */}
+              <Image
+                src="/images/zorahero.png"
+                alt="Nairobi skyline with everyday essentials basket"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover"
+                priority
+              />
             </div>
           </div>
         </div>
