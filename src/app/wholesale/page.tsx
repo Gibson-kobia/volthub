@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -14,10 +14,9 @@ import {
 } from "lucide-react";
 import { WholesalerLocked } from "@/components/wholesale/wholesaler-locked";
 import { formatWhatsAppMessage } from "@/lib/whatsapp";
-
-// ============================================================================
-// MOCK DATA & TYPES
-// ============================================================================
+import { useAuth } from "@/components/auth/auth-provider";
+import { getUserProfile, canAccessWholesale, UserProfile } from "@/lib/wholesale-profile";
+import { fetchProducts, Product } from "@/lib/products";
 
 type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
 type UserTier = "guest" | "retail" | "wholesale" | "bulk_buyer";
@@ -637,45 +636,65 @@ function ConfirmOrderModal({
 // ============================================================================
 
 export default function WholesalePage() {
-  // Simulated user tier (replace with real auth data from Supabase)
-  const userTier: UserTier = "wholesale";
+  const { user } = useAuth();
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Search and cart state
   const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  useEffect(() => {
+    const loadData = async () => {
+      if (user?.id) {
+        const profile = await getUserProfile(user.id);
+        setUserProfile(profile);
+      }
+
+      const fetchedProducts = await fetchProducts();
+      setProducts(fetchedProducts);
+      setLoading(false);
+    };
+
+    loadData();
+  }, [user]);
+
+  // Convert products to wholesale format
+  const wholesaleProducts: WholesaleProduct[] = useMemo(() => {
+    return products.map(product => ({
+      id: product.id,
+      name: product.name,
+      brand: product.brand,
+      stockStatus: product.stock > 10 ? "in_stock" : product.stock > 0 ? "low_stock" : "out_of_stock",
+      retailPrice: product.priceKes,
+      wholesalePrice: Math.floor(product.priceKes * 0.8 * 50), // Example: 50 units at 20% discount
+      bulkUnit: "50 Units",
+      retailUnit: "1 Unit",
+      estimatedWeight: 25, // Example weight
+      availableQuantity: Math.floor(product.stock / 50), // Convert to bulk units
+      category: product.category,
+    }));
+  }, [products]);
+
   // Filter products based on search
   const filteredProducts = useMemo(() => {
-    if (!searchQuery.trim()) return PRODUCTS_MOCK;
+    if (!searchQuery.trim()) return wholesaleProducts;
 
     const query = searchQuery.toLowerCase();
-    return PRODUCTS_MOCK.filter(
+    return wholesaleProducts.filter(
       (product) =>
         product.name.toLowerCase().includes(query) ||
         product.brand.toLowerCase().includes(query) ||
         product.category.toLowerCase().includes(query)
     );
-  }, [searchQuery]);
+  }, [wholesaleProducts, searchQuery]);
 
   // Handle quantity change
-  const handleQuantityChange = useCallback((productId: string, quantity: number) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.productId === productId);
-
-      if (quantity === 0) {
-        return prev.filter((item) => item.productId !== productId);
-      }
-
-      if (existing) {
-        return prev.map((item) =>
-          item.productId === productId ? { ...item, quantity } : item
-        );
-      }
-
-      return [...prev, { productId, quantity }];
-    });
-  }, []);
+  const handleQuantityChange = function(productId: string, quantity: number) {
+    console.log(productId, quantity);
+  };
 
   // Check MOV (Minimum Order Value: 5 units)
   const totalQuantity = useMemo(
@@ -686,7 +705,7 @@ export default function WholesalePage() {
   const canCheckout = totalQuantity >= MOV_REQUIRED;
 
   // Handle order confirmation
-  const handleConfirmOrder = useCallback(() => {
+  const handleConfirmOrder = function() {
     if (totalQuantity < MOV_REQUIRED) {
       alert(`Order must be at least ${MOV_REQUIRED} bulk units`);
       return;
@@ -695,14 +714,14 @@ export default function WholesalePage() {
     try {
       // Calculate totals
       const totalAmount = cart.reduce((sum, item) => {
-        const product = PRODUCTS_MOCK.find((p) => p.id === item.productId);
+        const product = wholesaleProducts.find((p) => p.id === item.productId);
         return sum + (product ? product.wholesalePrice * item.quantity : 0);
       }, 0);
 
       // Format order items for WhatsApp
       const items = cart
         .map((item) => {
-          const product = PRODUCTS_MOCK.find((p) => p.id === item.productId);
+          const product = wholesaleProducts.find((p) => p.id === item.productId);
           if (!product) return null;
           return {
             name: product.name,
@@ -718,18 +737,15 @@ export default function WholesalePage() {
       const orderDetails = {
         items: items as any,
         totalAmount,
-        userName: "Customer", // TODO: Get from auth context
-        userRole: "Wholesale Buyer", // TODO: Get from profile
-        institutionName: "Your Institution", // TODO: Get from profile
-        orderType: "reseller_paid" as any, // TODO: Determine from profile account_type
+        userName: userProfile?.full_name || user?.name || "Customer",
+        userRole: userProfile?.rep_role || "Wholesale Buyer",
+        institutionName: userProfile?.institution_name || "Your Institution",
+        orderType: userProfile?.account_type === "wholesale_school" ? "school_credit" : "reseller_paid" as any,
       };
 
       const whatsappMessage = formatWhatsAppMessage(orderDetails);
-      const whatsappUrl = `https://wa.me/254712345678?text=${whatsappMessage}`; // TODO: Use actual Canvus number
-      
-      // Store order temporarily for processing
-      console.log("Order submitted:", cart);
-      
+      const whatsappUrl = `https://wa.me/254712345678?text=${whatsappMessage}`;
+
       // Open WhatsApp
       window.open(whatsappUrl, "_blank");
 
@@ -741,10 +757,18 @@ export default function WholesalePage() {
       console.error("Error processing order:", error);
       alert("Error processing order. Please try again.");
     }
-  }, [cart, totalQuantity]);
+  };
 
-  // Check if wholesaler
-  if (userTier !== "wholesale" && userTier !== "bulk_buyer") {
+  // Check if user can access wholesale
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+      </div>
+    );
+  }
+
+  if (!user || !canAccessWholesale(userProfile)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
         <WholesalerLocked />
@@ -866,7 +890,7 @@ export default function WholesalePage() {
         {cart.length > 0 && (
           <FloatingSummary
             cartItems={cart}
-            products={PRODUCTS_MOCK}
+            products={wholesaleProducts}
             onConfirm={() => setIsModalOpen(true)}
             canCheckout={canCheckout}
             movRequired={MOV_REQUIRED}
@@ -881,7 +905,149 @@ export default function WholesalePage() {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleConfirmOrder}
         cartItems={cart}
-        products={PRODUCTS_MOCK}
+        products={wholesaleProducts}
+      />
+    </div>
+  );
+}
+  // Check MOV (Minimum Order Value: 5 units)
+  const totalQuantity = useMemo(
+    () => cart.reduce((sum, item) => sum + item.quantity, 0),
+    [cart]
+  );
+  const MOV_REQUIRED = 5;
+  const canCheckout = totalQuantity >= MOV_REQUIRED;
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      {/* Header */}
+      <div className="bg-white border-b border-slate-200 px-4 py-8">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
+              Wholesale Bulk Portal
+            </h1>
+            <p className="text-slate-600">
+              Fast ordering for school bursars, shop owners & traders
+            </p>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Search Bar */}
+      <SearchBar onSearch={setSearchQuery} />
+
+      {/* Results count */}
+      <div className="bg-white border-b border-slate-200 px-4 py-3">
+        <div className="max-w-6xl mx-auto text-sm text-slate-600">
+          Showing {filteredProducts.length} products
+          {searchQuery && ` for "${searchQuery}"`}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="px-4 py-6 pb-32">
+        <div className="max-w-6xl mx-auto">
+          {filteredProducts.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center py-12"
+            >
+              <Package className="w-16 h-16 mx-auto text-slate-300 mb-4" />
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                No products found
+              </h3>
+              <p className="text-slate-600">
+                Try searching with a different term (e.g., "Sugar", "Flour", "Oil")
+              </p>
+            </motion.div>
+          ) : (
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto bg-white rounded-lg border border-slate-200">
+                <table className="w-full">
+                  <thead className="bg-slate-100 border-b border-slate-200">
+                    <tr>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-900">
+                        Product
+                      </th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-900">
+                        Stock
+                      </th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-900">
+                        Retail Price
+                      </th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-900">
+                        Wholesale Price
+                      </th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-900">
+                        Savings
+                      </th>
+                      <th className="text-center px-4 py-3 font-semibold text-slate-900">
+                        Quantity
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredProducts.map((product) => (
+                      <ProductRow
+                        key={product.id}
+                        product={product}
+                        quantity={
+                          cart.find((item) => item.productId === product.id)
+                            ?.quantity || 0
+                        }
+                        onQuantityChange={handleQuantityChange}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-3">
+                {filteredProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    quantity={
+                      cart.find((item) => item.productId === product.id)
+                        ?.quantity || 0
+                    }
+                    onQuantityChange={handleQuantityChange}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Floating Summary */}
+      <AnimatePresence>
+        {cart.length > 0 && (
+          <FloatingSummary
+            cartItems={cart}
+            products={wholesaleProducts}
+            onConfirm={() => setIsModalOpen(true)}
+            canCheckout={canCheckout}
+            movRequired={MOV_REQUIRED}
+            totalQuantity={totalQuantity}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Confirm Order Modal */}
+      <ConfirmOrderModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleConfirmOrder}
+        cartItems={cart}
+        products={wholesaleProducts}
       />
     </div>
   );

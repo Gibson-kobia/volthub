@@ -135,7 +135,7 @@ function Shell({ children }: { children: React.ReactNode }) {
             <Link href="/" className="leading-none text-white">
               <div className="text-[1.75rem] font-extrabold tracking-[0.18em]">CANVUS</div>
               <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/50">
-                Nairobi minimart
+                Meru wholesale
               </div>
             </Link>
 

@@ -10,6 +10,10 @@ export default function SignupPage() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [accountType, setAccountType] = useState<"retail" | "wholesale">("retail");
+  const [wholesaleType, setWholesaleType] = useState<"school" | "business" | null>(null);
+  const [institutionName, setInstitutionName] = useState("");
+  const [repRole, setRepRole] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -35,8 +39,24 @@ export default function SignupPage() {
       return;
     }
 
+    if (accountType === "wholesale") {
+      if (!wholesaleType) {
+        setError("Please select whether you are a school/institution or business/reseller.");
+        return;
+      }
+      if (!institutionName.trim()) {
+        setError("Institution/Business name is required for wholesale accounts.");
+        return;
+      }
+      if (!repRole.trim()) {
+        setError("Your role/position is required for wholesale accounts.");
+        return;
+      }
+    }
+
     setLoading(true);
-    const res = await signup(name.trim(), email.trim(), phone.trim(), password);
+    const accountTypeValue = accountType === "retail" ? "retail" : wholesaleType === "school" ? "wholesale_school" : "wholesale_general";
+    const res = await signup(name.trim(), email.trim(), phone.trim(), password, accountTypeValue, institutionName.trim(), repRole.trim());
     setLoading(false);
 
     if (!res.ok) {
@@ -53,6 +73,8 @@ export default function SignupPage() {
 
     if (res.code === "confirmation_resent") {
       setInfoMessage("This email already has a pending account. We sent a fresh confirmation link.");
+    } else if (res.code === "wholesale_pending") {
+      setInfoMessage("Your wholesale application has been submitted. We'll review it within 24-48 hours.");
     }
 
     setState("sent");
@@ -90,6 +112,93 @@ export default function SignupPage() {
             className="w-full rounded-lg border border-black/10 dark:border-white/10 px-3 py-2 bg-white dark:bg-black"
           />
         </div>
+
+        {/* Account Type Selection */}
+        <div>
+          <label className="block mb-2 font-medium">Account Type</label>
+          <div className="space-y-2">
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="accountType"
+                value="retail"
+                checked={accountType === "retail"}
+                onChange={(e) => setAccountType(e.target.value as "retail")}
+                className="mr-2"
+              />
+              Retail - Standard shopping
+            </label>
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="accountType"
+                value="wholesale"
+                checked={accountType === "wholesale"}
+                onChange={(e) => setAccountType(e.target.value as "wholesale")}
+                className="mr-2"
+              />
+              Wholesale - Bulk ordering & special pricing
+            </label>
+          </div>
+        </div>
+
+        {/* Wholesale Type Selection */}
+        {accountType === "wholesale" && (
+          <div>
+            <label className="block mb-2 font-medium">Wholesale Type</label>
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="wholesaleType"
+                  value="school"
+                  checked={wholesaleType === "school"}
+                  onChange={(e) => setWholesaleType(e.target.value as "school")}
+                  className="mr-2"
+                />
+                School/Institution - LPO payments, credit terms
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="wholesaleType"
+                  value="business"
+                  checked={wholesaleType === "business"}
+                  onChange={(e) => setWholesaleType(e.target.value as "business")}
+                  className="mr-2"
+                />
+                Business/Reseller - M-Pesa payments, exclusive discounts
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* Conditional Wholesale Fields */}
+        {accountType === "wholesale" && wholesaleType && (
+          <>
+            <div>
+              <label className="block mb-1">
+                {wholesaleType === "school" ? "School/Institution Name" : "Business Name"}
+              </label>
+              <input
+                value={institutionName}
+                onChange={(e) => setInstitutionName(e.target.value)}
+                placeholder={wholesaleType === "school" ? "e.g., Meru High School" : "e.g., ABC Traders Ltd"}
+                className="w-full rounded-lg border border-black/10 dark:border-white/10 px-3 py-2 bg-white dark:bg-black"
+              />
+            </div>
+            <div>
+              <label className="block mb-1">Your Role/Position</label>
+              <input
+                value={repRole}
+                onChange={(e) => setRepRole(e.target.value)}
+                placeholder={wholesaleType === "school" ? "e.g., School Bursar" : "e.g., Owner/Manager"}
+                className="w-full rounded-lg border border-black/10 dark:border-white/10 px-3 py-2 bg-white dark:bg-black"
+              />
+            </div>
+          </>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block mb-1">Password</label>
