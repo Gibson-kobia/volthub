@@ -12,8 +12,6 @@ import {
   ChevronDown,
   AlertCircle,
 } from "lucide-react";
-import { WholesalerLocked } from "@/components/wholesale/wholesaler-locked";
-import { formatWhatsAppMessage } from "@/lib/whatsapp";
 
 // ============================================================================
 // MOCK DATA & TYPES
@@ -154,9 +152,49 @@ const PRODUCTS_MOCK: WholesaleProduct[] = [
 // ============================================================================
 
 /**
- * WholesalerLocked: Moved to components - now imported as WholesalerLocked
- * Component is now in src/components/wholesale/wholesaler-locked.tsx
+ * WholesalerLock: Shown when user is not an approved wholesaler
  */
+function WholesalerLock() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex items-center justify-center min-h-[60vh]"
+    >
+      <div className="w-full max-w-md text-center px-6">
+        <motion.div
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="mb-6"
+        >
+          <Lock className="w-16 h-16 mx-auto text-slate-400" />
+        </motion.div>
+
+        <h2 className="text-2xl font-bold text-slate-900 mb-3">
+          Wholesale Access Limited
+        </h2>
+        <p className="text-slate-600 mb-8 leading-relaxed">
+          The wholesale bulk portal is available for approved school bursars,
+          shop owners, and bulk retailers. Get access to wholesale pricing and
+          exclusive bulk orders.
+        </p>
+
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+        >
+          Apply for Wholesale Account
+        </motion.button>
+
+        <p className="text-sm text-slate-500 mt-6">
+          Already approved? Contact support at{" "}
+          <span className="font-semibold">support@kanywithia.com</span>
+        </p>
+      </div>
+    </motion.div>
+  );
+}
 
 /**
  * SearchBar: Sticky search input for finding products
@@ -400,20 +438,14 @@ interface FloatingSummaryProps {
   cartItems: CartItem[];
   products: WholesaleProduct[];
   onConfirm: () => void;
-  canCheckout?: boolean;
-  movRequired?: number;
-  totalQuantity?: number;
 }
 
 function FloatingSummary({
   cartItems,
   products,
   onConfirm,
-  canCheckout = true,
-  movRequired = 5,
-  totalQuantity = 0,
 }: FloatingSummaryProps) {
-  const totalQtyCalc = totalQuantity || cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const totalWeight = cartItems.reduce((sum, item) => {
     const product = products.find((p) => p.id === item.productId);
@@ -425,7 +457,7 @@ function FloatingSummary({
     return sum + (product ? product.wholesalePrice * item.quantity : 0);
   }, 0);
 
-  if (totalQtyCalc === 0) return null;
+  if (totalQuantity === 0) return null;
 
   return (
     <motion.div
@@ -439,9 +471,7 @@ function FloatingSummary({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           <div className="bg-slate-50 rounded-lg p-3">
             <div className="text-xs text-slate-600 font-semibold mb-1">BULK UNITS</div>
-            <div className={`text-2xl font-bold ${totalQtyCalc < movRequired ? 'text-red-600' : 'text-slate-900'}`}>
-              {totalQtyCalc}{totalQtyCalc < movRequired && ` / ${movRequired}`}
-            </div>
+            <div className="text-2xl font-bold text-slate-900">{totalQuantity}</div>
           </div>
           <div className="bg-slate-50 rounded-lg p-3">
             <div className="text-xs text-slate-600 font-semibold mb-1">EST. WEIGHT</div>
@@ -461,18 +491,13 @@ function FloatingSummary({
         </div>
 
         <motion.button
-          whileHover={canCheckout ? { scale: 1.02 } : {}}
-          whileTap={canCheckout ? { scale: 0.98 } : {}}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={onConfirm}
-          disabled={!canCheckout}
-          className={`w-full font-bold py-4 px-6 rounded-lg transition-all flex items-center justify-center gap-2 ${
-            canCheckout
-              ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-              : "bg-red-100 text-red-700 cursor-not-allowed"
-          }`}
+          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-6 rounded-lg transition-all flex items-center justify-center gap-2"
         >
           <CheckCircle className="w-5 h-5" />
-          {canCheckout ? "CONFIRM ORDER" : `MINIMUM ${movRequired} UNITS REQUIRED`}
+          CONFIRM ORDER
         </motion.button>
       </div>
     </motion.div>
@@ -598,10 +623,11 @@ function ConfirmOrderModal({
                 </div>
 
                 {/* Info Box */}
-                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-6 flex gap-3">
-                  <AlertCircle className="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5" />
-                  <div className="text-xs text-emerald-700">
-                    📱 <strong>You'll be redirected to WhatsApp</strong> for order confirmation. Our team will then contact you within 2 hours to arrange delivery.
+                <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-6 flex gap-3">
+                  <AlertCircle className="w-5 h-5 text-slate-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-xs text-slate-600">
+                    Our team will contact you within 2 hours to confirm delivery cost
+                    and pickup time.
                   </div>
                 </div>
 
@@ -614,7 +640,7 @@ function ConfirmOrderModal({
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
                   >
                     <Truck className="w-5 h-5" />
-                    SUBMIT ORDER TO WHATSAPP
+                    SUBMIT ORDER
                   </motion.button>
                   <button
                     onClick={onClose}
@@ -677,77 +703,20 @@ export default function WholesalePage() {
     });
   }, []);
 
-  // Check MOV (Minimum Order Value: 5 units)
-  const totalQuantity = useMemo(
-    () => cart.reduce((sum, item) => sum + item.quantity, 0),
-    [cart]
-  );
-  const MOV_REQUIRED = 5;
-  const canCheckout = totalQuantity >= MOV_REQUIRED;
-
   // Handle order confirmation
   const handleConfirmOrder = useCallback(() => {
-    if (totalQuantity < MOV_REQUIRED) {
-      alert(`Order must be at least ${MOV_REQUIRED} bulk units`);
-      return;
-    }
-
-    try {
-      // Calculate totals
-      const totalAmount = cart.reduce((sum, item) => {
-        const product = PRODUCTS_MOCK.find((p) => p.id === item.productId);
-        return sum + (product ? product.wholesalePrice * item.quantity : 0);
-      }, 0);
-
-      // Format order items for WhatsApp
-      const items = cart
-        .map((item) => {
-          const product = PRODUCTS_MOCK.find((p) => p.id === item.productId);
-          if (!product) return null;
-          return {
-            name: product.name,
-            size: product.bulkUnit,
-            quantity: item.quantity,
-            unitPrice: product.wholesalePrice,
-            subtotal: product.wholesalePrice * item.quantity,
-          };
-        })
-        .filter(Boolean);
-
-      // Generate WhatsApp message using utility
-      const orderDetails = {
-        items: items as any,
-        totalAmount,
-        userName: "Customer", // TODO: Get from auth context
-        userRole: "Wholesale Buyer", // TODO: Get from profile
-        institutionName: "Your Institution", // TODO: Get from profile
-        orderType: "reseller_paid" as any, // TODO: Determine from profile account_type
-      };
-
-      const whatsappMessage = formatWhatsAppMessage(orderDetails);
-      const whatsappUrl = `https://wa.me/254712345678?text=${whatsappMessage}`; // TODO: Use actual Canvus number
-      
-      // Store order temporarily for processing
-      console.log("Order submitted:", cart);
-      
-      // Open WhatsApp
-      window.open(whatsappUrl, "_blank");
-
-      // Reset UI
-      setCart([]);
-      setIsModalOpen(false);
-      alert("Opening WhatsApp... Our team will contact you shortly to confirm details.");
-    } catch (error) {
-      console.error("Error processing order:", error);
-      alert("Error processing order. Please try again.");
-    }
-  }, [cart, totalQuantity]);
+    console.log("Order submitted:", cart);
+    // TODO: Send to Supabase
+    setCart([]);
+    setIsModalOpen(false);
+    alert("Order submitted! We'll contact you shortly.");
+  }, [cart]);
 
   // Check if wholesaler
   if (userTier !== "wholesale" && userTier !== "bulk_buyer") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-        <WholesalerLocked />
+        <WholesalerLock />
       </div>
     );
   }
@@ -868,9 +837,6 @@ export default function WholesalePage() {
             cartItems={cart}
             products={PRODUCTS_MOCK}
             onConfirm={() => setIsModalOpen(true)}
-            canCheckout={canCheckout}
-            movRequired={MOV_REQUIRED}
-            totalQuantity={totalQuantity}
           />
         )}
       </AnimatePresence>
