@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Search,
   ShoppingCart,
@@ -13,6 +13,8 @@ import {
   CheckCircle,
   Truck,
 } from "lucide-react";
+import { supabase } from "../../lib/supabase";
+import { formatWholesaleWhatsappMessage, openWhatsappMessage } from "../../lib/whatsapp";
 
 // ============================================================================
 // TYPES & CONSTANTS
@@ -530,6 +532,33 @@ export default function WholesalePage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [cart, setCart] = useState<Map<string, number>>(new Map());
   const [showMobileCart, setShowMobileCart] = useState(false);
+  const [profile, setProfile] = useState<any | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+
+  const fetchProfile = async () => {
+    setLoadingProfile(true);
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData?.user;
+      if (!user) {
+        setProfile(null);
+        return;
+      }
+
+      const { data: profiles } = await supabase.from('profiles').select('*').eq('id', user.id).limit(1).maybeSingle();
+      setProfile(profiles || null);
+    } catch (err) {
+      console.error('fetchProfile', err);
+      setProfile(null);
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+    // subscribe to auth changes if desired
+  }, []);
 
   // Group products by brand
   const groupedByBrand = useMemo(() => {
@@ -584,6 +613,79 @@ export default function WholesalePage() {
 
     return { total_bales, total_packets, total_kes };
   }, [cart]);
+
+  // Minimum order value rule: at least 5 bales/units
+  const meetsMOV = cartSummary.total_bales >= 5;
+
+  // Simulated M-Pesa STK Push (replace with real integration)
+  const triggerMpesaSTKPush = async (amount: number) => {
+    // In production call backend endpoint to trigger STK push
+    // Here we simulate with a user confirm prompt
+    if (typeof window === 'undefined') return false;
+    const ok = window.confirm(`Trigger M-Pesa payment for KES ${amount.toLocaleString()}?`);
+    if (!ok) return false;
+    // simulate delay
+    await new Promise((r) => setTimeout(r, 1200));
+    // In real flow check callback for payment confirmation
+    return true;
+  };
+
+  const handlePlaceOrder = useCallback(async () => {
+    if (!profile) {
+      alert('Please sign in and complete profile.');
+      return;
+    }
+
+    const items = Array.from(cart.entries()).map(([productId, qty]) => {
+      const product = WHOLESALE_PRODUCTS_MOCK.find((p) => p.id === productId);
+      return {
+        id: productId,
+        name: product?.name || productId,
+        brand: product?.brand,
+        quantity_bales: qty,
+        line_total_kes: (product?.wholesale_price_per_bale || 0) * qty,
+      };
+    });
+
+    const total = cartSummary.total_kes;
+
+    if (profile.account_type === 'wholesale_school') {
+      const message = formatWholesaleWhatsappMessage({
+        userName: profile.full_name || profile.email || 'Unknown',
+        userRole: profile.rep_role || 'Representative',
+        institution: profile.institution_name || '',
+        items,
+        totalKes: total,
+        note: 'School Credit Order - LPO to be provided on delivery.',
+      });
+
+      openWhatsappMessage(message);
+      return;
+    }
+
+    if (profile.account_type === 'wholesale_general') {
+      // Reseller flow: require payment via M-Pesa first
+      const paid = await triggerMpesaSTKPush(total);
+      if (!paid) {
+        alert('Payment not completed. Order cancelled.');
+        return;
+      }
+
+      const message = formatWholesaleWhatsappMessage({
+        userName: profile.full_name || profile.email || 'Unknown',
+        userRole: profile.rep_role || 'Reseller',
+        institution: profile.institution_name || '',
+        items,
+        totalKes: total,
+        note: 'Reseller Order - Payment Confirmed via M-Pesa.',
+      });
+
+      openWhatsappMessage(message);
+      return;
+    }
+
+    alert('Your account does not have wholesale privileges.');
+  }, [cart, cartSummary, profile]);
 
   // Desktop Table View
   const TableView = () => (
