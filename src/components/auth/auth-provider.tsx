@@ -17,8 +17,11 @@ type AuthContextValue = {
     name: string,
     email: string,
     phone: string,
-    password: string
-  ) => Promise<{ ok: boolean; error?: string; code?: "confirmation_sent" | "confirmation_resent" | "already_confirmed" }>;
+    password: string,
+    accountType?: 'retail' | 'wholesale_general' | 'wholesale_school',
+    institutionName?: string,
+    repRole?: string
+  ) => Promise<{ ok: boolean; error?: string; code?: "confirmation_sent" | "confirmation_resent" | "already_confirmed" | "wholesale_pending" }>;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string; code?: "unconfirmed" }>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ ok: boolean; error?: string }>;
