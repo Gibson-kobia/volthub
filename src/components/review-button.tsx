@@ -21,7 +21,7 @@ export function ReviewButton({ productId }: { productId: string }) {
       return;
     }
     setLoading(true);
-    const raw = localStorage.getItem("volthubReviews");
+    const raw = localStorage.getItem("canvusReviews");
     const all = raw ? JSON.parse(raw) : [];
     const review = {
       id: crypto.randomUUID(),
@@ -32,7 +32,7 @@ export function ReviewButton({ productId }: { productId: string }) {
       createdAt: new Date().toISOString(),
     };
     const next = [...all, review];
-    localStorage.setItem("volthubReviews", JSON.stringify(next));
+    localStorage.setItem("canvusReviews", JSON.stringify(next));
     setLoading(false);
     setStatus("Thank you for your review.");
     setText("");

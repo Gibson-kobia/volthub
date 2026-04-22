@@ -50,7 +50,7 @@ orders (Customer orders)
 | email | TEXT | Staff email |
 | full_name | TEXT | Staff name |
 | **role** | TEXT | 'super_admin' \| 'store_admin' \| 'cashier' \| 'rider' |
-| store_code | TEXT | 'main' \| 'volthub' (multi-store) |
+| store_code | TEXT | 'main' \| 'canvus' (multi-store) |
 | is_active | BOOLEAN | Can staff log in |
 | permissions | JSONB | Custom granular permissions |
 
@@ -119,7 +119,7 @@ Product: Sugar
 |-------|------|---------|
 | id | UUID | Tracking record |
 | product_id | UUID | FK → products.id |
-| store_code | TEXT | 'main' or 'volthub' |
+| store_code | TEXT | 'main' or 'canvus' |
 | **wholesale_stock** | INTEGER | Bulk units available |
 | **retail_stock** | INTEGER | Individual units available |
 | **reserved_stock** | INTEGER | Units awaiting pickup |

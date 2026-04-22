@@ -17,9 +17,9 @@ const bodySans = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Zora | Fast Everyday Shopping in Nairobi",
+  title: "Canvus | Meru's Premier B2B & Wholesale Shop",
   description:
-    "Zora is a Nairobi-first minimart for groceries, drinks, household essentials, personal care, and VoltHub electronics with same-day delivery, M-Pesa checkout, and fast WhatsApp support.",
+    "Canvus is Meru's premier B2B and wholesale platform for schools, institutions, and businesses. Bulk pricing, wholesale ordering via WhatsApp, M-Pesa payments, and fast delivery.",
 };
 
 export const viewport = {

@@ -38,8 +38,8 @@ type FormState = {
 };
 
 const DEFAULT_FORM: FormState = {
-  store_name: "Zora Retail",
-  public_brand_name: "Zora",
+  store_name: "Canvus Wholesale",
+  public_brand_name: "Canvus",
   support_phone: "",
   support_email: "",
   physical_address: "",

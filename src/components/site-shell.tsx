@@ -8,8 +8,8 @@ import { AuthProvider, useAuth } from "./auth/auth-provider";
 import { CartDrawer } from "./cart/cart-drawer";
 
 const SUPPORT_PHONE = "+254 798 966 238";
-const SUPPORT_EMAIL = "support@volthub.co.ke";
-const WHATSAPP_URL = "https://wa.me/254798966238?text=Hi%20Zora,%20I%20need%20help%20with%20my%20order.";
+const SUPPORT_EMAIL = "support@canvus.co.ke";
+const WHATSAPP_URL = "https://wa.me/254798966238?text=Hi%20Canvus,%20I%20need%20help%20with%20my%20order.";
 
 const HEADER_LINKS = [
   { href: "/shop", label: "Categories" },
@@ -24,7 +24,7 @@ const QUICK_CATEGORY_LINKS = [
   { href: "/category/snacks", label: "Snacks" },
   { href: "/category/household", label: "Household" },
   { href: "/category/personal-care", label: "Personal care" },
-  { href: "/category/electronics", label: "VoltHub electronics" },
+  { href: "/category/electronics", label: "Canvus bulk electronics" },
 ];
 
 const SEARCH_TRENDS = ["groceries", "snacks", "drinks", "chargers", "earbuds"];
@@ -133,7 +133,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <div className="flex items-center gap-8">
             <Link href="/" className="leading-none text-white">
-              <div className="text-[1.75rem] font-extrabold tracking-[0.18em]">ZORA</div>
+              <div className="text-[1.75rem] font-extrabold tracking-[0.18em]">CANVUS</div>
               <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/50">
                 Nairobi minimart
               </div>
@@ -287,7 +287,7 @@ function Shell({ children }: { children: React.ReactNode }) {
           <div className="mx-auto max-w-2xl px-4 pt-24 sm:px-6">
             <div className="rounded-[28px] border border-[color:var(--border)] bg-[#101418] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
               <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[color:var(--glow)]">
-                Search Zora
+                Search Canvus
               </div>
               <input
                 value={searchQuery}
@@ -297,7 +297,7 @@ function Shell({ children }: { children: React.ReactNode }) {
                     runSearch(searchQuery);
                   }
                 }}
-                placeholder="Search groceries, drinks, household items, or VoltHub electronics"
+                placeholder="Search wholesale products and bulk items"
                 className="mt-4 w-full rounded-[22px] border border-[color:var(--border)] bg-white/4 px-4 py-4 text-base text-white outline-none placeholder:text-white/40 focus:border-[color:var(--glow)]"
               />
               <div className="mt-4 flex flex-wrap gap-2">
@@ -329,7 +329,7 @@ function Shell({ children }: { children: React.ReactNode }) {
           <div className="absolute right-0 top-0 h-full w-full max-w-sm border-l border-[color:var(--border)] bg-[#0f1317] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-[1.45rem] font-extrabold tracking-[0.16em] text-white">ZORA</div>
+                <div className="text-[1.45rem] font-extrabold tracking-[0.16em] text-white">CANVUS</div>
                 <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/45">
                   Everyday shopping first
                 </div>

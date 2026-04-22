@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { StaffRole } from "./types";
 
-export const STORE_CODES = ["main", "volthub"] as const;
+export const STORE_CODES = ["main", "canvus"] as const;
 export type StoreCode = (typeof STORE_CODES)[number];
 
 export const STAFF_ROLES = ["super_admin", "store_admin", "cashier", "rider"] as const;

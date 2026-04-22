@@ -36,7 +36,7 @@ export function mapDBProductToProduct(dbProduct: DBProduct): Product {
     id: dbProduct.id,
     slug: dbProduct.slug,
     name: dbProduct.name,
-    brand: dbProduct.brand || "Zora",
+    brand: dbProduct.brand || "Canvus",
     category: normalizeCategorySlug(dbProduct.category),
     priceKes: dbProduct.price,
     image: dbProduct.image_url || "/product-placeholder.png",

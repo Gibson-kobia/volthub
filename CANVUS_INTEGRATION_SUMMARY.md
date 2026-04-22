@@ -228,7 +228,7 @@ VALUES ('your-auth-user-uuid', 'admin@canvus.com', 'Admin Name', 'super_admin', 
 - Real-time stock tracking
 - Complete audit trail (every movement logged)
 - Reorder level alerts
-- Multi-location support (main, volthub stores)
+- Multi-location support (main, canvus stores)
 - Loss/damage tracking
 
 ### 🔒 Security (Built-In)

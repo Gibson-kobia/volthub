@@ -99,7 +99,7 @@ Core Store:
 Wholesale Logic:
   ✓ Wholesale pricing (5 tiers: Tier1/2/3, School, BulkBuyer)
   ✓ Profiles with school/wholesaler account types
-  ✓ Multi-store support (main, volthub)
+  ✓ Multi-store support (main, canvus)
 
 Admin System:
   ✓ Staff profiles with 4 roles (super_admin, store_admin, cashier, rider)

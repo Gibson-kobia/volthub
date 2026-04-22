@@ -73,7 +73,7 @@ export default function LoginPage() {
     <div className="mx-auto max-w-md px-6 py-10">
       <h1 className="font-serif text-3xl mb-2">Log in</h1>
       <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">
-        Welcome back to Zora.
+        Welcome back to Canvus.
       </p>
       {confirmed && (
         <div className="mb-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-300">
@@ -119,7 +119,7 @@ export default function LoginPage() {
         </Link>
       </div>
       <div className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
-        New to Zora?{" "}
+        New to Canvus?{" "}
         <Link href="/auth/signup" className="underline">
           Create account
         </Link>

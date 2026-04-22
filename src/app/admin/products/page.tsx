@@ -62,7 +62,7 @@ const SORT_OPTIONS = [
 const DEFAULT_FORM: ProductFormState = {
   name: "",
   slug: "",
-  brand: "Zora",
+  brand: "Canvus",
   category: "groceries",
   price: "",
   cost_price: "",
@@ -99,7 +99,7 @@ function mapProductToForm(product: DBProduct): ProductFormState {
   return {
     name: product.name || "",
     slug: product.slug || "",
-    brand: product.brand || "Zora",
+    brand: product.brand || "Canvus",
     category: product.category || "groceries",
     price: String(product.price ?? ""),
     cost_price: product.cost_price === null || product.cost_price === undefined ? "" : String(product.cost_price),
@@ -274,7 +274,7 @@ export default function AdminProductsPage() {
     const payload = compactRecord({
       name: form.name.trim(),
       slug: form.slug.trim() || createSlug(form.name),
-      brand: form.brand.trim() || "Zora",
+      brand: form.brand.trim() || "Canvus",
       category: form.category,
       price: Number(form.price || 0),
       cost_price: form.cost_price === "" ? null : Number(form.cost_price),

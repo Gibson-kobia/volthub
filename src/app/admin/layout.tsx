@@ -180,8 +180,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="hidden h-screen w-80 flex-col border-r border-white/8 bg-black/22 px-6 py-7 backdrop-blur lg:fixed lg:flex">
         <div className="rounded-[28px] border border-white/10 bg-white/5 p-5">
           <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">Store OS</div>
-          <div className="mt-3 font-serif text-3xl text-white">Zora Ops</div>
-          <div className="mt-2 text-sm text-white/56">VoltHub retail operations, inventory truth, and order control.</div>
+          <div className="mt-3 font-serif text-3xl text-white">Canvus Control</div>
+          <div className="mt-2 text-sm text-white/56">Wholesale operations, inventory management, and order fulfillment.</div>
           {role ? (
             <div className="mt-4">
               <Badge tone="sky">{ROLE_LABELS[role]}</Badge>
@@ -230,7 +230,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <header className="sticky top-0 z-20 border-b border-white/8 bg-black/22 px-4 py-4 backdrop-blur sm:px-6 lg:hidden">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/42">Zora Ops</div>
+              <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/42">Canvus Control</div>
               <div className="mt-1 font-serif text-2xl text-white">Admin control</div>
             </div>
             {role ? <Badge tone="sky">{ROLE_LABELS[role]}</Badge> : null}

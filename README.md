@@ -1,6 +1,6 @@
-# Zora
+# Canvus
 
-Zora is a Nairobi-first e-commerce storefront built with Next.js (App Router) and Supabase. The store focuses on groceries, drinks, snacks, household essentials, personal care, and a featured VoltHub electronics department.
+Canvus is Meru's premier B2B and wholesale e-commerce platform built with Next.js (App Router) and Supabase. The platform specializes in wholesale bulk ordering, institutional partnerships with schools and businesses, and efficient fulfillment via WhatsApp and M-Pesa payments.
 
 ## Environment Variables
 

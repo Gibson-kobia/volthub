@@ -80,7 +80,7 @@ const getAuthRedirectUrl = (path = "/auth/callback") => {
     return `${window.location.origin}${path}`; // for all non-production local host setups
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://volthub1.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://canvus.vercel.app";
   return `${baseUrl.replace(/\/*$/, "")}${path}`;
 };
 
