@@ -55,6 +55,19 @@ export type DBProduct = {
   updated_at?: string;
 };
 
+// Wholesale Product with Bale Logic (Kenyan market)
+// The '24kg Rule': 1kg packets × 24 = 24kg bale, 2kg packets × 12 = 24kg bale
+export type WholesaleProduct = DBProduct & {
+  packet_size: string; // e.g., "1kg", "2kg", "500g"
+  units_per_bale: number; // e.g., 24 for 1kg packets, 12 for 2kg packets
+  stock_bales: number; // Wholesale inventory in bales
+  wholesale_price_per_bale: number; // KES per complete bale
+  is_bale_product: boolean; // Flag for bale-based pricing
+  // Computed helpers
+  price_per_packet?: number; // Derived: wholesale_price_per_bale / units_per_bale
+  total_weight_kg?: number; // Derived: (stock_bales * units_per_bale * extractNumber(packet_size))
+};
+
 export type CartItem = {
   productId: string;
   qty: number;

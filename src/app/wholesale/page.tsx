@@ -1,149 +1,300 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   Search,
+  ShoppingCart,
   Package,
+  TrendingDown,
+  Plus,
+  Minus,
+  X,
+  AlertCircle,
   CheckCircle,
   Truck,
-  Lock,
-  X,
-  ChevronDown,
-  AlertCircle,
 } from "lucide-react";
 
 // ============================================================================
-// MOCK DATA & TYPES
+// TYPES & CONSTANTS
 // ============================================================================
-
-type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
-type UserTier = "guest" | "retail" | "wholesale" | "bulk_buyer";
 
 interface WholesaleProduct {
   id: string;
   name: string;
   brand: string;
-  stockStatus: StockStatus;
-  retailPrice: number; // KES per retail unit
-  wholesalePrice: number; // KES per bulk unit
-  bulkUnit: string; // e.g., "50kg Sack", "Bale of 12", "Carton"
-  retailUnit: string; // e.g., "1kg", "Single", "Pack"
-  estimatedWeight: number; // kg per bulk unit
-  availableQuantity: number; // how many bulk units in stock
-  category: string;
+  packet_size: string; // e.g., "1kg", "2kg", "500g"
+  units_per_bale: number; // 24, 12, 40, etc.
+  wholesale_price_per_bale: number; // KES
+  retail_price: number; // KES per packet (for reference)
+  stock_bales: number;
+  category: string; // "Flour", "Rice", "Milk", etc.
+  image?: string;
 }
 
 interface CartItem {
-  productId: string;
-  quantity: number; // number of bulk units
+  product_id: string;
+  product_name: string;
+  brand: string;
+  quantity_bales: number;
+  price_per_bale: number;
+  total_packets: number;
+  price_per_packet: number;
 }
 
-// Kenyan staple products mock
-const PRODUCTS_MOCK: WholesaleProduct[] = [
+type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
+
+const getStockStatus = (bales: number): StockStatus => {
+  if (bales === 0) return "out_of_stock";
+  if (bales <= 3) return "low_stock";
+  return "in_stock";
+};
+
+// ============================================================================
+// MOCK DATA - KENYAN WHOLESALE PRODUCTS
+// ============================================================================
+
+const WHOLESALE_PRODUCTS_MOCK: WholesaleProduct[] = [
+  // FLOUR (WHEAT) - Bale Rule: 24kg per bale
   {
-    id: "sugar-001",
-    name: "Sugar",
-    brand: "Kabras Sugar",
-    stockStatus: "in_stock",
-    retailPrice: 120,
-    wholesalePrice: 4500,
-    bulkUnit: "50kg Bag",
-    retailUnit: "1kg",
-    estimatedWeight: 50,
-    availableQuantity: 150,
-    category: "Staples",
-  },
-  {
-    id: "flour-002",
-    name: "Flour",
+    id: "flour-ajab-1kg",
+    name: "Wheat Flour",
     brand: "Ajab",
-    stockStatus: "in_stock",
-    retailPrice: 85,
-    wholesalePrice: 3200,
-    bulkUnit: "25kg Sack",
-    retailUnit: "2kg",
-    estimatedWeight: 25,
-    availableQuantity: 200,
-    category: "Staples",
+    packet_size: "1kg",
+    units_per_bale: 24,
+    wholesale_price_per_bale: 1680,
+    retail_price: 85,
+    stock_bales: 45,
+    category: "Flour",
   },
   {
-    id: "cooking-oil-003",
-    name: "Cooking Oil",
-    brand: "Pwani",
-    stockStatus: "in_stock",
-    retailPrice: 450,
-    wholesalePrice: 8500,
-    bulkUnit: "20L Jerrycan",
-    retailUnit: "1L",
-    estimatedWeight: 20,
-    availableQuantity: 80,
-    category: "Oils",
+    id: "flour-ajab-2kg",
+    name: "Wheat Flour",
+    brand: "Ajab",
+    packet_size: "2kg",
+    units_per_bale: 12,
+    wholesale_price_per_bale: 1680,
+    retail_price: 170,
+    stock_bales: 32,
+    category: "Flour",
   },
   {
-    id: "rice-004",
-    name: "Rice (Basmati)",
-    brand: "Sunrice",
-    stockStatus: "low_stock",
-    retailPrice: 180,
-    wholesalePrice: 6800,
-    bulkUnit: "50kg Bag",
-    retailUnit: "1kg",
-    estimatedWeight: 50,
-    availableQuantity: 25,
-    category: "Staples",
+    id: "flour-raha-1kg",
+    name: "Wheat Flour",
+    brand: "Raha",
+    packet_size: "1kg",
+    units_per_bale: 24,
+    wholesale_price_per_bale: 1560,
+    retail_price: 78,
+    stock_bales: 28,
+    category: "Flour",
   },
   {
-    id: "soap-005",
-    name: "Laundry Soap",
-    brand: "Omo",
-    stockStatus: "in_stock",
-    retailPrice: 45,
-    wholesalePrice: 1600,
-    bulkUnit: "Bale of 50",
-    retailUnit: "Single",
-    estimatedWeight: 12,
-    availableQuantity: 300,
-    category: "Detergents",
+    id: "flour-raha-2kg",
+    name: "Wheat Flour",
+    brand: "Raha",
+    packet_size: "2kg",
+    units_per_bale: 12,
+    wholesale_price_per_bale: 1560,
+    retail_price: 156,
+    stock_bales: 50,
+    category: "Flour",
   },
   {
-    id: "salt-006",
+    id: "flour-lotus-1kg",
+    name: "Wheat Flour",
+    brand: "Lotus",
+    packet_size: "1kg",
+    units_per_bale: 24,
+    wholesale_price_per_bale: 1440,
+    retail_price: 72,
+    stock_bales: 18,
+    category: "Flour",
+  },
+  {
+    id: "flour-lotus-2kg",
+    name: "Wheat Flour",
+    brand: "Lotus",
+    packet_size: "2kg",
+    units_per_bale: 12,
+    wholesale_price_per_bale: 1440,
+    retail_price: 144,
+    stock_bales: 35,
+    category: "Flour",
+  },
+
+  // RICE - Various brands, 1kg x 24
+  {
+    id: "rice-raha-1kg",
+    name: "Basmati Rice",
+    brand: "Raha",
+    packet_size: "1kg",
+    units_per_bale: 24,
+    wholesale_price_per_bale: 3840,
+    retail_price: 185,
+    stock_bales: 22,
+    category: "Rice",
+  },
+  {
+    id: "rice-bandari-1kg",
+    name: "Basmati Rice",
+    brand: "Bandari",
+    packet_size: "1kg",
+    units_per_bale: 24,
+    wholesale_price_per_bale: 3600,
+    retail_price: 175,
+    stock_bales: 15,
+    category: "Rice",
+  },
+  {
+    id: "rice-spencer-1kg",
+    name: "Jasmine Rice",
+    brand: "Spencer",
+    packet_size: "1kg",
+    units_per_bale: 24,
+    wholesale_price_per_bale: 3360,
+    retail_price: 160,
+    stock_bales: 12,
+    category: "Rice",
+  },
+  {
+    id: "rice-nice-1kg",
+    name: "White Rice",
+    brand: "Nice",
+    packet_size: "1kg",
+    units_per_bale: 24,
+    wholesale_price_per_bale: 3120,
+    retail_price: 150,
+    stock_bales: 28,
+    category: "Rice",
+  },
+  {
+    id: "rice-beamer-1kg",
+    name: "Mixed Grain Rice",
+    brand: "Beamer",
+    packet_size: "1kg",
+    units_per_bale: 24,
+    wholesale_price_per_bale: 2880,
+    retail_price: 135,
+    stock_bales: 35,
+    category: "Rice",
+  },
+
+  // MILK - Mt. Kenya (crates of 12)
+  {
+    id: "milk-mtkenya-500ml",
+    name: "Fresh Milk",
+    brand: "Mt. Kenya",
+    packet_size: "500ml",
+    units_per_bale: 12,
+    wholesale_price_per_bale: 960,
+    retail_price: 95,
+    stock_bales: 40,
+    category: "Milk",
+  },
+
+  // ESSENTIALS
+  {
+    id: "sugar-1kg",
+    name: "Refined Sugar",
+    brand: "Mumias",
+    packet_size: "1kg",
+    units_per_bale: 24,
+    wholesale_price_per_bale: 2160,
+    retail_price: 120,
+    stock_bales: 55,
+    category: "Essentials",
+  },
+  {
+    id: "salt-500g",
     name: "Iodized Salt",
     brand: "Tropical",
-    stockStatus: "in_stock",
-    retailPrice: 30,
-    wholesalePrice: 900,
-    bulkUnit: "50kg Bag",
-    retailUnit: "1kg",
-    estimatedWeight: 50,
-    availableQuantity: 120,
-    category: "Condiments",
+    packet_size: "500g",
+    units_per_bale: 40,
+    wholesale_price_per_bale: 1200,
+    retail_price: 35,
+    stock_bales: 60,
+    category: "Essentials",
   },
   {
-    id: "beans-007",
-    name: "Dried Beans",
-    brand: "Upland",
-    stockStatus: "low_stock",
-    retailPrice: 160,
-    wholesalePrice: 5500,
-    bulkUnit: "50kg Bag",
-    retailUnit: "1kg",
-    estimatedWeight: 50,
-    availableQuantity: 15,
-    category: "Staples",
+    id: "royco-cubes",
+    name: "Royco Cubes",
+    brand: "Royco",
+    packet_size: "10 cubes",
+    units_per_bale: 24,
+    wholesale_price_per_bale: 960,
+    retail_price: 45,
+    stock_bales: 30,
+    category: "Essentials",
   },
   {
-    id: "maize-008",
-    name: "Maize Flour",
-    brand: "Unga",
-    stockStatus: "in_stock",
-    retailPrice: 95,
-    wholesalePrice: 3600,
-    bulkUnit: "25kg Sack",
-    retailUnit: "2kg",
-    estimatedWeight: 25,
-    availableQuantity: 180,
-    category: "Staples",
+    id: "cooking-oil-1l",
+    name: "Cooking Oil",
+    brand: "Pwani",
+    packet_size: "1L",
+    units_per_bale: 20,
+    wholesale_price_per_bale: 8000,
+    retail_price: 450,
+    stock_bales: 18,
+    category: "Essentials",
+  },
+
+  // HOUSEHOLD
+  {
+    id: "tissue-peachey",
+    name: "Tissue Paper",
+    brand: "Peachey",
+    packet_size: "500g",
+    units_per_bale: 24,
+    wholesale_price_per_bale: 1440,
+    retail_price: 65,
+    stock_bales: 25,
+    category: "Household",
+  },
+  {
+    id: "tissue-rosey",
+    name: "Tissue Paper",
+    brand: "Rosey",
+    packet_size: "500g",
+    units_per_bale: 24,
+    wholesale_price_per_bale: 1320,
+    retail_price: 60,
+    stock_bales: 32,
+    category: "Household",
+  },
+  {
+    id: "tissue-olx",
+    name: "Tissue Roll",
+    brand: "Olx",
+    packet_size: "1 roll",
+    units_per_bale: 12,
+    wholesale_price_per_bale: 1080,
+    retail_price: 100,
+    stock_bales: 28,
+    category: "Household",
+  },
+
+  // SNACKS
+  {
+    id: "biscuits-ppcl",
+    name: "Digestive Biscuits",
+    brand: "PPCL",
+    packet_size: "200g",
+    units_per_bale: 24,
+    wholesale_price_per_bale: 1920,
+    retail_price: 90,
+    stock_bales: 20,
+    category: "Snacks",
+  },
+  {
+    id: "sweets-pipi",
+    name: "Pipi Maxima Sweets",
+    brand: "Pipi Maxima",
+    packet_size: "100g",
+    units_per_bale: 24,
+    wholesale_price_per_bale: 720,
+    retail_price: 35,
+    stock_bales: 45,
+    category: "Snacks",
   },
 ];
 
@@ -151,510 +302,223 @@ const PRODUCTS_MOCK: WholesaleProduct[] = [
 // SUB-COMPONENTS
 // ============================================================================
 
-/**
- * WholesalerLock: Shown when user is not an approved wholesaler
- */
-function WholesalerLock() {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex items-center justify-center min-h-[60vh]"
-    >
-      <div className="w-full max-w-md text-center px-6">
-        <motion.div
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="mb-6"
-        >
-          <Lock className="w-16 h-16 mx-auto text-slate-400" />
-        </motion.div>
-
-        <h2 className="text-2xl font-bold text-slate-900 mb-3">
-          Wholesale Access Limited
-        </h2>
-        <p className="text-slate-600 mb-8 leading-relaxed">
-          The wholesale bulk portal is available for approved school bursars,
-          shop owners, and bulk retailers. Get access to wholesale pricing and
-          exclusive bulk orders.
-        </p>
-
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
-        >
-          Apply for Wholesale Account
-        </motion.button>
-
-        <p className="text-sm text-slate-500 mt-6">
-          Already approved? Contact support at{" "}
-          <span className="font-semibold">support@kanywithia.com</span>
-        </p>
-      </div>
-    </motion.div>
-  );
+interface StockBadgeProps {
+  status: StockStatus;
+  bales: number;
 }
 
-/**
- * SearchBar: Sticky search input for finding products
- */
-interface SearchBarProps {
-  onSearch: (query: string) => void;
-  placeholder?: string;
-}
-
-function SearchBar({ onSearch, placeholder = "Search products..." }: SearchBarProps) {
-  return (
-    <div className="sticky top-0 z-20 bg-white border-b border-slate-200 p-4 shadow-sm">
-      <div className="max-w-6xl mx-auto">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-          <input
-            type="text"
-            placeholder={placeholder}
-            onChange={(e) => onSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/**
- * StockBadge: Visual indicator of stock status
- */
-function StockBadge({ status }: { status: StockStatus }) {
-  const styles: Record<StockStatus, { bg: string; text: string; label: string }> = {
-    in_stock: { bg: "bg-green-50", text: "text-green-700", label: "In Stock" },
-    low_stock: { bg: "bg-amber-50", text: "text-amber-700", label: "Low Stock" },
-    out_of_stock: { bg: "bg-slate-100", text: "text-slate-600", label: "Out of Stock" },
+function StockBadge({ status, bales }: StockBadgeProps) {
+  const styles: Record<
+    StockStatus,
+    { bg: string; text: string; icon: string; label: string }
+  > = {
+    in_stock: {
+      bg: "bg-emerald-50 border-emerald-200",
+      text: "text-emerald-700",
+      icon: "✓",
+      label: "In Stock",
+    },
+    low_stock: {
+      bg: "bg-amber-50 border-amber-200",
+      text: "text-amber-700",
+      icon: "!",
+      label: "Low Stock",
+    },
+    out_of_stock: {
+      bg: "bg-slate-100 border-slate-200",
+      text: "text-slate-600",
+      icon: "×",
+      label: "Out of Stock",
+    },
   };
 
   const style = styles[status];
 
   return (
-    <span className={`${style.bg} ${style.text} text-xs font-semibold px-2.5 py-1 rounded-full inline-flex items-center gap-1`}>
-      <span className={`w-2 h-2 rounded-full ${style.text === "text-green-700" ? "bg-green-500" : style.text === "text-amber-700" ? "bg-amber-500" : "bg-slate-400"}`} />
-      {style.label}
-    </span>
+    <div
+      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border ${style.bg} ${style.text}`}
+    >
+      <span className="font-bold text-sm">{style.icon}</span>
+      <span>{style.label}</span>
+      <span className="opacity-75">({bales})</span>
+    </div>
   );
 }
 
-/**
- * SavingsBadge: Shows KES savings vs retail price
- */
-function SavingsBadge({
-  retailPrice,
-  wholesalePrice,
-  bulkUnit,
-}: {
-  retailPrice: number;
-  wholesalePrice: number;
-  bulkUnit: string;
-}) {
-  // Extract quantity from bulkUnit (e.g., "50kg Bag" -> 50)
-  const quantity = parseInt(bulkUnit) || 1;
-  const totalRetailValue = retailPrice * quantity;
-  const savings = totalRetailValue - wholesalePrice;
-  const savingsPercent = ((savings / totalRetailValue) * 100).toFixed(0);
+interface PriceBreakdownProps {
+  price_per_bale: number;
+  units_per_bale: number;
+}
+
+function PriceBreakdown({ price_per_bale, units_per_bale }: PriceBreakdownProps) {
+  const price_per_packet = price_per_bale / units_per_bale;
 
   return (
-    <motion.div
-      initial={{ scale: 0.95, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      className="bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 text-center"
-    >
-      <div className="text-xs text-emerald-700 font-semibold">
-        Save KES {savings.toLocaleString()}
+    <div className="space-y-1">
+      <div className="text-sm font-semibold text-slate-900">
+        KES {price_per_bale.toLocaleString()}
       </div>
-      <div className="text-xs text-emerald-600">{savingsPercent}% off retail</div>
-    </motion.div>
+      <div className="text-xs text-slate-600 flex items-center gap-1">
+        <TrendingDown className="w-3 h-3" />
+        <span className="font-medium">
+          KES {price_per_packet.toFixed(0)}/packet
+        </span>
+      </div>
+    </div>
   );
 }
 
-/**
- * ProductRow: Single row in the wholesale table (desktop)
- */
-interface ProductRowProps {
-  product: WholesaleProduct;
+interface QuantityControlProps {
   quantity: number;
-  onQuantityChange: (productId: string, quantity: number) => void;
+  disabled: boolean;
+  onIncrement: () => void;
+  onDecrement: () => void;
+  units_per_bale: number;
 }
 
-function ProductRow({
-  product,
+function QuantityControl({
   quantity,
-  onQuantityChange,
-}: ProductRowProps) {
+  disabled,
+  onIncrement,
+  onDecrement,
+  units_per_bale,
+}: QuantityControlProps) {
   return (
-    <motion.tr
-      layout
-      animate={{
-        backgroundColor: quantity > 0 ? "rgb(243, 250, 255)" : "rgb(255, 255, 255)",
-      }}
-      transition={{ duration: 0.2 }}
-      className="border-b border-slate-200 hover:bg-slate-50 transition-colors"
-    >
-      {/* Product Name & Brand */}
-      <td className="px-4 py-4">
-        <div className="font-semibold text-slate-900">{product.name}</div>
-        <div className="text-xs text-slate-500">{product.brand}</div>
-      </td>
-
-      {/* Stock Status */}
-      <td className="px-4 py-4">
-        <StockBadge status={product.stockStatus} />
-      </td>
-
-      {/* Retail Price (Crossed Out) */}
-      <td className="px-4 py-4">
-        <div className="line-through text-slate-500 text-sm">
-          KES {product.retailPrice.toLocaleString()} / {product.retailUnit}
-        </div>
-      </td>
-
-      {/* Wholesale Price (Bold) */}
-      <td className="px-4 py-4">
-        <div className="font-bold text-slate-900 text-lg">
-          KES {product.wholesalePrice.toLocaleString()}
-        </div>
-        <div className="text-xs text-slate-600">per {product.bulkUnit.toLowerCase()}</div>
-      </td>
-
-      {/* Savings Badge */}
-      <td className="px-4 py-4">
-        <SavingsBadge
-          retailPrice={product.retailPrice}
-          wholesalePrice={product.wholesalePrice}
-          bulkUnit={product.bulkUnit}
-        />
-      </td>
-
-      {/* Quantity Input */}
-      <td className="px-4 py-4">
-        <motion.div
-          animate={{
-            scale: quantity > 0 ? 1.05 : 1,
-          }}
-          transition={{ duration: 0.15 }}
+    <div>
+      <div className="flex items-center gap-2 bg-slate-100 rounded-lg p-1 w-fit">
+        <button
+          onClick={onDecrement}
+          disabled={disabled || quantity === 0}
+          className="p-1.5 hover:bg-slate-200 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          aria-label="Decrease quantity"
         >
-          <input
-            type="number"
-            min="0"
-            max={product.availableQuantity}
-            value={quantity}
-            onChange={(e) =>
-              onQuantityChange(product.id, Math.max(0, parseInt(e.target.value) || 0))
-            }
-            className="w-16 px-3 py-2 border border-slate-300 rounded-lg text-center font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
-            placeholder="0"
-          />
-          <div className="text-xs text-slate-500 mt-1 text-center">
-            {product.availableQuantity} avail.
-          </div>
-        </motion.div>
-      </td>
-    </motion.tr>
-  );
-}
-
-/**
- * ProductCard: Mobile-optimized compact card view
- */
-interface ProductCardProps {
-  product: WholesaleProduct;
-  quantity: number;
-  onQuantityChange: (productId: string, quantity: number) => void;
-}
-
-function ProductCard({
-  product,
-  quantity,
-  onQuantityChange,
-}: ProductCardProps) {
-  return (
-    <motion.div
-      layout
-      animate={{
-        backgroundColor: quantity > 0 ? "rgb(243, 250, 255)" : "rgb(255, 255, 255)",
-      }}
-      transition={{ duration: 0.2 }}
-      className="border border-slate-200 rounded-lg p-4 mb-3"
-    >
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex-1">
-          <h3 className="font-semibold text-slate-900">{product.name}</h3>
-          <p className="text-xs text-slate-500">{product.brand}</p>
-        </div>
-        <StockBadge status={product.stockStatus} />
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 mb-3">
-        <div>
-          <div className="text-xs text-slate-600 font-medium mb-1">Retail Price</div>
-          <div className="line-through text-slate-500 text-xs">
-            KES {product.retailPrice} / {product.retailUnit}
-          </div>
-        </div>
-        <div>
-          <div className="text-xs text-slate-600 font-medium mb-1">Wholesale Price</div>
-          <div className="font-bold text-slate-900">
-            KES {product.wholesalePrice.toLocaleString()}
-          </div>
-          <div className="text-xs text-slate-600">per {product.bulkUnit}</div>
-        </div>
-      </div>
-
-      <SavingsBadge
-        retailPrice={product.retailPrice}
-        wholesalePrice={product.wholesalePrice}
-        bulkUnit={product.bulkUnit}
-      />
-
-      <div className="mt-3 flex items-center justify-between">
-        <span className="text-xs text-slate-600">{product.availableQuantity} available</span>
-        <input
-          type="number"
-          min="0"
-          max={product.availableQuantity}
-          value={quantity}
-          onChange={(e) =>
-            onQuantityChange(product.id, Math.max(0, parseInt(e.target.value) || 0))
-          }
-          className="w-20 px-3 py-2 border border-slate-300 rounded-lg text-center font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
-          placeholder="0"
-        />
-      </div>
-    </motion.div>
-  );
-}
-
-/**
- * FloatingSummary: Sticky bottom HUD showing order totals
- */
-interface FloatingSummaryProps {
-  cartItems: CartItem[];
-  products: WholesaleProduct[];
-  onConfirm: () => void;
-}
-
-function FloatingSummary({
-  cartItems,
-  products,
-  onConfirm,
-}: FloatingSummaryProps) {
-  const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-
-  const totalWeight = cartItems.reduce((sum, item) => {
-    const product = products.find((p) => p.id === item.productId);
-    return sum + (product ? product.estimatedWeight * item.quantity : 0);
-  }, 0);
-
-  const totalAmount = cartItems.reduce((sum, item) => {
-    const product = products.find((p) => p.id === item.productId);
-    return sum + (product ? product.wholesalePrice * item.quantity : 0);
-  }, 0);
-
-  if (totalQuantity === 0) return null;
-
-  return (
-    <motion.div
-      initial={{ y: 100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      exit={{ y: 100, opacity: 0 }}
-      transition={{ duration: 0.3 }}
-      className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-2xl px-4 py-4"
-    >
-      <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-          <div className="bg-slate-50 rounded-lg p-3">
-            <div className="text-xs text-slate-600 font-semibold mb-1">BULK UNITS</div>
-            <div className="text-2xl font-bold text-slate-900">{totalQuantity}</div>
-          </div>
-          <div className="bg-slate-50 rounded-lg p-3">
-            <div className="text-xs text-slate-600 font-semibold mb-1">EST. WEIGHT</div>
-            <div className="text-2xl font-bold text-slate-900">
-              {totalWeight}
-              <span className="text-lg ml-1">kg</span>
-            </div>
-          </div>
-          <div className="bg-emerald-50 rounded-lg p-3 col-span-2 md:col-span-2">
-            <div className="text-xs text-emerald-700 font-semibold mb-1">
-              TOTAL ORDER VALUE
-            </div>
-            <div className="text-2xl md:text-3xl font-bold text-slate-900">
-              KES {totalAmount.toLocaleString()}
-            </div>
-          </div>
-        </div>
-
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={onConfirm}
-          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-6 rounded-lg transition-all flex items-center justify-center gap-2"
+          <Minus className="w-4 h-4 text-slate-700" />
+        </button>
+        <span className="min-w-8 text-center font-semibold text-slate-900">
+          {quantity}
+        </span>
+        <button
+          onClick={onIncrement}
+          disabled={disabled}
+          className="p-1.5 hover:bg-slate-200 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          aria-label="Increase quantity"
         >
-          <CheckCircle className="w-5 h-5" />
-          CONFIRM ORDER
-        </motion.button>
+          <Plus className="w-4 h-4 text-emerald-600" />
+        </button>
       </div>
-    </motion.div>
-  );
-}
-
-/**
- * ConfirmOrderModal: Modal to confirm and submit order
- */
-interface ConfirmOrderModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: () => void;
-  cartItems: CartItem[];
-  products: WholesaleProduct[];
-}
-
-function ConfirmOrderModal({
-  isOpen,
-  onClose,
-  onSubmit,
-  cartItems,
-  products,
-}: ConfirmOrderModalProps) {
-  const totalAmount = cartItems.reduce((sum, item) => {
-    const product = products.find((p) => p.id === item.productId);
-    return sum + (product ? product.wholesalePrice * item.quantity : 0);
-  }, 0);
-
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          />
-
-          {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.3 }}
-            className="fixed bottom-0 left-0 right-0 z-50 md:inset-0 md:flex md:items-center md:justify-center md:px-4"
-          >
-            <motion.div className="bg-white rounded-t-2xl md:rounded-2xl w-full md:max-w-md max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-white border-b border-slate-200 p-4 flex items-center justify-between rounded-t-2xl">
-                <h2 className="text-xl font-bold text-slate-900">
-                  Review Your Order
-                </h2>
-                <button
-                  onClick={onClose}
-                  className="text-slate-500 hover:text-slate-700"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-
-              <div className="p-6">
-                {/* Order Items List */}
-                <div className="mb-6">
-                  <h3 className="font-semibold text-slate-900 mb-3">Order Items</h3>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {cartItems.map((item) => {
-                      const product = products.find((p) => p.id === item.productId);
-                      if (!product) return null;
-
-                      return (
-                        <div
-                          key={item.productId}
-                          className="flex justify-between items-center text-sm p-3 bg-slate-50 rounded-lg"
-                        >
-                          <div>
-                            <div className="font-medium text-slate-900">
-                              {product.name}
-                            </div>
-                            <div className="text-xs text-slate-600">
-                              {item.quantity} × {product.bulkUnit}
-                            </div>
-                          </div>
-                          <div className="font-semibold text-slate-900">
-                            KES {(product.wholesalePrice * item.quantity).toLocaleString()}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Divider */}
-                <div className="border-t border-slate-200 my-4" />
-
-                {/* Total */}
-                <div className="mb-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-slate-700">Subtotal:</span>
-                    <span className="font-semibold text-slate-900">
-                      KES {totalAmount.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="text-slate-700">Delivery:</span>
-                    <span className="text-sm text-slate-600">
-                      To be confirmed
-                    </span>
-                  </div>
-
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-                    <div className="flex justify-between items-center">
-                      <span className="font-semibold text-emerald-900">
-                        Estimated Total:
-                      </span>
-                      <span className="text-2xl font-bold text-emerald-600">
-                        KES {totalAmount.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Info Box */}
-                <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-6 flex gap-3">
-                  <AlertCircle className="w-5 h-5 text-slate-600 flex-shrink-0 mt-0.5" />
-                  <div className="text-xs text-slate-600">
-                    Our team will contact you within 2 hours to confirm delivery cost
-                    and pickup time.
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="space-y-3">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={onSubmit}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Truck className="w-5 h-5" />
-                    SUBMIT ORDER
-                  </motion.button>
-                  <button
-                    onClick={onClose}
-                    className="w-full bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold py-3 px-6 rounded-lg transition-colors"
-                  >
-                    Continue Shopping
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        </>
+      {quantity > 0 && (
+        <div className="text-xs text-emerald-700 font-medium mt-1.5">
+          {quantity * units_per_bale} packets
+        </div>
       )}
-    </AnimatePresence>
+    </div>
+  );
+}
+
+interface ProductCardMobileProps {
+  product: WholesaleProduct;
+  quantity: number;
+  onQuantityChange: (qty: number) => void;
+  disabled: boolean;
+}
+
+function ProductCardMobile({
+  product,
+  quantity,
+  onQuantityChange,
+  disabled,
+}: ProductCardMobileProps) {
+  const stockStatus = getStockStatus(product.stock_bales);
+  const is_disabled = disabled || stockStatus === "out_of_stock";
+
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
+      <div className="flex justify-between items-start gap-3">
+        <div className="flex-1">
+          <h3 className="font-bold text-slate-900 text-sm">{product.name}</h3>
+          <p className="text-xs text-slate-600 font-medium">{product.brand}</p>
+          <p className="text-xs text-slate-500 mt-1">
+            {product.packet_size} × {product.units_per_bale} = ~
+            {((parseInt(product.packet_size) * product.units_per_bale) / 1000).toFixed(0) ||
+              product.units_per_bale * parseInt(product.packet_size.match(/\d+/)?.[0] || "1")}
+            kg
+          </p>
+        </div>
+        <StockBadge status={stockStatus} bales={product.stock_bales} />
+      </div>
+
+      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+        <PriceBreakdown
+          price_per_bale={product.wholesale_price_per_bale}
+          units_per_bale={product.units_per_bale}
+        />
+      </div>
+
+      <QuantityControl
+        quantity={quantity}
+        disabled={is_disabled}
+        onIncrement={() => onQuantityChange(quantity + 1)}
+        onDecrement={() => onQuantityChange(Math.max(0, quantity - 1))}
+        units_per_bale={product.units_per_bale}
+      />
+    </div>
+  );
+}
+
+interface ProductTableRowProps {
+  product: WholesaleProduct;
+  quantity: number;
+  onQuantityChange: (qty: number) => void;
+  disabled: boolean;
+}
+
+function ProductTableRow({
+  product,
+  quantity,
+  onQuantityChange,
+  disabled,
+}: ProductTableRowProps) {
+  const stockStatus = getStockStatus(product.stock_bales);
+  const is_disabled = disabled || stockStatus === "out_of_stock";
+
+  return (
+    <tr className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+      <td className="px-4 py-4">
+        <div>
+          <p className="font-semibold text-slate-900 text-sm">{product.name}</p>
+          <p className="text-xs text-slate-600">{product.brand}</p>
+        </div>
+      </td>
+
+      <td className="px-4 py-4 text-sm text-slate-700">
+        {product.packet_size}
+      </td>
+
+      <td className="px-4 py-4 text-sm text-slate-700 text-center">
+        {product.units_per_bale}
+      </td>
+
+      <td className="px-4 py-4">
+        <StockBadge status={stockStatus} bales={product.stock_bales} />
+      </td>
+
+      <td className="px-4 py-4">
+        <PriceBreakdown
+          price_per_bale={product.wholesale_price_per_bale}
+          units_per_bale={product.units_per_bale}
+        />
+      </td>
+
+      <td className="px-4 py-4">
+        <QuantityControl
+          quantity={quantity}
+          disabled={is_disabled}
+          onIncrement={() => onQuantityChange(quantity + 1)}
+          onDecrement={() => onQuantityChange(Math.max(0, quantity - 1))}
+          units_per_bale={product.units_per_bale}
+        />
+      </td>
+    </tr>
   );
 }
 
@@ -663,192 +527,373 @@ function ConfirmOrderModal({
 // ============================================================================
 
 export default function WholesalePage() {
-  // Simulated user tier (replace with real auth data from Supabase)
-  const userTier: UserTier = "wholesale";
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [cart, setCart] = useState<Map<string, number>>(new Map());
+  const [showMobileCart, setShowMobileCart] = useState(false);
 
-  // Search and cart state
-  const [searchQuery, setSearchQuery] = useState("");
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Group products by brand
+  const groupedByBrand = useMemo(() => {
+    const grouped = new Map<string, WholesaleProduct[]>();
 
-  // Filter products based on search
-  const filteredProducts = useMemo(() => {
-    if (!searchQuery.trim()) return PRODUCTS_MOCK;
-
-    const query = searchQuery.toLowerCase();
-    return PRODUCTS_MOCK.filter(
-      (product) =>
+    const filtered = WHOLESALE_PRODUCTS_MOCK.filter((product) => {
+      const query = searchQuery.toLowerCase();
+      return (
         product.name.toLowerCase().includes(query) ||
         product.brand.toLowerCase().includes(query) ||
         product.category.toLowerCase().includes(query)
-    );
+      );
+    });
+
+    filtered.forEach((product) => {
+      if (!grouped.has(product.brand)) {
+        grouped.set(product.brand, []);
+      }
+      grouped.get(product.brand)!.push(product);
+    });
+
+    return grouped;
   }, [searchQuery]);
 
-  // Handle quantity change
-  const handleQuantityChange = useCallback((productId: string, quantity: number) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.productId === productId);
-
+  const handleQuantityChange = useCallback(
+    (productId: string, quantity: number) => {
+      const newCart = new Map(cart);
       if (quantity === 0) {
-        return prev.filter((item) => item.productId !== productId);
+        newCart.delete(productId);
+      } else {
+        newCart.set(productId, quantity);
       }
+      setCart(newCart);
+    },
+    [cart]
+  );
 
-      if (existing) {
-        return prev.map((item) =>
-          item.productId === productId ? { ...item, quantity } : item
-        );
+  // Calculate cart totals
+  const cartSummary = useMemo(() => {
+    let total_bales = 0;
+    let total_packets = 0;
+    let total_kes = 0;
+
+    cart.forEach((quantity, productId) => {
+      const product = WHOLESALE_PRODUCTS_MOCK.find((p) => p.id === productId);
+      if (product) {
+        total_bales += quantity;
+        total_packets += quantity * product.units_per_bale;
+        total_kes += quantity * product.wholesale_price_per_bale;
       }
-
-      return [...prev, { productId, quantity }];
     });
-  }, []);
 
-  // Handle order confirmation
-  const handleConfirmOrder = useCallback(() => {
-    console.log("Order submitted:", cart);
-    // TODO: Send to Supabase
-    setCart([]);
-    setIsModalOpen(false);
-    alert("Order submitted! We'll contact you shortly.");
+    return { total_bales, total_packets, total_kes };
   }, [cart]);
 
-  // Check if wholesaler
-  if (userTier !== "wholesale" && userTier !== "bulk_buyer") {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-        <WholesalerLock />
-      </div>
-    );
-  }
+  // Desktop Table View
+  const TableView = () => (
+    <div className="hidden md:block bg-white rounded-xl border border-slate-200 overflow-x-auto shadow-sm">
+      <table className="w-full">
+        <thead>
+          <tr className="bg-slate-50 border-b-2 border-slate-200">
+            <th className="px-4 py-4 text-left text-sm font-semibold text-slate-900">
+              Product
+            </th>
+            <th className="px-4 py-4 text-left text-sm font-semibold text-slate-900">
+              Packet
+            </th>
+            <th className="px-4 py-4 text-center text-sm font-semibold text-slate-900">
+              Units/Bale
+            </th>
+            <th className="px-4 py-4 text-left text-sm font-semibold text-slate-900">
+              Stock
+            </th>
+            <th className="px-4 py-4 text-left text-sm font-semibold text-slate-900">
+              Pricing
+            </th>
+            <th className="px-4 py-4 text-center text-sm font-semibold text-slate-900">
+              Qty (Bales)
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from(groupedByBrand.entries()).map(([brand, products]) => (
+            <React.Fragment key={brand}>
+              <tr className="bg-slate-100 hover:bg-slate-100">
+                <td colSpan={6} className="px-4 py-3">
+                  <p className="font-bold text-slate-900 flex items-center gap-2">
+                    <Package className="w-4 h-4" />
+                    {brand}
+                  </p>
+                </td>
+              </tr>
+              {products.map((product) => (
+                <ProductTableRow
+                  key={product.id}
+                  product={product}
+                  quantity={cart.get(product.id) || 0}
+                  onQuantityChange={(qty) =>
+                    handleQuantityChange(product.id, qty)
+                  }
+                  disabled={false}
+                />
+              ))}
+            </React.Fragment>
+          ))}
+        </tbody>
+      </table>
+
+      {groupedByBrand.size === 0 && (
+        <div className="p-12 text-center text-slate-600">
+          <AlertCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
+          <p className="font-semibold">No products found</p>
+          <p className="text-sm">Try adjusting your search filters</p>
+        </div>
+      )}
+    </div>
+  );
+
+  // Mobile Card View
+  const MobileView = () => (
+    <div className="md:hidden space-y-6">
+      {Array.from(groupedByBrand.entries()).map(([brand, products]) => (
+        <div key={brand}>
+          <div className="flex items-center gap-2 px-4 py-3 bg-slate-100 rounded-lg mb-3 sticky top-20 z-10">
+            <Package className="w-4 h-4 text-slate-700" />
+            <h3 className="font-bold text-slate-900">{brand}</h3>
+          </div>
+          <div className="space-y-3 px-4">
+            {products.map((product) => (
+              <ProductCardMobile
+                key={product.id}
+                product={product}
+                quantity={cart.get(product.id) || 0}
+                onQuantityChange={(qty) =>
+                  handleQuantityChange(product.id, qty)
+                }
+                disabled={false}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+
+      {groupedByBrand.size === 0 && (
+        <div className="p-8 text-center text-slate-600">
+          <AlertCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
+          <p className="font-semibold">No products found</p>
+          <p className="text-sm">Try adjusting your search filters</p>
+        </div>
+      )}
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
-              Wholesale Bulk Portal
-            </h1>
-            <p className="text-slate-600">
-              Fast ordering for school bursars, shop owners & traders
-            </p>
-          </motion.div>
+      <div className="border-b border-slate-200 bg-white sticky top-0 z-30 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl md:text-3xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                Wholesale Bulk Orders
+              </h1>
+              <p className="text-sm text-slate-600 mt-1">
+                Enterprise Pricing for Retailers, Schools & Wholesalers
+              </p>
+            </div>
+            <button
+              onClick={() => setShowMobileCart(true)}
+              className="md:hidden relative bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg p-3 transition-colors"
+            >
+              <ShoppingCart className="w-6 h-6" />
+              {cart.size > 0 && (
+                <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {cart.size}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Search Bar */}
-      <SearchBar onSearch={setSearchQuery} />
-
-      {/* Results count */}
-      <div className="bg-white border-b border-slate-200 px-4 py-3">
-        <div className="max-w-6xl mx-auto text-sm text-slate-600">
-          Showing {filteredProducts.length} products
-          {searchQuery && ` for "${searchQuery}"`}
+      <div className="sticky top-20 z-20 bg-white border-b border-slate-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search by brand, product, or category..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="px-4 py-6 pb-32">
-        <div className="max-w-6xl mx-auto">
-          {filteredProducts.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center py-12"
-            >
-              <Package className="w-16 h-16 mx-auto text-slate-300 mb-4" />
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                No products found
-              </h3>
-              <p className="text-slate-600">
-                Try searching with a different term (e.g., "Sugar", "Flour", "Oil")
-              </p>
-            </motion.div>
-          ) : (
-            <>
-              {/* Desktop Table View */}
-              <div className="hidden md:block overflow-x-auto bg-white rounded-lg border border-slate-200">
-                <table className="w-full">
-                  <thead className="bg-slate-100 border-b border-slate-200">
-                    <tr>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-900">
-                        Product
-                      </th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-900">
-                        Stock
-                      </th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-900">
-                        Retail Price
-                      </th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-900">
-                        Wholesale Price
-                      </th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-900">
-                        Savings
-                      </th>
-                      <th className="text-center px-4 py-3 font-semibold text-slate-900">
-                        Quantity
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredProducts.map((product) => (
-                      <ProductRow
-                        key={product.id}
-                        product={product}
-                        quantity={
-                          cart.find((item) => item.productId === product.id)
-                            ?.quantity || 0
-                        }
-                        onQuantityChange={handleQuantityChange}
-                      />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 py-8 pb-32 md:pb-8">
+        {/* Desktop + Mobile Views */}
+        <TableView />
+        <MobileView />
 
-              {/* Mobile Card View */}
-              <div className="md:hidden space-y-3">
-                {filteredProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    quantity={
-                      cart.find((item) => item.productId === product.id)
-                        ?.quantity || 0
-                    }
-                    onQuantityChange={handleQuantityChange}
-                  />
-                ))}
+        {/* Info Box */}
+        {groupedByBrand.size > 0 && (
+          <div className="mt-8 bg-emerald-50 border-l-4 border-emerald-600 p-4 rounded-r-lg">
+            <div className="flex items-start gap-3">
+              <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-semibold text-emerald-900 mb-1">
+                  Kenyan Bale Logic
+                </p>
+                <p className="text-emerald-800">
+                  1kg packets: 24 per bale (24kg total) • 2kg packets: 12 per bale (24kg total) •
+                  500g packets: 40 per bale (20kg total). Unit pricing shown
+                  below bale price.
+                </p>
               </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Floating Summary */}
-      <AnimatePresence>
-        {cart.length > 0 && (
-          <FloatingSummary
-            cartItems={cart}
-            products={PRODUCTS_MOCK}
-            onConfirm={() => setIsModalOpen(true)}
-          />
+            </div>
+          </div>
         )}
-      </AnimatePresence>
+      </div>
 
-      {/* Confirm Order Modal */}
-      <ConfirmOrderModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleConfirmOrder}
-        cartItems={cart}
-        products={PRODUCTS_MOCK}
-      />
+      {/* STICKY BOTTOM CART (Desktop) */}
+      {cart.size > 0 && (
+        <div className="hidden md:block fixed bottom-0 left-0 right-0 bg-white border-t-2 border-emerald-600 shadow-2xl z-40">
+          <div className="max-w-7xl mx-auto px-4 py-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-8">
+                <div>
+                  <p className="text-xs text-slate-600 uppercase font-semibold tracking-wider">
+                    Order Summary
+                  </p>
+                  <div className="mt-2 space-y-1">
+                    <p className="text-lg font-black text-slate-900">
+                      {cartSummary.total_bales} Bales
+                      <span className="text-xs text-slate-600 font-normal ml-2">
+                        ({cartSummary.total_packets} packets)
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                <div className="h-10 w-px bg-slate-200" />
+                <div>
+                  <p className="text-xs text-slate-600 uppercase font-semibold tracking-wider">
+                    Total Amount
+                  </p>
+                  <p className="text-3xl font-black text-emerald-600 mt-1">
+                    KES {cartSummary.total_kes.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setCart(new Map())}
+                  className="px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  Clear Cart
+                </button>
+                <button className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors flex items-center gap-2 shadow-lg">
+                  <ShoppingCart className="w-5 h-5" />
+                  Proceed to Checkout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MOBILE CART DRAWER */}
+      {showMobileCart && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowMobileCart(false)}
+          />
+
+          {/* Drawer */}
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[70vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-slate-200 px-4 py-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-slate-900">Order Summary</h2>
+              <button
+                onClick={() => setShowMobileCart(false)}
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 space-y-4">
+              {Array.from(cart.entries()).map(([productId, quantity]) => {
+                const product = WHOLESALE_PRODUCTS_MOCK.find(
+                  (p) => p.id === productId
+                );
+                if (!product) return null;
+
+                return (
+                  <div
+                    key={productId}
+                    className="bg-slate-50 border border-slate-200 rounded-lg p-3"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="font-semibold text-slate-900 text-sm">
+                          {product.brand}
+                        </p>
+                        <p className="text-xs text-slate-600">{product.name}</p>
+                      </div>
+                      <p className="font-bold text-slate-900">
+                        {quantity} bales
+                      </p>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p className="text-xs text-slate-600">
+                        {quantity * product.units_per_bale} packets
+                      </p>
+                      <p className="font-semibold text-emerald-600">
+                        KES{" "}
+                        {(
+                          quantity * product.wholesale_price_per_bale
+                        ).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+
+              <div className="border-t-2 border-slate-200 pt-4 mt-4">
+                <div className="flex justify-between items-center mb-4">
+                  <p className="font-semibold text-slate-900">
+                    Total Bales:
+                  </p>
+                  <p className="text-xl font-black text-slate-900">
+                    {cartSummary.total_bales}
+                  </p>
+                </div>
+                <div className="flex justify-between items-center mb-4">
+                  <p className="font-semibold text-slate-900">
+                    Total Amount:
+                  </p>
+                  <p className="text-2xl font-black text-emerald-600">
+                    KES {cartSummary.total_kes.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={() => setCart(new Map())}
+                  className="flex-1 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors border border-slate-300"
+                >
+                  Clear
+                </button>
+                <button className="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors">
+                  Checkout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
