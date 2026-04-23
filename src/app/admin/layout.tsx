@@ -66,6 +66,12 @@ const NAV_ITEMS: NavItem[] = [
     description: "Operational roles, current access, and future enforcement.",
   },
   {
+    name: "Partners",
+    href: "/admin/partners",
+    roles: ["super_admin", "store_admin"],
+    description: "Review and approve wholesale partner applications.",
+  },
+  {
     name: "Settings",
     href: "/admin/settings",
     roles: ["super_admin", "store_admin"],
@@ -83,6 +89,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [role, setRole] = useState<StaffRole | null>(null);
   const [storeCode, setStoreCode] = useState<StoreCode | null>(null);
   const [userEmail, setUserEmail] = useState("");
+  const [partnersCount, setPartnersCount] = useState(0);
   const router = useRouter();
   const pathname = usePathname();
   const supabase = getSupabase();
@@ -122,6 +129,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       setRole(staff.role);
       setStoreCode(staff.store_code);
+
+      // Fetch partners count
+      const { count } = await supabase
+        .from('wholesale_applications')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+
+      setPartnersCount(count || 0);
+
       setLoading(false);
     }
 
@@ -202,7 +218,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     : "border-white/8 bg-white/3 hover:bg-white/6"
                 }`}
               >
-                <div className="text-sm font-semibold text-white">{item.name}</div>
+                <div className="text-sm font-semibold text-white">
+                  {item.name === 'Partners' && partnersCount > 0 ? `${item.name} (${partnersCount})` : item.name}
+                </div>
                 <div className="mt-1 text-sm leading-6 text-white/45">{item.description}</div>
               </Link>
             );
@@ -242,13 +260,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm font-semibold ${
+                      className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm font-semibold ${
                     isActive
                       ? "border-[color:var(--accent)]/40 bg-[color:var(--accent)]/18 text-white"
                       : "border-white/10 bg-white/4 text-white/70"
                   }`}
                 >
-                  {item.name}
+                  {item.name === 'Partners' && partnersCount > 0 ? `${item.name} (${partnersCount})` : item.name}
                 </Link>
               );
             })}
