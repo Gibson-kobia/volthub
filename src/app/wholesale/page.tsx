@@ -760,7 +760,6 @@ export default function WholesalePage() {
   };
 
   // Check if user can access wholesale
-  /*
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -776,7 +775,6 @@ export default function WholesalePage() {
       </div>
     );
   }
-  */
 
   return (
     <>

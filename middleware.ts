@@ -69,7 +69,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(target, request.url));
   }
 
-  if (!isStaffRoute(pathname)) {
+  if (!isStaffRoute(pathname) && !pathname.startsWith("/wholesale")) {
+    return response;
+  }
+
+  if (pathname.startsWith("/wholesale")) {
+    if (!user?.email || !isConfirmedUser) {
+      return NextResponse.redirect(buildLoginRedirect(request));
+    }
     return response;
   }
 
@@ -97,5 +104,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/rider/:path*", "/auth/login", "/auth/signup"],
+  matcher: ["/admin/:path*", "/rider/:path*", "/wholesale/:path*", "/auth/login", "/auth/signup"],
 };
