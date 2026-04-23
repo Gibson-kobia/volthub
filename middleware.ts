@@ -69,7 +69,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(target, request.url));
   }
 
-  if (!isStaffRoute(pathname) && !pathname.startsWith("/wholesale")) {
+  if (!isStaffRoute(pathname) && (!pathname.startsWith("/wholesale") || pathname === "/wholesale/apply")) {
     return response;
   }
 

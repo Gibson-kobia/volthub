@@ -105,7 +105,7 @@ export default function LoginPage() {
           </button>
         </form>
         <div className="mt-8 text-center">
-          <Link href="/wholesale" className="text-zinc-400 hover:text-white transition-colors text-sm">
+          <Link href="/wholesale/apply" className="text-white underline hover:text-zinc-200 transition-colors text-sm z-10 relative">
             Don't have a partner account? Apply for Wholesale Access
           </Link>
         </div>
