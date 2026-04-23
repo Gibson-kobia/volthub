@@ -280,7 +280,7 @@ export default function AdminProductsPage() {
     const previousStock = editingProduct ? Number(editingProduct.stock || 0) : 0;
     const nextStock = Number(form.stock || 0);
     const slug = form.slug.trim() || createSlug(form.name.trim());
-    const payload = compactRecord({
+    const payload = {
       name: form.name.trim(),
       slug,
       brand: form.brand.trim() || "Canvus",
@@ -302,7 +302,7 @@ export default function AdminProductsPage() {
       wholesale_price: form.wholesale_price === "" ? null : Number(form.wholesale_price),
       unit_type: form.unit_type.trim() || null,
       units_per_container: form.units_per_container === "" ? null : Number(form.units_per_container),
-    });
+    };
 
     try {
       let savedProduct: DBProduct | null = null;
