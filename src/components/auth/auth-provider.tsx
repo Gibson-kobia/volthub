@@ -17,8 +17,11 @@ type AuthContextValue = {
     name: string,
     email: string,
     phone: string,
-    password: string
-  ) => Promise<{ ok: boolean; error?: string; code?: "confirmation_sent" | "confirmation_resent" | "already_confirmed" }>;
+    password: string,
+    accountType?: 'retail' | 'wholesale_general' | 'wholesale_school',
+    institutionName?: string,
+    repRole?: string
+  ) => Promise<{ ok: boolean; error?: string; code?: "confirmation_sent" | "confirmation_resent" | "already_confirmed" | "wholesale_pending" }>;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string; code?: "unconfirmed" }>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ ok: boolean; error?: string }>;
@@ -77,7 +80,7 @@ const getAuthRedirectUrl = (path = "/auth/callback") => {
     return `${window.location.origin}${path}`; // for all non-production local host setups
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://volthub1.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://canvus.vercel.app";
   return `${baseUrl.replace(/\/*$/, "")}${path}`;
 };
 
@@ -131,7 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return {
       user,
       authReady,
-      signup: async (name, email, phone, password) => {
+      signup: async (name, email, phone, password, accountType = 'retail', institutionName, repRole) => {
         try {
           const normalizedEmail = email.trim().toLowerCase();
           const redirectTo = getAuthRedirectUrl("/auth/confirm");
@@ -175,8 +178,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             };
           }
 
+          // Insert profile data
+          if (data.user) {
+            const profileData = {
+              id: data.user.id,
+              email: normalizedEmail,
+              full_name: name.trim(),
+              phone_number: phone.trim() || null,
+              account_type: accountType,
+              institution_name: institutionName || null,
+              rep_role: repRole || null,
+              application_status: accountType.startsWith('wholesale') ? 'pending' : 'none',
+              is_verified_wholesale: false,
+            };
+
+            const { error: profileError } = await getSupabase()
+              .from('profiles')
+              .insert(profileData);
+
+            if (profileError) {
+              console.error('Profile creation error:', profileError);
+              // Don't fail signup if profile insert fails, but log it
+            }
+          }
+
           if (data.user && data.session && isEmailConfirmed(data.user)) {
             setUser(toPublicFromSupabase(data.user));
+          }
+
+          if (accountType && accountType.startsWith('wholesale')) {
+            return { ok: true, code: "wholesale_pending" };
           }
 
           return { ok: true, code: "confirmation_sent" };

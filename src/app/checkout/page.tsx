@@ -52,7 +52,7 @@ export default function CheckoutPage() {
   } | null>(null);
   const savedAddresses = useMemo<{ id: string; label: string; addressText: string }[]>(() => {
     if (!user) return [];
-    const raw = typeof window !== "undefined" ? localStorage.getItem("volthubAddresses") : null;
+    const raw = typeof window !== "undefined" ? localStorage.getItem("canvusAddresses") : null;
     const all = raw ? (JSON.parse(raw) as { id: string; userId: string; label: string; addressText: string }[]) : [];
     return all
       .filter((a) => a.userId === user.id)
@@ -197,10 +197,10 @@ export default function CheckoutPage() {
 
   if (placed) {
     const waMessage = lastOrder
-      ? `Hello VoltHub, I want to order: ${lastOrder.itemsLabel} - Total: KES ${lastOrder.total.toLocaleString()}${
+      ? `Hello Canvus, I want to order: ${lastOrder.itemsLabel} - Total: KES ${lastOrder.total.toLocaleString()}${
           lastOrder.customerName?.trim() ? ` - Name: ${lastOrder.customerName.trim()}` : ""
         }`
-      : "Hello VoltHub, I just placed an order and need help confirming it.";
+      : "Hello Canvus, I just placed an order and need help confirming it.";
     const waUrl = buildWhatsAppOrderUrl(waMessage);
     return (
       <div className="min-h-screen bg-[#0a0b0c] text-white">

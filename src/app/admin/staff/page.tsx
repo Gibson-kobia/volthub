@@ -252,7 +252,7 @@ export default function AdminStaffPage() {
                   value={form.store_code}
                   onChange={(event) => setForm((current) => ({ ...current, store_code: event.target.value }))}
                   className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none"
-                  placeholder="main or volthub"
+                  placeholder="main or canvus"
                   disabled={viewerRole !== "super_admin"}
                 />
               </label>

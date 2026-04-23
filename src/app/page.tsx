@@ -189,7 +189,7 @@ export default function Home() {
             
             {/* Hero Image */}
             <Image
-              src="/images/zorahero.png"
+              src="/images/canvushero.png"
               alt="Nairobi skyline with everyday essentials basket"
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
@@ -381,10 +381,10 @@ export default function Home() {
         <div className="grid gap-5 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
           <div className="max-w-xl">
             <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/48">
-              VoltHub electronics department
+              Canvus wholesale division
             </div>
             <h2 className="mt-2.5 max-w-[12ch] font-serif text-3xl leading-tight text-white sm:text-4xl">
-              Premium electronics, same Zora basket.
+              Premium bulk products, same Canvus checkout.
             </h2>
             <p className="mt-3.5 text-xs leading-5 text-white/72 sm:text-sm sm:leading-6">
               Chargers, audio, power, and wearables in the same checkout.
@@ -394,7 +394,7 @@ export default function Home() {
                 href="/category/electronics"
                 className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 text-xs font-semibold text-[#101418] transition-all hover:scale-[1.02]"
               >
-                Shop VoltHub
+                Shop Canvus
               </Link>
               <Link
                 href="/category/chargers-cables"

@@ -61,7 +61,7 @@ export default async function Page({
   const inStock = product.stock > 0;
   const categoryLabel = CATEGORY_LABELS[product.category as CategorySlug] ?? "Gadgets";
   const highlights = getHighlights(product.category as CategorySlug);
-  const waMessage = `Hello VoltHub, I want to order: ${product.name} - Total: KES ${product.priceKes.toLocaleString()}`;
+  const waMessage = `Hello Canvus, I want to order: ${product.name} - Total: KES ${product.priceKes.toLocaleString()}`;
   const waUrl = buildWhatsAppOrderUrl(waMessage);
 
   return (
@@ -153,7 +153,7 @@ export default async function Page({
             </div>
 
             <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-              <h3 className="font-medium text-sm text-zinc-900 dark:text-white">Why buy from VoltHub</h3>
+              <h3 className="font-medium text-sm text-zinc-900 dark:text-white">Why buy from Canvus</h3>
               <ul className="mt-2 space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
                 <li>• Curated gadgets for everyday use</li>
                 <li>• Fast support on WhatsApp</li>
@@ -190,7 +190,7 @@ export default async function Page({
         <div className="mt-12">
           <div className="mb-3">
             <h2 className="font-serif text-2xl text-zinc-900 dark:text-white">You may also like</h2>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">Similar picks from VoltHub.</p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">Similar picks from Canvus.</p>
           </div>
           <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
             {related.map((p) => (

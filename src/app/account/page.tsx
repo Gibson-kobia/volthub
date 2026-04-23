@@ -372,10 +372,10 @@ export default function AccountPage() {
                     <button
                       className="text-sm underline"
                       onClick={() => {
-                        const raw = localStorage.getItem("volthubAddresses");
+                        const raw = localStorage.getItem("canvusAddresses");
                         const all = raw ? (JSON.parse(raw) as Address[]) : [];
                         const next = all.filter((x) => x.id !== a.id);
-                        localStorage.setItem("volthubAddresses", JSON.stringify(next));
+                        localStorage.setItem("canvusAddresses", JSON.stringify(next));
                         setAddresses(next.filter((x) => x.userId === user!.id));
                       }}
                     >

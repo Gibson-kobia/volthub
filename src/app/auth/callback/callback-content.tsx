@@ -205,7 +205,7 @@ export default function AuthCallbackContent() {
           {status === "loading" && (
             <>
               <div className="h-12 w-12 rounded-full border-4 border-white/20 border-t-[color:var(--accent)] animate-spin" />
-              <h1 className="text-2xl font-semibold">Verifying your Zora account…</h1>
+              <h1 className="text-2xl font-semibold">Verifying your Canvus account…</h1>
               <p className="text-sm text-zinc-300">
                 Please wait while we confirm your email and set up your session.
               </p>
@@ -246,7 +246,7 @@ export default function AuthCallbackContent() {
               <div className="h-12 w-12 rounded-full bg-emerald-400/20 flex items-center justify-center animate-in zoom-in duration-300">
                 <span className="text-2xl">✓</span>
               </div>
-              <h1 className="text-2xl font-semibold">Welcome to Zora</h1>
+              <h1 className="text-2xl font-semibold">Welcome to Canvus</h1>
               <p className="text-sm text-zinc-300">
                 Your account is verified and ready. Taking you to your interface.
               </p>

@@ -33,7 +33,7 @@ export default function CartPage() {
   const waMessage =
     items.length === 0
       ? ""
-      : `Hello VoltHub, I want to order: ${items
+      : `Hello Canvus, I want to order: ${items
           .map((i) => `${i.product!.name} x${i.qty}`)
           .join(", ")} - Total: KES ${subtotal.toLocaleString()}${
           user?.name?.trim() ? ` - Name: ${user.name.trim()}` : ""
