@@ -70,7 +70,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-6">
+    <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-6">
       <div className="w-full max-w-md">
         <h1 className="font-serif text-3xl text-white mb-2 text-center">Partner Access</h1>
         <p className="text-zinc-500 text-sm mb-8 text-center">
@@ -109,6 +109,7 @@ export default function LoginPage() {
             Don't have a partner account? Apply for Wholesale Access
           </Link>
         </div>
+      </div>
     </div>
   );
 }
