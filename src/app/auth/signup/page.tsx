@@ -81,7 +81,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="mx-auto max-w-md px-6 py-10">
+    <div className="mx-auto max-w-md px-6 py-10 bg-slate-900 text-white rounded-lg shadow-lg">
       <h1 className="font-serif text-3xl mb-2">Create account</h1>
       <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">
         Create a Canvus wholesale account for bulk ordering, institutional pricing, and WhatsApp integration.
@@ -115,30 +115,32 @@ export default function SignupPage() {
 
         {/* Account Type Selection */}
         <div>
-          <label className="block mb-2 font-medium">Account Type</label>
-          <div className="space-y-2">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="accountType"
-                value="retail"
-                checked={accountType === "retail"}
-                onChange={(e) => setAccountType(e.target.value as "retail")}
-                className="mr-2"
-              />
-              Retail - Standard shopping
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="accountType"
-                value="wholesale"
-                checked={accountType === "wholesale"}
-                onChange={(e) => setAccountType(e.target.value as "wholesale")}
-                className="mr-2"
-              />
-              Wholesale - Bulk ordering & special pricing
-            </label>
+          <label className="block mb-3 font-medium text-slate-900">Account Type</label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setAccountType("retail")}
+              className={`p-4 border-2 rounded-lg text-center transition-all ${
+                accountType === "retail"
+                  ? "border-emerald-500 bg-emerald-50 text-emerald-900"
+                  : "border-slate-300 bg-white text-slate-700 hover:border-slate-400"
+              }`}
+            >
+              <div className="font-semibold">Retail</div>
+              <div className="text-xs mt-1">Standard shopping</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setAccountType("wholesale")}
+              className={`p-4 border-2 rounded-lg text-center transition-all ${
+                accountType === "wholesale"
+                  ? "border-emerald-500 bg-emerald-50 text-emerald-900"
+                  : "border-slate-300 bg-white text-slate-700 hover:border-slate-400"
+              }`}
+            >
+              <div className="font-semibold">Wholesale</div>
+              <div className="text-xs mt-1">Bulk ordering & special pricing</div>
+            </button>
           </div>
         </div>
 
