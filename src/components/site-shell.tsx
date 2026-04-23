@@ -117,76 +117,16 @@ function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className={`sticky top-0 z-50 border-b transition-colors ${solid ? "border-[color:var(--border)] bg-[#0b0d10]/88 shadow-[0_16px_40px_rgba(0,0,0,0.28)] backdrop-blur-xl" : "border-transparent bg-transparent"}`}>
-        <div className="border-b border-white/6 bg-black/18">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.18em] text-white/72 sm:px-6">
-            <div>CANVUS WHOLESALE: Bulk partner</div>
-            <div className="hidden items-center gap-4 sm:flex">
-              <span>M-Pesa accepted</span>
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white">
-                WhatsApp support
-              </a>
-            </div>
-          </div>
-        </div>
+      <header className="sticky top-0 z-50 border-b border-zinc-800/50 bg-[#0a0a0a]">
 
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-center px-4 py-6 sm:px-6">
+          <div className="text-center">
             <Link href="/" className="leading-none text-white">
               <div className="text-[1.75rem] font-extrabold tracking-[0.18em]">CANVUS</div>
-              <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/50">
+              <div className="mt-1 text-[10px] uppercase tracking-[0.3em] text-zinc-500">
                 Meru wholesale
               </div>
             </Link>
-
-            <nav className="hidden items-center gap-6 text-sm font-medium text-white/82 lg:flex">
-              {HEADER_LINKS.map((link) => (
-                <Link key={link.label} href={link.href} className="transition-colors hover:text-white">
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              aria-label="Search"
-              onClick={() => setSearchOpen(true)}
-              className="inline-flex min-h-11 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/8"
-            >
-              <span className="inline-flex items-center gap-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.3-4.3" />
-                </svg>
-                <span className="hidden sm:inline">Search</span>
-              </span>
-            </button>
-
-            {user ? (
-              <div className="hidden items-center gap-2 sm:flex">
-                <Link href="/account" className="inline-flex min-h-11 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/8">
-                  Account
-                </Link>
-                <button onClick={logout} className="inline-flex min-h-11 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/8">
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <Link href="/auth/login" className="hidden min-h-11 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/8 sm:inline-flex">
-                Account
-              </Link>
-            )}
-
-            <CartButton />
-
-            <button
-              aria-label="Menu"
-              onClick={() => setMobileOpen(true)}
-              className="inline-flex min-h-11 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/8 lg:hidden"
-            >
-              Menu
-            </button>
           </div>
         </div>
       </header>

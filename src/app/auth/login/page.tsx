@@ -70,77 +70,45 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="mx-auto max-w-md px-6 py-10">
-      <h1 className="font-serif text-4xl font-bold mb-2">Log in</h1>
-      <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">
-        Secure Access: Canvus Partner Portal
-      </p>
-      {confirmed && (
-        <div className="mb-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-300">
-          Email verified successfully. You can log in now.
-        </div>
-      )}
-      {confirmErrorText && (
-        <div className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-200">
-          {confirmErrorText}
-        </div>
-      )}
-      <form onSubmit={handleSubmit} className="space-y-4 text-sm">
-        <div>
-          <label className="block mb-1">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-black/10 dark:border-white/10 px-3 py-2 bg-white dark:bg-black"
-          />
-        </div>
-        <div>
-          <label className="block mb-1">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-black/10 dark:border-white/10 px-3 py-2 bg-white dark:bg-black"
-          />
-        </div>
-        {error && <div className="text-sm text-red-600">{error}</div>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-full px-4 py-2 bg-[color:var(--accent)] text-white text-sm font-medium hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed"
-        >
-          {loading ? "Logging in..." : "Log in"}
-        </button>
-      </form>
-      <div className="mt-4 p-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg">
-        <p className="text-xs text-slate-700 dark:text-slate-300">
-          Applying for a school or business account?{" "}
-          <Link href="/wholesale" className="underline text-slate-900 dark:text-slate-100 font-medium">
-            Click here to create a wholesale application
-          </Link>
+    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-6">
+      <div className="w-full max-w-md">
+        <h1 className="font-serif text-3xl text-white mb-2 text-center">Partner Access</h1>
+        <p className="text-zinc-500 text-sm mb-8 text-center">
+          Enter your credentials to access the Canvus Bulk Portal.
         </p>
-      </div>
-      <div className="mt-4 text-xs text-zinc-600 dark:text-zinc-400">
-        <Link href="/auth/reset" className="underline">
-          Forgot password?
-        </Link>
-      </div>
-      <div className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
-        New to Canvus?{" "}
-        <Link href="/auth/signup" className="underline">
-          Create account
-        </Link>
-      </div>
-      <div className="mt-4 text-xs text-zinc-600 dark:text-zinc-400">
-        Didn’t receive verification email?{" "}
-        <button
-          onClick={() => setResendEmail(email)}
-          className="underline hover:text-zinc-800 dark:hover:text-zinc-200"
-        >
-          Resend
-        </button>
-      </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block mb-1 text-zinc-400 text-sm">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full border-b border-zinc-800 bg-transparent px-0 py-2 text-white placeholder-zinc-600 focus:border-white focus:outline-none transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block mb-1 text-zinc-400 text-sm">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border-b border-zinc-800 bg-transparent px-0 py-2 text-white placeholder-zinc-600 focus:border-white focus:outline-none transition-colors"
+            />
+          </div>
+          {error && <div className="text-sm text-red-400">{error}</div>}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-white text-black py-3 text-sm font-medium hover:bg-zinc-200 disabled:opacity-70 disabled:cursor-not-allowed rounded-none transition-colors"
+          >
+            {loading ? "Logging in..." : "Log in"}
+          </button>
+        </form>
+        <div className="mt-8 text-center">
+          <Link href="/wholesale" className="text-zinc-400 hover:text-white transition-colors text-sm">
+            Don't have a partner account? Apply for Wholesale Access
+          </Link>
+        </div>
     </div>
   );
 }
