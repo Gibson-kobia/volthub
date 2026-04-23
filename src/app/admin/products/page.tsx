@@ -249,7 +249,6 @@ export default function AdminProductsPage() {
     const nextErrors: Record<string, string> = {};
 
     if (!form.name.trim()) nextErrors.name = "Product name is required.";
-    if (!form.slug.trim()) nextErrors.slug = "Slug is required.";
     if (form.slug.trim() && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(form.slug.trim())) {
       nextErrors.slug = "Slug must be lowercase and dash-separated.";
     }
@@ -280,9 +279,10 @@ export default function AdminProductsPage() {
 
     const previousStock = editingProduct ? Number(editingProduct.stock || 0) : 0;
     const nextStock = Number(form.stock || 0);
+    const slug = form.slug.trim() || createSlug(form.name.trim());
     const payload = compactRecord({
       name: form.name.trim(),
-      slug: form.slug.trim() || createSlug(form.name),
+      slug,
       brand: form.brand.trim() || "Canvus",
       category: form.category,
       price: Number(form.price || 0),
@@ -314,11 +314,17 @@ export default function AdminProductsPage() {
           .eq("id", editingProduct.id)
           .select("*")
           .single();
-        if (error) throw error;
+        if (error) {
+          alert("Database Error: " + error.message);
+          throw error;
+        }
         savedProduct = data as DBProduct;
       } else {
         const { data, error } = await supabase.from("products").insert([payload]).select("*").single();
-        if (error) throw error;
+        if (error) {
+          alert("Database Error: " + error.message);
+          throw error;
+        }
         savedProduct = data as DBProduct;
       }
 
@@ -340,6 +346,7 @@ export default function AdminProductsPage() {
 
       await fetchProducts();
       setIsModalOpen(false);
+      setForm(DEFAULT_FORM);
       setFeedback(editingProduct ? "Product updated." : "Product created.");
     } catch (error) {
       setWarning(extractSupabaseErrorMessage(error));
