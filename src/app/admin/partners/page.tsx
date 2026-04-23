@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 
 type WholesaleApplication = {
   id: string;
@@ -36,6 +36,7 @@ export default function PartnersPage() {
   }, []);
 
   const fetchApplications = async () => {
+    const supabase = getSupabase();
     const { data, error } = await supabase
       .from('wholesale_applications')
       .select('*')
@@ -59,6 +60,7 @@ export default function PartnersPage() {
     setShowApproveModal(false);
 
     try {
+      const supabase = getSupabase();
       const { error } = await supabase.rpc('handle_wholesale_approval', {
         app_id: selectedApp.id,
         target_user_id: selectedApp.user_id,
@@ -84,6 +86,7 @@ export default function PartnersPage() {
     setShowRejectModal(false);
 
     try {
+      const supabase = getSupabase();
       const { error } = await supabase.rpc('handle_wholesale_approval', {
         app_id: selectedApp.id,
         target_user_id: selectedApp.user_id,
@@ -210,5 +213,4 @@ export default function PartnersPage() {
       )}
     </div>
   );
-}</content>
-<parameter name="filePath">/workspaces/volthub/src/app/admin/partners/page.tsx
+}
