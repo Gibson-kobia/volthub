@@ -760,6 +760,7 @@ export default function WholesalePage() {
   };
 
   // Check if user can access wholesale
+  /*
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -775,10 +776,10 @@ export default function WholesalePage() {
       </div>
     );
   }
+  */
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
+    <>
       <div className="bg-white border-b border-slate-200 px-4 py-8">
         <div className="max-w-6xl mx-auto">
           <motion.div
@@ -907,148 +908,7 @@ export default function WholesalePage() {
         cartItems={cart}
         products={wholesaleProducts}
       />
-    </div>
+    </>
   );
 }
-  // Check MOV (Minimum Order Value: 5 units)
-  const totalQuantity = useMemo(
-    () => cart.reduce((sum, item) => sum + item.quantity, 0),
-    [cart]
-  );
-  const MOV_REQUIRED = 5;
-  const canCheckout = totalQuantity >= MOV_REQUIRED;
 
-  return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
-              Wholesale Bulk Portal
-            </h1>
-            <p className="text-slate-600">
-              Fast ordering for school bursars, shop owners & traders
-            </p>
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Search Bar */}
-      <SearchBar onSearch={setSearchQuery} />
-
-      {/* Results count */}
-      <div className="bg-white border-b border-slate-200 px-4 py-3">
-        <div className="max-w-6xl mx-auto text-sm text-slate-600">
-          Showing {filteredProducts.length} products
-          {searchQuery && ` for "${searchQuery}"`}
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="px-4 py-6 pb-32">
-        <div className="max-w-6xl mx-auto">
-          {filteredProducts.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center py-12"
-            >
-              <Package className="w-16 h-16 mx-auto text-slate-300 mb-4" />
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                No products found
-              </h3>
-              <p className="text-slate-600">
-                Try searching with a different term (e.g., "Sugar", "Flour", "Oil")
-              </p>
-            </motion.div>
-          ) : (
-            <>
-              {/* Desktop Table View */}
-              <div className="hidden md:block overflow-x-auto bg-white rounded-lg border border-slate-200">
-                <table className="w-full">
-                  <thead className="bg-slate-100 border-b border-slate-200">
-                    <tr>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-900">
-                        Product
-                      </th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-900">
-                        Stock
-                      </th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-900">
-                        Retail Price
-                      </th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-900">
-                        Wholesale Price
-                      </th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-900">
-                        Savings
-                      </th>
-                      <th className="text-center px-4 py-3 font-semibold text-slate-900">
-                        Quantity
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredProducts.map((product) => (
-                      <ProductRow
-                        key={product.id}
-                        product={product}
-                        quantity={
-                          cart.find((item) => item.productId === product.id)
-                            ?.quantity || 0
-                        }
-                        onQuantityChange={handleQuantityChange}
-                      />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Mobile Card View */}
-              <div className="md:hidden space-y-3">
-                {filteredProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    quantity={
-                      cart.find((item) => item.productId === product.id)
-                        ?.quantity || 0
-                    }
-                    onQuantityChange={handleQuantityChange}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Floating Summary */}
-      <AnimatePresence>
-        {cart.length > 0 && (
-          <FloatingSummary
-            cartItems={cart}
-            products={wholesaleProducts}
-            onConfirm={() => setIsModalOpen(true)}
-            canCheckout={canCheckout}
-            movRequired={MOV_REQUIRED}
-            totalQuantity={totalQuantity}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Confirm Order Modal */}
-      <ConfirmOrderModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleConfirmOrder}
-        cartItems={cart}
-        products={wholesaleProducts}
-      />
-    </div>
-  );
-}
