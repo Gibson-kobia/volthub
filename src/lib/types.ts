@@ -25,6 +25,9 @@ export type Product = {
   rating: number;
   reviewsCount: number; // Frontend uses this
   is_active?: boolean;
+  wholesale_price?: number;
+  unit_type?: string;
+  units_per_container?: number;
 };
 
 // Database representation of a Product
@@ -53,6 +56,9 @@ export type DBProduct = {
   seller_id?: string; // Added for RLS
   created_at?: string;
   updated_at?: string;
+  wholesale_price?: number | null;
+  unit_type?: string | null;
+  units_per_container?: number | null;
 };
 
 export type CartItem = {

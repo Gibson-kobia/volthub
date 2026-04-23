@@ -41,6 +41,9 @@ type ProductFormState = {
   description: string;
   is_active: boolean;
   track_inventory: boolean;
+  wholesale_price: string;
+  unit_type: string;
+  units_per_container: string;
 };
 
 type StockAdjustmentState = {
@@ -75,6 +78,9 @@ const DEFAULT_FORM: ProductFormState = {
   description: "",
   is_active: true,
   track_inventory: true,
+  wholesale_price: "",
+  unit_type: "",
+  units_per_container: "1",
 };
 
 const DEFAULT_ADJUSTMENT: StockAdjustmentState = {
@@ -115,6 +121,9 @@ function mapProductToForm(product: DBProduct): ProductFormState {
     description: product.description || "",
     is_active: product.is_active !== false,
     track_inventory: product.track_inventory !== false,
+    wholesale_price: product.wholesale_price === null || product.wholesale_price === undefined ? "" : String(product.wholesale_price),
+    unit_type: product.unit_type || "",
+    units_per_container: product.units_per_container === null || product.units_per_container === undefined ? "1" : String(product.units_per_container),
   };
 }
 
@@ -290,6 +299,9 @@ export default function AdminProductsPage() {
       is_archived: false,
       archived_at: null,
       store_code: viewerStoreCode,
+      wholesale_price: form.wholesale_price === "" ? null : Number(form.wholesale_price),
+      unit_type: form.unit_type.trim() || null,
+      units_per_container: form.units_per_container === "" ? null : Number(form.units_per_container),
     });
 
     try {
@@ -696,6 +708,43 @@ export default function AdminProductsPage() {
                     className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none"
                   />
                   {formErrors.cost_price ? <span className="text-xs text-rose-300">{formErrors.cost_price}</span> : null}
+                </label>
+                <label className="space-y-2 text-sm text-white/70">
+                  <span>Wholesale price</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={form.wholesale_price}
+                    onChange={(event) => setForm((current) => ({ ...current, wholesale_price: event.target.value }))}
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none"
+                  />
+                </label>
+                <label className="space-y-2 text-sm text-white/70">
+                  <span>Bulk unit type</span>
+                  <select
+                    value={form.unit_type}
+                    onChange={(event) => setForm((current) => ({ ...current, unit_type: event.target.value }))}
+                    className="w-full rounded-2xl border border-white/10 bg-[#10161d] px-4 py-3 text-white outline-none"
+                  >
+                    <option value="">Select unit type</option>
+                    <option value="Bale">Bale</option>
+                    <option value="Crate">Crate</option>
+                    <option value="Sack">Sack</option>
+                    <option value="Case">Case</option>
+                    <option value="Box">Box</option>
+                    <option value="Bag">Bag</option>
+                    <option value="Jerrycan">Jerrycan</option>
+                  </select>
+                </label>
+                <label className="space-y-2 text-sm text-white/70">
+                  <span>Units per container</span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={form.units_per_container}
+                    onChange={(event) => setForm((current) => ({ ...current, units_per_container: event.target.value }))}
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none"
+                  />
                 </label>
                 <label className="space-y-2 text-sm text-white/70">
                   <span>Stock quantity</span>
