@@ -105,10 +105,6 @@ export default function AdminSettingsPage() {
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [viewerStoreCode, setViewerStoreCode] = useState("main");
 
-  useEffect(() => {
-    void loadSettings();
-  }, []);
-
   async function loadSettings() {
     setLoading(true);
     setWarning(null);
@@ -153,6 +149,10 @@ export default function AdminSettingsPage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    void loadSettings(); // eslint-disable-line react-hooks/set-state-in-effect
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

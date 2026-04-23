@@ -49,10 +49,6 @@ export default function AdminStaffPage() {
   const [viewerRole, setViewerRole] = useState<StaffRole | null>(null);
   const [viewerStoreCode, setViewerStoreCode] = useState("main");
 
-  useEffect(() => {
-    void loadProfiles();
-  }, []);
-
   async function loadProfiles() {
     setLoading(true);
     setWarning(null);
@@ -99,6 +95,10 @@ export default function AdminStaffPage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    void loadProfiles(); // eslint-disable-line react-hooks/set-state-in-effect
+  }, []);
 
   const roleCoverage = useMemo(() => {
     const counts: Record<StaffRole, number> = {

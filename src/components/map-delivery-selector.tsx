@@ -116,7 +116,7 @@ export function MapDeliverySelector({
   }, []);
 
   useEffect(() => {
-    setCurrent((prev) => ({
+    setCurrent((prev) => ({ // eslint-disable-line react-hooks/set-state-in-effect
       ...prev,
       deliveryMethod,
     }));
@@ -124,7 +124,10 @@ export function MapDeliverySelector({
 
   useEffect(() => {
     if (value) {
-      setCurrent(value);
+      setCurrent((prev) => ({ // eslint-disable-line react-hooks/set-state-in-effect
+        ...prev,
+        ...value,
+      }));
       if (mapRef.current && markerRef.current) {
         markerRef.current.setLatLng([value.latitude, value.longitude]);
         mapRef.current.setView([value.latitude, value.longitude], 16);

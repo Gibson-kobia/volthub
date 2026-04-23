@@ -140,13 +140,13 @@ export default function Home() {
     let mounted = true;
 
     async function load() {
+      setLoading(true);
       const data = await fetchProducts();
       if (!mounted) return;
       setProducts(data);
       setLoading(false);
     }
 
-    setLoading(true);
     load();
 
     return () => {

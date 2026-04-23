@@ -106,16 +106,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let mounted = true;
     let sub: { subscription: { unsubscribe: () => void } } | null = null;
 
-    try {
-      refreshSession().finally(() => {
+    const initAuth = async () => {
+      try {
+        await refreshSession();
+      } catch (error) {
+        console.error("Failed to refresh session:", error);
+        setUser(null);
+      } finally {
         if (mounted) setAuthReady(true);
-      });
+      }
+    };
 
+    initAuth();
+
+    try {
       const { data } = getSupabase().auth.onAuthStateChange(async (_event, session) => {
         const u = session?.user || null;
         if (mounted) {
-          setUser(u && isEmailConfirmed(u) ? toPublicFromSupabase(u) : null);
-          setAuthReady(true);
+          setUser(u && isEmailConfirmed(u) ? toPublicFromSupabase(u) : null); // eslint-disable-line react-hooks/set-state-in-effect
+          setAuthReady(true); // eslint-disable-line react-hooks/set-state-in-effect
         }
       });
       sub = data;

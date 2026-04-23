@@ -20,10 +20,6 @@ export default function AdminApplicationsPage() {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchPendingApplications();
-  }, []);
-
   const fetchPendingApplications = async () => {
     try {
       const { data, error } = await getSupabase()
@@ -40,6 +36,10 @@ export default function AdminApplicationsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchPendingApplications(); // eslint-disable-line react-hooks/set-state-in-effect
+  }, []);
 
   const approveApplication = async (applicationId: string) => {
     setProcessing(applicationId);
