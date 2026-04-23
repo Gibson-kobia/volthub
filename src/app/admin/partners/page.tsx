@@ -8,8 +8,8 @@ type WholesaleApplication = {
   user_id: string;
   status: string;
   business_info: {
-    name: string;
-    location: string;
+    business_name: string;
+    contact_name: string;
     whatsapp: string;
   };
   created_at: string;
@@ -69,7 +69,7 @@ export default function PartnersPage() {
 
       if (error) throw error;
 
-      setToast(`Success: ${selectedApp.business_info.name} is now a verified Wholesale Partner.`);
+      setToast(`Success: ${selectedApp.business_info.business_name} is now a verified Wholesale Partner.`);
     } catch (error) {
       console.error('Error approving application:', error);
       setToast('Error approving application. Please try again.');
@@ -96,7 +96,7 @@ export default function PartnersPage() {
 
       if (error) throw error;
 
-      setToast(`Application from ${selectedApp.business_info.name} has been rejected.`);
+      setToast(`Application from ${selectedApp.business_info.business_name} has been rejected.`);
     } catch (error) {
       console.error('Error rejecting application:', error);
       setToast('Error rejecting application. Please try again.');
@@ -131,7 +131,7 @@ export default function PartnersPage() {
           <thead>
             <tr>
               <th className="px-4 py-2 border">Business Name</th>
-              <th className="px-4 py-2 border">Location</th>
+              <th className="px-4 py-2 border">Contact Name</th>
               <th className="px-4 py-2 border">WhatsApp</th>
               <th className="px-4 py-2 border">Actions</th>
             </tr>
@@ -139,8 +139,8 @@ export default function PartnersPage() {
           <tbody>
             {applications.map(app => (
               <tr key={app.id}>
-                <td className="px-4 py-2 border">{app.business_info.name}</td>
-                <td className="px-4 py-2 border">{app.business_info.location}</td>
+                <td className="px-4 py-2 border">{app.business_info.business_name}</td>
+                <td className="px-4 py-2 border">{app.business_info.contact_name}</td>
                 <td className="px-4 py-2 border">
                   <a href={`https://wa.me/${app.business_info.whatsapp}`} target="_blank" rel="noopener noreferrer">
                     {app.business_info.whatsapp}
@@ -171,7 +171,7 @@ export default function PartnersPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded">
             <h2 className="text-xl mb-4">Confirm Approval</h2>
-            <p>Elevate {selectedApp.business_info.name} to Wholesale Partner?</p>
+            <p>Elevate {selectedApp.business_info.business_name} to Wholesale Partner?</p>
             <div className="mt-4">
               <button onClick={handleApprove} className="bg-green-500 text-white px-4 py-2 rounded mr-2">
                 Confirm
@@ -189,11 +189,11 @@ export default function PartnersPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded">
             <h2 className="text-xl mb-4">Reject Application</h2>
-            <p>Select a reason for rejecting {selectedApp.business_info.name}:</p>
+            <p>Select a reason for rejecting {selectedApp.business_info.business_name}:</p>
             <select
               value={selectedReason}
               onChange={(e) => setSelectedReason(e.target.value)}
-              className="mt-2 p-2 border rounded w-full"
+              className="mt-2 p-2 border rounded w-full focus:ring-gold"
             >
               <option value="">Select reason</option>
               {rejectionReasons.map(reason => (

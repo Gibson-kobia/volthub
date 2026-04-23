@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
-import { Instrument_Serif, Manrope } from "next/font/google";
+import { Playfair_Display, Geist } from "next/font/google";
 import "./globals.css";
 import { SiteShell } from "../components/site-shell";
 
-const headingSerif = Instrument_Serif({
+const headingSerif = Playfair_Display({
   variable: "--font-heading",
   subsets: ["latin"],
   weight: "400",
   display: "swap",
 });
 
-const bodySans = Manrope({
+const bodySans = Geist({
   variable: "--font-body",
   subsets: ["latin"],
   display: "swap",

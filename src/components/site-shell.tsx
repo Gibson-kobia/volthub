@@ -137,9 +137,9 @@ function Shell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12">
           <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr]">
             <div>
-              <div className="text-[1.55rem] font-extrabold tracking-[0.18em] text-white">ZORA</div>
+              <div className="text-[1.55rem] font-extrabold tracking-[0.18em] text-white">CANVUS</div>
               <p className="mt-4 max-w-md text-sm leading-6 text-[color:var(--muted)]">
-                Nairobi-first everyday shopping for groceries, drinks, snacks, household essentials, personal care, and VoltHub electronics in one clean checkout flow.
+                Meru's Premier B2B & Wholesale Supply Chain.
               </p>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl border border-white/8 bg-white/4 p-4 text-sm text-white/88">
@@ -238,7 +238,7 @@ function Shell({ children }: { children: React.ReactNode }) {
                   }
                 }}
                 placeholder="Search wholesale products and bulk items"
-                className="mt-4 w-full rounded-[22px] border border-[color:var(--border)] bg-white/4 px-4 py-4 text-base text-white outline-none placeholder:text-white/40 focus:border-[color:var(--glow)]"
+                className="mt-4 w-full rounded-[22px] border border-[color:var(--border)] bg-white/4 px-4 py-4 text-base text-white outline-none placeholder:text-white/40 focus:border-gold"
               />
               <div className="mt-4 flex flex-wrap gap-2">
                 {SEARCH_TRENDS.map((trend) => (

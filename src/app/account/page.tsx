@@ -47,7 +47,7 @@ export default function AccountPage() {
 
   const [addresses, setAddresses] = useState<Address[]>(() => {
     if (typeof window === "undefined") return [];
-    const raw = localStorage.getItem("volthubAddresses");
+    const raw = localStorage.getItem("canvusAddresses");
     const all = raw ? (JSON.parse(raw) as Address[]) : [];
     return user ? all.filter((a) => a.userId === user.id) : [];
   });
@@ -55,7 +55,7 @@ export default function AccountPage() {
   const [profileDraft, setProfileDraft] = useState<User | null>(user);
   const [reviews, setReviews] = useState<Review[]>(() => {
     if (typeof window === "undefined") return [];
-    const raw = localStorage.getItem("volthubReviews");
+    const raw = localStorage.getItem("canvusReviews");
     const all = raw ? (JSON.parse(raw) as Review[]) : [];
     return user ? all.filter((r) => r.userId === user.id) : [];
   });
@@ -78,11 +78,11 @@ export default function AccountPage() {
       if (e.key === "wishlist" && e.newValue) {
         setWishlistIds(JSON.parse(e.newValue));
       }
-      if (e.key === "volthubAddresses" && e.newValue) {
+      if (e.key === "canvusAddresses" && e.newValue) {
         const all = JSON.parse(e.newValue) as Address[];
         setAddresses(user ? all.filter((a) => a.userId === user.id) : []);
       }
-      if (e.key === "volthubReviews" && e.newValue) {
+      if (e.key === "canvusReviews" && e.newValue) {
         const all = JSON.parse(e.newValue) as Review[];
         setReviews(user ? all.filter((r) => r.userId === user.id) : []);
       }
@@ -339,7 +339,7 @@ export default function AccountPage() {
               const label = (document.getElementById("addr_label") as HTMLInputElement)?.value.trim();
               const text = (document.getElementById("addr_text") as HTMLInputElement)?.value.trim();
               if (!label || !text || !user) return;
-              const raw = localStorage.getItem("volthubAddresses");
+              const raw = localStorage.getItem("canvusAddresses");
               const all = raw ? (JSON.parse(raw) as Address[]) : [];
               const entry: Address = {
                 id: crypto.randomUUID(),
@@ -348,7 +348,7 @@ export default function AccountPage() {
                 addressText: text,
               };
               const next = [...all, entry];
-              localStorage.setItem("volthubAddresses", JSON.stringify(next));
+              localStorage.setItem("canvusAddresses", JSON.stringify(next));
               const mine = next.filter((a) => a.userId === user.id);
               setAddresses(mine);
               (document.getElementById("addr_label") as HTMLInputElement).value = "";
@@ -510,12 +510,12 @@ export default function AccountPage() {
                         const next = reviews.map((x) =>
                           x.id === r.id ? { ...x, text: prompt("Edit review text", r.text) || r.text } : x
                         );
-                        const raw = localStorage.getItem("volthubReviews");
+                        const raw = localStorage.getItem("canvusReviews");
                         const all = raw ? (JSON.parse(raw) as Review[]) : [];
                         const merged = all.map((x) =>
                           x.id === r.id ? { ...x, text: next.find((n) => n.id === x.id)?.text || x.text } : x
                         );
-                        localStorage.setItem("volthubReviews", JSON.stringify(merged));
+                        localStorage.setItem("canvusReviews", JSON.stringify(merged));
                         setReviews(next);
                       }}
                     >
@@ -524,10 +524,10 @@ export default function AccountPage() {
                     <button
                       className="text-xs text-red-600"
                       onClick={() => {
-                        const raw = localStorage.getItem("volthubReviews");
+                        const raw = localStorage.getItem("canvusReviews");
                         const all = raw ? (JSON.parse(raw) as Review[]) : [];
                         const merged = all.filter((x) => x.id !== r.id);
-                        localStorage.setItem("volthubReviews", JSON.stringify(merged));
+                        localStorage.setItem("canvusReviews", JSON.stringify(merged));
                         setReviews(merged.filter((x) => x.userId === user!.id));
                       }}
                     >

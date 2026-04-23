@@ -10,7 +10,7 @@ export function ProductCard({ product }: { product: Product }) {
       : "/product-placeholder.png";
   const inStock = product.stock > 0;
   return (
-    <div className="group relative flex h-full flex-col overflow-hidden rounded-[20px] border border-white/8 bg-[linear-gradient(180deg,rgba(23,26,30,0.98),rgba(15,17,20,0.98))] shadow-[0_14px_32px_rgba(0,0,0,0.26)] transition-all duration-300 hover:border-white/14 hover:shadow-[0_16px_36px_rgba(0,0,0,0.34)] hover:-translate-y-0.5">
+    <div className="group relative flex h-full flex-col overflow-hidden rounded-[20px] border border-white/8 glass-card shadow-[0_14px_32px_rgba(0,0,0,0.26)] transition-all duration-300 hover:border-white/14 hover:shadow-[0_16px_36px_rgba(0,0,0,0.34)] hover:-translate-y-0.5">
       <div className="pointer-events-none absolute inset-x-4 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.32),transparent)]" />
       <Link href={`/product/${product.slug}`} className="block px-2.5 pt-2.5">
         <div className="relative aspect-square overflow-hidden rounded-[16px] border border-white/7 bg-[linear-gradient(180deg,rgba(34,39,44,0.96),rgba(16,18,22,1))] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
