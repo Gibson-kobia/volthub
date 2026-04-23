@@ -209,6 +209,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               console.error('Profile creation error:', profileError);
               // Don't fail signup if profile insert fails, but log it
             }
+
+            // Insert wholesale application if applicable
+            if (accountType && accountType.startsWith('wholesale') && data.user) {
+              const applicationData = {
+                user_id: data.user.id,
+                status: 'pending',
+                business_info: {
+                  business_name: institutionName || '',
+                  rep_role: repRole || '',
+                  contact_name: name.trim(),
+                  whatsapp: phone.trim(),
+                },
+              };
+
+              const { error: appError } = await getSupabase()
+                .from('wholesale_applications')
+                .insert(applicationData);
+
+              if (appError) {
+                console.error('Wholesale application creation error:', appError);
+                return { ok: false, error: `Failed to submit application: ${appError.message}` };
+              }
+            }
           }
 
           if (data.user && data.session && isEmailConfirmed(data.user)) {
