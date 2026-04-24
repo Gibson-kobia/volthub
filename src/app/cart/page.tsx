@@ -4,6 +4,7 @@ import { fetchProducts, type Product } from "../../lib/products";
 import { useCart } from "../../components/cart/cart-provider";
 import { useMemo, useState, useEffect } from "react";
 import { useAuth } from "../../components/auth/auth-provider";
+import { getSupabase } from "../../lib/supabase";
 
 function buildWhatsAppOrderUrl(message: string) {
   return `https://wa.me/254798966238?text=${encodeURIComponent(message)}`;
@@ -15,6 +16,7 @@ export default function CartPage() {
   const [delivery, setDelivery] = useState<"nairobi" | "kenya">("nairobi");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isWholesaleCustomer, setIsWholesaleCustomer] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -25,11 +27,49 @@ export default function CartPage() {
     load();
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    async function loadWholesaleStatus() {
+      if (!user) {
+        if (active) setIsWholesaleCustomer(false);
+        return;
+      }
+      try {
+        const { data, error } = await getSupabase()
+          .from("profiles")
+          .select("account_type,is_verified_wholesale,application_status")
+          .eq("id", user.id)
+          .maybeSingle();
+        if (!active) return;
+        if (!error && data) {
+          setIsWholesaleCustomer(
+            data.is_verified_wholesale === true &&
+              data.application_status === "approved" &&
+              data.account_type?.startsWith("wholesale")
+          );
+        } else {
+          setIsWholesaleCustomer(false);
+        }
+      } catch (err) {
+        if (active) setIsWholesaleCustomer(false);
+      }
+    }
+    loadWholesaleStatus();
+    return () => {
+      active = false;
+    };
+  }, [user]);
+
   const items = cart
     .map((c) => ({ ...c, product: products.find((p) => p.id === c.productId) }))
     .filter((i) => i.product);
 
-  const subtotal = items.reduce((sum, i) => sum + (i.product?.priceKes || 0) * i.qty, 0);
+  const getItemPrice = (product: Product) =>
+    isWholesaleCustomer && typeof product.wholesale_price === "number"
+      ? product.wholesale_price
+      : product.priceKes;
+
+  const subtotal = items.reduce((sum, i) => sum + getItemPrice(i.product!) * i.qty, 0);
   const waMessage =
     items.length === 0
       ? ""
@@ -99,7 +139,12 @@ export default function CartPage() {
                       {i.product?.name}
                     </div>
                     <div className="text-white font-semibold mb-3">
-                      KES {i.product?.priceKes.toLocaleString()}
+                      KES {getItemPrice(i.product!).toLocaleString()}
+                      {isWholesaleCustomer && i.product?.wholesale_price ? (
+                        <span className="ml-3 text-xs text-zinc-400 line-through">
+                          KES {i.product.priceKes.toLocaleString()}
+                        </span>
+                      ) : null}
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">

@@ -4,6 +4,7 @@ import { fetchProductBySlug, fetchProducts, type Product } from "../../../lib/pr
 import { AddToCartButton } from "../../../components/add-to-cart-button";
 import { AddToWishlistButton } from "../../../components/add-to-wishlist-button";
 import { ReviewButton } from "../../../components/review-button";
+import WholesalePricing from "../../../components/wholesale/wholesale-pricing";
 import type { CategorySlug } from "../../../lib/types";
 
 function buildWhatsAppOrderUrl(message: string) {
@@ -98,14 +99,13 @@ export default async function Page({
             </div>
           </div>
 
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-5 dark:border-zinc-800 dark:bg-zinc-950/40">
-            <div className="text-2xl md:text-3xl font-semibold">KES {product.priceKes.toLocaleString()}</div>
-            <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-zinc-700 dark:text-zinc-300 md:grid-cols-1">
-              <div>✅ M-Pesa payment available</div>
-              <div>✅ Nairobi same-day delivery</div>
-              <div>✅ Nationwide 1–3 working days</div>
-              <div>✅ Easy return if item arrives faulty</div>
-            </div>
+          <WholesalePricing product={product} />
+          <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-zinc-700 dark:text-zinc-300 md:grid-cols-1">
+            <div>✅ M-Pesa payment available</div>
+            <div>✅ Nairobi same-day delivery</div>
+            <div>✅ Nationwide 1–3 working days</div>
+            <div>✅ Easy return if item arrives faulty</div>
+          </div>
 
             <div className="mt-4 space-y-3">
               <div className="flex flex-wrap items-center gap-3">

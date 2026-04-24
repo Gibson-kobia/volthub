@@ -27,9 +27,10 @@ export default function CheckoutPage() {
   const [products, setProducts] = useState<Product[]>([]);
 
   const [addressText, setAddressText] = useState("");
-  const [deliveryArea, setDeliveryArea] = useState<"nairobi" | "kenya">("nairobi");
+  const [deliveryOption, setDeliveryOption] = useState<"meru_office" | "nanyuki_isiolo" | "door_to_door">("meru_office");
   const [paymentMode, setPaymentMode] = useState<"mpesa" | "delivery">("mpesa");
   const [mpesaPhone, setMpesaPhone] = useState("");
+  const [isWholesaleCustomer, setIsWholesaleCustomer] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [customerName, setCustomerName] = useState(user?.name ?? "");
   const [customerEmail, setCustomerEmail] = useState(user?.email ?? "");
@@ -49,6 +50,8 @@ export default function CheckoutPage() {
     customerName?: string;
     itemsLabel: string;
     total: number;
+    orderId?: string;
+    deliveryLabel: string;
   } | null>(null);
   const savedAddresses = useMemo<{ id: string; label: string; addressText: string }[]>(() => {
     if (!user) return [];
@@ -66,6 +69,42 @@ export default function CheckoutPage() {
     }
     load();
   }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadWholesaleStatus() {
+      if (!user) {
+        if (active) setIsWholesaleCustomer(false);
+        return;
+      }
+      try {
+        const { data, error } = await getSupabase()
+          .from("profiles")
+          .select("account_type,is_verified_wholesale,application_status")
+          .eq("id", user.id)
+          .maybeSingle();
+        if (!active) return;
+        if (!error && data) {
+          setIsWholesaleCustomer(
+            data.is_verified_wholesale === true &&
+              data.application_status === "approved" &&
+              data.account_type?.startsWith("wholesale")
+          );
+        } else {
+          setIsWholesaleCustomer(false);
+        }
+      } catch {
+        if (active) setIsWholesaleCustomer(false);
+      }
+    }
+
+    loadWholesaleStatus();
+
+    return () => {
+      active = false;
+    };
+  }, [user]);
 
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
@@ -93,11 +132,23 @@ export default function CheckoutPage() {
   }, [cart, products]);
 
   const subtotal = useMemo(() => {
-    return items.reduce((sum, i) => sum + i.product.priceKes * i.qty, 0);
-  }, [items]);
+    return items.reduce((sum, i) => {
+      const itemPrice =
+        isWholesaleCustomer && i.product.wholesale_price && i.product.wholesale_price > 0
+          ? i.product.wholesale_price
+          : i.product.priceKes;
+      return sum + itemPrice * i.qty;
+    }, 0);
+  }, [items, isWholesaleCustomer]);
 
-  const deliveryMethod = deliveryArea === "nairobi" ? "bodaboda" : "courier";
-  const deliveryEstimate = deliveryArea === "nairobi" ? "Same-day via bodaboda" : "1-3 days via courier";
+  const deliveryMethod =
+    deliveryOption === "door_to_door" ? "bodaboda" : "courier";
+  const deliveryEstimate =
+    deliveryOption === "meru_office"
+      ? "Meru office collection"
+      : deliveryOption === "nanyuki_isiolo"
+      ? "Nanyuki / Isiolo route"
+      : "Door-to-door delivery";
 
   const confirmLocation = (loc: DeliveryLocation) => {
     setMapSelected(loc);
@@ -147,12 +198,18 @@ export default function CheckoutPage() {
       return;
     }
 
-    const orderItems = items.map((i) => ({
-      product_id: i.product.id,
-      name: i.product.name,
-      qty: i.qty,
-      price: i.product.priceKes,
-    }));
+    const orderItems = items.map((i) => {
+      const itemPrice =
+        isWholesaleCustomer && i.product.wholesale_price && i.product.wholesale_price > 0
+          ? i.product.wholesale_price
+          : i.product.priceKes;
+      return {
+        product_id: i.product.id,
+        name: i.product.name,
+        qty: i.qty,
+        price: itemPrice,
+      };
+    });
 
     const { data: rpcData, error: rpcError } = await getSupabase().rpc("place_order_with_inventory", {
       p_customer_name: name,
@@ -190,6 +247,7 @@ export default function CheckoutPage() {
       customerName: name,
       itemsLabel: items.map((i) => `${i.product.name} x${i.qty}`).join(", "),
       total: subtotal,
+      deliveryLabel: deliveryEstimate,
     });
     localStorage.setItem("cart", JSON.stringify([]));
     setPlaced(true);
@@ -207,7 +265,7 @@ export default function CheckoutPage() {
         <div className="mx-auto max-w-2xl px-4 py-16 text-center">
           <div className="text-2xl font-semibold mb-4">Order placed successfully</div>
           <div className="text-zinc-400 mb-8">
-            We'll send payment and delivery details shortly.
+            We&apos;ll send payment and delivery details shortly.
           </div>
           <div className="space-y-4">
             <Link href="/" className="block w-full rounded-full px-6 py-3 bg-[color:var(--accent)] text-white font-medium hover:opacity-90">
@@ -248,23 +306,33 @@ export default function CheckoutPage() {
                 <div className="flex gap-2">
                   <button
                     className={`flex-1 rounded-full px-4 py-3 text-sm font-medium transition-colors ${
-                      deliveryArea === "nairobi"
+                      deliveryOption === "meru_office"
                         ? "bg-[color:var(--accent)] text-white"
                         : "border border-white/20 text-zinc-400 hover:text-white"
                     }`}
-                    onClick={() => setDeliveryArea("nairobi")}
+                    onClick={() => setDeliveryOption("meru_office")}
                   >
-                    Nairobi
+                    Meru Office
                   </button>
                   <button
                     className={`flex-1 rounded-full px-4 py-3 text-sm font-medium transition-colors ${
-                      deliveryArea === "kenya"
+                      deliveryOption === "nanyuki_isiolo"
                         ? "bg-[color:var(--accent)] text-white"
                         : "border border-white/20 text-zinc-400 hover:text-white"
                     }`}
-                    onClick={() => setDeliveryArea("kenya")}
+                    onClick={() => setDeliveryOption("nanyuki_isiolo")}
                   >
-                    Rest of Kenya
+                    Nanyuki / Isiolo
+                  </button>
+                  <button
+                    className={`flex-1 rounded-full px-4 py-3 text-sm font-medium transition-colors ${
+                      deliveryOption === "door_to_door"
+                        ? "bg-[color:var(--accent)] text-white"
+                        : "border border-white/20 text-zinc-400 hover:text-white"
+                    }`}
+                    onClick={() => setDeliveryOption("door_to_door")}
+                  >
+                    Door to door
                   </button>
                 </div>
                 <div className="text-sm text-zinc-400">
