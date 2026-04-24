@@ -556,6 +556,7 @@ export default function AdminProductsPage() {
                 {filteredProducts.map((product) => {
                   const stockState = getInventoryStatus(product);
                   const missingFields = getMissingProductFields(product);
+                  const isLowStockAlert = Number(product.stock || 0) < 10;
                   return (
                     <tr key={product.id} className="rounded-[22px] bg-white/4 align-top">
                       <td className="rounded-l-[22px] px-4 py-4">
@@ -593,8 +594,17 @@ export default function AdminProductsPage() {
                         </div>
                       </td>
                       <td className="px-4 py-4 text-white/72">
-                        <div className="text-base font-semibold text-white">{formatNumber(product.stock)}</div>
+                        <div
+                          className={`text-base font-semibold ${isLowStockAlert ? "text-rose-200 shadow-[0_0_20px_rgba(244,63,94,0.18)]" : "text-white"}`}
+                        >
+                          {formatNumber(product.stock)}
+                        </div>
                         <div className="mt-1 text-white/45">Reorder: {formatNumber(product.reorder_level ?? 8)}</div>
+                        {isLowStockAlert ? (
+                          <div className="mt-2 inline-flex items-center rounded-full bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-100">
+                            Restock Soon
+                          </div>
+                        ) : null}
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex flex-wrap gap-2">

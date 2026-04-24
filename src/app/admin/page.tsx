@@ -31,11 +31,22 @@ import { resolveAccessForCurrentSession } from "@/lib/staff-session";
 import { getSupabase } from "@/lib/supabase";
 import type { DBProduct, InventoryMovement, Order } from "@/lib/types";
 
+type RecentPartnerAction = {
+  id: string;
+  business_info: {
+    business_name: string;
+    contact_name: string | null;
+  };
+  status: string;
+  updated_at: string | null;
+};
+
 type DashboardState = {
   products: DBProduct[];
   orders: Order[];
   movements: InventoryMovement[];
   warnings: string[];
+  recentPartnerActions: RecentPartnerAction[];
 };
 
 export default function AdminDashboard() {
@@ -44,6 +55,7 @@ export default function AdminDashboard() {
     orders: [],
     movements: [],
     warnings: [],
+    recentPartnerActions: [],
   });
   const [loading, setLoading] = useState(true);
   const [viewerStoreCode, setViewerStoreCode] = useState("main");
@@ -61,7 +73,7 @@ export default function AdminDashboard() {
       const isSuperAdmin = access.role === "super_admin";
       setViewerStoreCode(storeCode);
 
-      const [productsResult, ordersResult, movementsResult] = await Promise.allSettled([
+      const [productsResult, ordersResult, movementsResult, recentPartnerActionsResult] = await Promise.allSettled([
         (isSuperAdmin
           ? supabase.from("products").select("*").order("created_at", { ascending: false })
           : supabase.from("products").select("*").eq("store_code", storeCode).order("created_at", { ascending: false })),
@@ -85,6 +97,19 @@ export default function AdminDashboard() {
               .eq("store_code", storeCode)
               .order("created_at", { ascending: false })
               .limit(12)),
+        (isSuperAdmin
+          ? supabase
+              .from("wholesale_applications")
+              .select("id,business_info,status,updated_at")
+              .in("status", ["approved", "rejected"])
+              .order("updated_at", { ascending: false })
+              .limit(5)
+          : supabase
+              .from("wholesale_applications")
+              .select("id,business_info,status,updated_at")
+              .in("status", ["approved", "rejected"])
+              .order("updated_at", { ascending: false })
+              .limit(5)),
       ]);
 
       const products =
@@ -127,6 +152,17 @@ export default function AdminDashboard() {
         warnings.push(`Inventory activity could not be loaded: ${extractSupabaseErrorMessage(movementsResult.reason)}`);
       }
 
+      const recentPartnerActions =
+        recentPartnerActionsResult.status === "fulfilled" && !recentPartnerActionsResult.value.error
+          ? ((recentPartnerActionsResult.value.data || []) as RecentPartnerAction[])
+          : [];
+      if (recentPartnerActionsResult.status === "fulfilled" && recentPartnerActionsResult.value.error) {
+        warnings.push(`Partner history could not be loaded: ${recentPartnerActionsResult.value.error.message}`);
+      }
+      if (recentPartnerActionsResult.status === "rejected") {
+        warnings.push(`Partner history could not be loaded: ${extractSupabaseErrorMessage(recentPartnerActionsResult.reason)}`);
+      }
+
       if (!active) return;
 
       setState({
@@ -134,6 +170,7 @@ export default function AdminDashboard() {
         orders,
         movements: sortMovementsByNewest(movements),
         warnings,
+        recentPartnerActions,
       });
       setLoading(false);
     }
@@ -178,6 +215,7 @@ export default function AdminDashboard() {
 
   const recentOrders = state.orders.slice(0, 6);
   const recentMovements = state.movements.slice(0, 6);
+  const recentPartnerActions = state.recentPartnerActions;
   const productLookup = useMemo(
     () => new Map(state.products.map((product) => [product.id, product])),
     [state.products]
@@ -442,6 +480,39 @@ export default function AdminDashboard() {
                       </div>
                     );
                   })
+              )}
+            </div>
+          </Surface>
+
+          <Surface>
+            <SurfaceHeader
+              title="Recent actions"
+              description="Last partner approvals and rejections, with a traceable time stamp."
+            />
+            <div className="space-y-3 px-5 py-6 sm:px-6">
+              {recentPartnerActions.length === 0 ? (
+                <EmptyState
+                  title="No partner audit events"
+                  description="Partner decisions will appear here as they are processed."
+                />
+              ) : (
+                recentPartnerActions.map((action) => {
+                  const isApproved = action.status === "approved";
+                  return (
+                    <div key={action.id} className="rounded-2xl border border-white/8 bg-white/4 px-4 py-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <div className="font-semibold text-white">{action.business_info.contact_name || action.business_info.business_name}</div>
+                          <div className="mt-1 text-sm text-white/52">{action.business_info.business_name}</div>
+                        </div>
+                        <Badge tone={isApproved ? "emerald" : "rose"}>{isApproved ? "Approved" : "Rejected"}</Badge>
+                      </div>
+                      <div className="mt-2 text-xs uppercase tracking-[0.18em] text-white/40">
+                        {action.updated_at ? formatDateTime(action.updated_at) : "Timestamp unavailable"}
+                      </div>
+                    </div>
+                  );
+                })
               )}
             </div>
           </Surface>

@@ -15,6 +15,15 @@ type WholesaleApplication = {
   created_at: string;
 };
 
+function buildPartnerWhatsAppUrl(businessInfo: WholesaleApplication['business_info']) {
+  const phone = businessInfo.whatsapp.replace(/\D/g, "");
+  const name = businessInfo.contact_name || businessInfo.business_name;
+  const message = encodeURIComponent(
+    `Hello ${name}, this is Canvus Meru Wholesale. We have reviewed your application...`
+  );
+  return `https://wa.me/${phone}?text=${message}`;
+}
+
 const rejectionReasons = [
   'Outside Delivery Zone',
   'Insufficient Business Proof',
@@ -69,7 +78,9 @@ export default function PartnersPage() {
 
       if (error) throw error;
 
-      setToast(`Success: ${selectedApp.business_info.business_name} is now a verified Wholesale Partner.`);
+      const displayName = selectedApp.business_info.contact_name || selectedApp.business_info.business_name;
+      const businessName = selectedApp.business_info.business_name;
+      setToast(`Success: ${displayName} from ${businessName} is now a verified Partner.`);
     } catch (error) {
       console.error('Error approving application:', error);
       setToast('Error approving application. Please try again.');
@@ -142,8 +153,13 @@ export default function PartnersPage() {
                 <td className="px-4 py-2 border">{app.business_info.business_name}</td>
                 <td className="px-4 py-2 border">{app.business_info.contact_name}</td>
                 <td className="px-4 py-2 border">
-                  <a href={`https://wa.me/${app.business_info.whatsapp}`} target="_blank" rel="noopener noreferrer">
-                    {app.business_info.whatsapp}
+                  <a
+                    href={buildPartnerWhatsAppUrl(app.business_info)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex rounded-full bg-sky-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-sky-500"
+                  >
+                    WhatsApp {app.business_info.whatsapp}
                   </a>
                 </td>
                 <td className="px-4 py-2 border">

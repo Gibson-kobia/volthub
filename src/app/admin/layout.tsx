@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Badge } from "@/components/admin/admin-ui";
+import AdminAccessGuard from "@/components/admin/access-guard";
 import { ROLE_LABELS } from "@/lib/admin";
 import { canRoleAccessPath, getActiveStaffByEmail, getHomePathForRole, type StoreCode } from "@/lib/access-control";
 import { getSupabase } from "@/lib/supabase";
@@ -164,31 +165,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   if (accessDenied) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,rgba(47,107,255,0.12),transparent_30%),linear-gradient(180deg,#0a0a0b_0%,#121417_100%)] px-6">
-        <div className="w-full max-w-xl rounded-[32px] border border-white/10 bg-white/6 p-8 shadow-[0_40px_120px_rgba(0,0,0,0.35)] backdrop-blur">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/42">Admin access</div>
-          <h1 className="mt-4 font-serif text-4xl text-white">Account is not on the operations allowlist.</h1>
-          <p className="mt-4 text-sm leading-7 text-white/62">
-            This account is not linked to an active staff record. Staff access requires an active match on email, role, and store assignment.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              onClick={handleLogout}
-              className="rounded-full border border-white/12 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/8"
-            >
-              Logout
-            </button>
-            <Link
-              href="/auth/login?redirect=/admin"
-              className="rounded-full bg-[color:var(--accent)] px-5 py-2.5 text-sm font-semibold text-white"
-            >
-              Login with a different account
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
+    return <AdminAccessGuard />;
   }
 
   return (
