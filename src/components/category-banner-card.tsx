@@ -24,7 +24,7 @@ export function CategoryBannerCard({
   return (
     <Link
       href={href}
-      className={`group relative block overflow-hidden rounded-lg aspect-[3/4] border border-light-border shadow-sm transition-all duration-300 active:scale-[0.985] hover:border-primary/30 hover:shadow-md${featured ? " col-span-2 sm:col-span-1" : ""}`}
+      className={`group relative block overflow-hidden rounded-[20px] aspect-[3/4] border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.32)] transition-all duration-300 active:scale-[0.985] hover:border-white/20 hover:-translate-y-0.5 hover:shadow-[0_16px_48px_rgba(0,0,0,0.42)]${featured ? " col-span-2 sm:col-span-1" : ""}`}
       style={!image && gradient ? { background: gradient } : undefined}
     >
       {/* Photo layer */}
@@ -61,7 +61,7 @@ export function CategoryBannerCard({
         <h3 className="mt-2 font-serif text-[1.2rem] leading-tight text-white sm:text-[1.3rem]">
           {title}
         </h3>
-        <div className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-light-border bg-off-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-deep-ink transition-colors group-hover:border-primary/40 group-hover:bg-light-border">
+        <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-white/18 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/90 backdrop-blur-sm transition-colors group-hover:border-white/28 group-hover:bg-white/16 group-hover:text-white">
           Shop
           <span className="transition-transform group-hover:translate-x-0.5">→</span>
         </div>

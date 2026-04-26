@@ -5,17 +5,17 @@ function cx(...parts: Array<string | false | null | undefined>) {
 }
 
 const TONE_STYLES: Record<string, string> = {
-  slate: "border-light-border bg-off-white text-deep-ink",
-  sky: "border-blue-200 bg-blue-50 text-blue-900",
-  indigo: "border-indigo-200 bg-indigo-50 text-indigo-900",
-  violet: "border-violet-200 bg-violet-50 text-violet-900",
-  emerald: "border-emerald-200 bg-emerald-50 text-emerald-900",
-  amber: "border-amber-200 bg-amber-50 text-amber-900",
-  rose: "border-rose-200 bg-rose-50 text-rose-900",
-  zinc: "border-zinc-200 bg-zinc-50 text-zinc-900",
-  critical: "border-rose-200 bg-rose-50 text-rose-900",
-  warning: "border-amber-200 bg-amber-50 text-amber-900",
-  ok: "border-emerald-200 bg-emerald-50 text-emerald-900",
+  slate: "border-white/10 bg-white/5 text-white",
+  sky: "border-sky-400/20 bg-sky-400/10 text-sky-100",
+  indigo: "border-indigo-400/20 bg-indigo-400/10 text-indigo-100",
+  violet: "border-violet-400/20 bg-violet-400/10 text-violet-100",
+  emerald: "border-emerald-400/20 bg-emerald-400/10 text-emerald-100",
+  amber: "border-amber-400/20 bg-amber-400/10 text-amber-100",
+  rose: "border-rose-400/20 bg-rose-400/10 text-rose-100",
+  zinc: "border-zinc-400/20 bg-zinc-400/10 text-zinc-100",
+  critical: "border-rose-400/20 bg-rose-400/10 text-rose-100",
+  warning: "border-amber-400/20 bg-amber-400/10 text-amber-100",
+  ok: "border-emerald-400/20 bg-emerald-400/10 text-emerald-100",
 };
 
 export function AdminPageHeader({
@@ -32,13 +32,13 @@ export function AdminPageHeader({
   return (
     <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
       <div className="max-w-3xl">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/45">
           {eyebrow}
         </div>
-        <h1 className="mt-3 font-serif text-4xl leading-tight text-deep-ink sm:text-5xl">
+        <h1 className="mt-3 font-serif text-4xl leading-tight text-white sm:text-5xl">
           {title}
         </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/64 sm:text-base">
           {description}
         </p>
       </div>

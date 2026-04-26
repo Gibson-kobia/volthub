@@ -1,19 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --background: #FDFDFB;
-  --foreground: #1A1A1A;
-  --accent: #004225;
-  --accent-secondary: #009870;
-  --accent-soft: rgba(0, 66, 37, 0.08);
-  --surface: #FFFFFF;
-  --surface-soft: #F8F9FA;
-  --border: #E2E8F0;
-  --muted: #718096;
-  --success: #009870;
-  --warning: #D97706;
-  --glow: transparent;
-  --charcoal-black: #1A1A1A;
+  --background: #0a0a0b;
+  --foreground: #f5f7fa;
+  --accent: #2f6bff;
+  --accent-soft: rgba(47, 107, 255, 0.14);
+  --surface: #181c20;
+  --surface-soft: #121417;
+  --border: #2a3138;
+  --muted: #a7b0ba;
+  --success: #2ed3a0;
+  --warning: #ffb84d;
+  --glow: #21d4fd;
+  --charcoal-black: #0a0a0b;
 }
 
 @theme inline {
@@ -38,8 +37,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #FDFDFB;
-    --foreground: #1A1A1A;
+    --background: #0a0a0b;
+    --foreground: #f5f7fa;
   }
 }
 
@@ -50,8 +49,12 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-body), system-ui, -apple-system, Segoe UI, Roboto,
+  font-family: var(--font-sans), system-ui, -apple-system, Segoe UI, Roboto,
     Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  background-image:
+    radial-gradient(circle at top, rgba(47, 107, 255, 0.16), transparent 34%),
+    radial-gradient(circle at 20% 20%, rgba(33, 212, 253, 0.08), transparent 24%),
+    linear-gradient(180deg, #0a0a0b 0%, #121417 100%);
 }
 
 img,
@@ -68,18 +71,18 @@ html[data-theme="dark"] {
 }
 
 html[data-theme="light"] {
-  --background: #FDFDFB;
-  --foreground: #1A1A1A;
-  --surface: #FFFFFF;
-  --surface-soft: #F8F9FA;
-  --border: #E2E8F0;
-  --muted: #718096;
-  --accent-soft: rgba(0, 66, 37, 0.08);
+  --background: #f3f6fb;
+  --foreground: #121417;
+  --surface: #ffffff;
+  --surface-soft: #e8edf5;
+  --border: #c9d3df;
+  --muted: #57616d;
+  --accent-soft: rgba(47, 107, 255, 0.12);
 }
 
 ::selection {
-  background: rgba(0, 66, 37, 0.2);
-  color: #1A1A1A;
+  background: rgba(47, 107, 255, 0.28);
+  color: #f5f7fa;
 }
 
 .text-balance {
@@ -87,6 +90,8 @@ html[data-theme="light"] {
 }
 
 .glass-card {
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
