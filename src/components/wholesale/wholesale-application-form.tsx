@@ -108,10 +108,10 @@ export function WholesaleApplicationForm({ onSuccess }: WholesaleApplicationForm
         className="w-full max-w-2xl mx-auto px-6"
       >
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 mb-2">
+          <h2 className="text-3xl font-bold text-deep-ink mb-2">
             Choose Your Account Type
           </h2>
-          <p className="text-slate-600">
+          <p className="text-muted">
             Select how you'd like to use Canvus
           </p>
         </div>
@@ -122,18 +122,18 @@ export function WholesaleApplicationForm({ onSuccess }: WholesaleApplicationForm
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => handleAccountTypeSelect("retail")}
-            className="p-8 bg-white border-2 border-slate-200 rounded-lg text-left hover:border-emerald-500 hover:shadow-lg transition-all group"
+            className="p-8 bg-white border-2 border-light-border rounded-lg text-left hover:border-primary/40 hover:shadow-sm transition-all group"
           >
             <div className="mb-4">
-              <div className="inline-block p-3 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition-colors">
-                <Building2 className="w-6 h-6 text-emerald-600" />
+              <div className="inline-block p-3 bg-off-white rounded-lg group-hover:bg-light-border transition-colors">
+                <Building2 className="w-6 h-6 text-primary" />
               </div>
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Individual Shopper</h3>
-            <p className="text-slate-600 text-sm mb-4">
+            <h3 className="text-xl font-bold text-deep-ink mb-2">Individual Shopper</h3>
+            <p className="text-muted text-sm mb-4">
               Browse and purchase for personal needs. Retail prices apply.
             </p>
-            <div className="flex items-center text-emerald-600 font-semibold text-sm">
+            <div className="flex items-center text-primary font-semibold text-sm">
               Get Started <ChevronRight className="w-4 h-4 ml-2" />
             </div>
           </motion.button>
@@ -143,18 +143,18 @@ export function WholesaleApplicationForm({ onSuccess }: WholesaleApplicationForm
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => handleAccountTypeSelect("wholesale")}
-            className="p-8 bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-500 rounded-lg text-left shadow-lg hover:shadow-xl transition-all group"
+            className="p-8 bg-white border-2 border-primary rounded-lg text-left shadow-sm hover:shadow-md transition-all group"
           >
             <div className="mb-4">
-              <div className="inline-block p-3 bg-emerald-600 rounded-lg">
+              <div className="inline-block p-3 bg-primary rounded-lg">
                 <Building2 className="w-6 h-6 text-white" />
               </div>
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Wholesale Account</h3>
-            <p className="text-slate-600 text-sm mb-4">
+            <h3 className="text-xl font-bold text-deep-ink mb-2">Wholesale Account</h3>
+            <p className="text-muted text-sm mb-4">
               Schools, institutions & businesses get bulk pricing & MOV benefits.
             </p>
-            <div className="flex items-center text-emerald-600 font-semibold text-sm">
+            <div className="flex items-center text-primary font-semibold text-sm">
               Apply Now <ChevronRight className="w-4 h-4 ml-2" />
             </div>
           </motion.button>
@@ -172,10 +172,10 @@ export function WholesaleApplicationForm({ onSuccess }: WholesaleApplicationForm
         className="w-full max-w-2xl mx-auto px-6"
       >
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 mb-2">
+          <h2 className="text-3xl font-bold text-deep-ink mb-2">
             What type of wholesale account?
           </h2>
-          <p className="text-slate-600">
+          <p className="text-muted">
             This helps us provide better support
           </p>
         </div>
@@ -186,11 +186,11 @@ export function WholesaleApplicationForm({ onSuccess }: WholesaleApplicationForm
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => handleWholesaleTypeSelect("school")}
-            className="p-8 bg-white border-2 border-slate-200 rounded-lg text-left hover:border-emerald-500 hover:shadow-lg transition-all"
+            className="p-8 bg-white border-2 border-light-border rounded-lg text-left hover:border-primary/40 hover:shadow-sm transition-all"
           >
-            <div className="text-3xl font-bold text-emerald-600 mb-2">🏫</div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">School/Institution</h3>
-            <p className="text-slate-600 text-sm">
+            <div className="text-3xl font-bold text-secondary mb-2">🏫</div>
+            <h3 className="text-xl font-bold text-deep-ink mb-2">School/Institution</h3>
+            <p className="text-muted text-sm">
               School bursars, canteens, hostels. Credit terms available.
             </p>
           </motion.button>
@@ -200,11 +200,11 @@ export function WholesaleApplicationForm({ onSuccess }: WholesaleApplicationForm
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => handleWholesaleTypeSelect("business")}
-            className="p-8 bg-white border-2 border-slate-200 rounded-lg text-left hover:border-emerald-500 hover:shadow-lg transition-all"
+            className="p-8 bg-white border-2 border-light-border rounded-lg text-left hover:border-primary/40 hover:shadow-sm transition-all"
           >
-            <div className="text-3xl font-bold text-emerald-600 mb-2">🏪</div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Business/Reseller</h3>
-            <p className="text-slate-600 text-sm">
+            <div className="text-3xl font-bold text-secondary mb-2">🏪</div>
+            <h3 className="text-xl font-bold text-deep-ink mb-2">Business/Reseller</h3>
+            <p className="text-muted text-sm">
               Shop owners, traders, resellers. Exclusive bulk discounts.
             </p>
           </motion.button>
@@ -216,7 +216,7 @@ export function WholesaleApplicationForm({ onSuccess }: WholesaleApplicationForm
             setSelectedType(null);
             setStep("account-type");
           }}
-          className="w-full mt-6 py-3 text-slate-600 hover:text-slate-900 font-semibold transition-colors"
+          className="w-full mt-6 py-3 text-muted hover:text-deep-ink font-semibold transition-colors"
         >
           ← Back
         </motion.button>
@@ -233,10 +233,10 @@ export function WholesaleApplicationForm({ onSuccess }: WholesaleApplicationForm
         className="w-full max-w-2xl mx-auto px-6"
       >
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 mb-2">
+          <h2 className="text-3xl font-bold text-deep-ink mb-2">
             {selectedType === "retail" ? "Create Your Account" : "Wholesale Application"}
           </h2>
-          <p className="text-slate-600">
+          <p className="text-muted">
             {selectedType === "retail"
               ? "Join Canvus to start shopping"
               : "Tell us about your organization"}
@@ -246,7 +246,7 @@ export function WholesaleApplicationForm({ onSuccess }: WholesaleApplicationForm
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Full Name */}
           <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-2">
+            <label className="block text-sm font-semibold text-deep-ink mb-2">
               Full Name *
             </label>
             <input
@@ -255,14 +255,14 @@ export function WholesaleApplicationForm({ onSuccess }: WholesaleApplicationForm
               value={formData.name}
               onChange={handleInputChange}
               placeholder="John Doe"
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-3 border border-light-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
               required
             />
           </div>
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-2">
+            <label className="block text-sm font-semibold text-deep-ink mb-2">
               Email Address *
             </label>
             <input
@@ -271,14 +271,14 @@ export function WholesaleApplicationForm({ onSuccess }: WholesaleApplicationForm
               value={formData.email}
               onChange={handleInputChange}
               placeholder="you@example.com"
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-3 border border-light-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
               required
             />
           </div>
 
           {/* Phone */}
           <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-2">
+            <label className="block text-sm font-semibold text-deep-ink mb-2">
               Phone Number *
             </label>
             <input
@@ -287,14 +287,14 @@ export function WholesaleApplicationForm({ onSuccess }: WholesaleApplicationForm
               value={formData.phone}
               onChange={handleInputChange}
               placeholder="+254712345678"
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-3 border border-light-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
               required
             />
           </div>
 
           {/* Password */}
           <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-2">
+            <label className="block text-sm font-semibold text-deep-ink mb-2">
               Password *
             </label>
             <input

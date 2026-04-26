@@ -59,20 +59,20 @@ export function CartDrawer() {
         onClick={closeDrawer}
       />
       <aside
-        className={`absolute right-0 top-0 h-full w-full max-w-sm bg-[#0a0b0c] border-l border-white/10 shadow-2xl transition-transform duration-300 ${
+        className={`absolute right-0 top-0 h-full w-full max-w-sm bg-white border-l border-light-border shadow-lg transition-transform duration-300 ${
           isDrawerOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="p-6 border-b border-white/10">
+        <div className="p-6 border-b border-light-border">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-lg font-semibold text-white">Cart</div>
-              <div className="text-sm text-zinc-400">
+              <div className="text-lg font-semibold text-deep-ink">Cart</div>
+              <div className="text-sm text-muted">
                 {lines.length} item{lines.length === 1 ? "" : "s"}
               </div>
             </div>
             <button
-              className="rounded-full p-2 text-zinc-400 hover:text-white hover:bg-white/10"
+              className="rounded-lg p-2 text-muted hover:text-deep-ink hover:bg-off-white"
               onClick={closeDrawer}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -85,11 +85,11 @@ export function CartDrawer() {
         <div className="flex-1 overflow-auto p-6">
           {lines.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-zinc-500">Your cart is empty</div>
+              <div className="text-muted">Your cart is empty</div>
               <Link
                 href="/shop"
                 onClick={closeDrawer}
-                className="mt-4 inline-block text-sm text-white underline"
+                className="mt-4 inline-block text-sm text-primary underline"
               >
                 Browse products
               </Link>
@@ -99,9 +99,9 @@ export function CartDrawer() {
               {lines.map((l) => (
                 <div
                   key={l.product!.id}
-                  className="flex gap-4 p-4 rounded-xl border border-white/5 bg-white/5"
+                  className="flex gap-4 p-4 rounded-lg border border-light-border bg-off-white"
                 >
-                  <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-zinc-800">
+                  <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-light-border">
                     <Image
                       src={l.product!.image || "/product-placeholder.png"}
                       alt={l.product!.name}
@@ -110,33 +110,33 @@ export function CartDrawer() {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs text-zinc-500 uppercase tracking-wide">
+                    <div className="text-xs text-muted uppercase tracking-wide">
                       {l.product!.brand}
                     </div>
-                    <div className="text-sm font-medium text-white leading-tight mt-1">
+                    <div className="text-sm font-medium text-deep-ink leading-tight mt-1">
                       {l.product!.name}
                     </div>
-                    <div className="text-sm font-semibold text-white mt-2">
+                    <div className="text-sm font-semibold text-deep-ink mt-2">
                       KES {l.product!.priceKes.toLocaleString()}
                     </div>
                     <div className="flex items-center justify-between mt-3">
                       <div className="flex items-center gap-2">
                         <button
-                          className="w-8 h-8 rounded-full border border-white/20 text-white hover:bg-white/10 flex items-center justify-center text-sm"
+                          className="w-8 h-8 rounded-lg border border-light-border text-deep-ink hover:bg-light-border flex items-center justify-center text-sm"
                           onClick={() => setQty(l.product!.id, l.qty - 1)}
                         >
                           −
                         </button>
-                        <span className="text-sm text-white min-w-[20px] text-center">{l.qty}</span>
+                        <span className="text-sm text-deep-ink min-w-[20px] text-center">{l.qty}</span>
                         <button
-                          className="w-8 h-8 rounded-full border border-white/20 text-white hover:bg-white/10 flex items-center justify-center text-sm"
+                          className="w-8 h-8 rounded-lg border border-light-border text-deep-ink hover:bg-light-border flex items-center justify-center text-sm"
                           onClick={() => setQty(l.product!.id, l.qty + 1)}
                         >
                           +
                         </button>
                       </div>
                       <button
-                        className="text-xs text-zinc-400 hover:text-red-400"
+                        className="text-xs text-muted hover:text-primary"
                         onClick={() => removeItem(l.product!.id)}
                       >
                         Remove
@@ -150,10 +150,10 @@ export function CartDrawer() {
         </div>
 
         {lines.length > 0 && (
-          <div className="p-6 border-t border-white/10">
+          <div className="p-6 border-t border-light-border">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-sm text-zinc-400">Total</div>
-              <div className="text-lg font-semibold text-white">
+              <div className="text-sm text-muted">Total</div>
+              <div className="text-lg font-semibold text-deep-ink">
                 KES {total.toLocaleString()}
               </div>
             </div>
@@ -161,14 +161,14 @@ export function CartDrawer() {
               <Link
                 href="/cart"
                 onClick={closeDrawer}
-                className="block w-full rounded-full px-4 py-3 border border-white/20 text-white text-center text-sm font-medium hover:bg-white/10"
+                className="block w-full rounded-lg px-4 py-3 border border-light-border text-deep-ink text-center text-sm font-medium hover:bg-off-white"
               >
                 View full cart
               </Link>
               <Link
                 href="/checkout"
                 onClick={closeDrawer}
-                className="block w-full rounded-full px-4 py-3 bg-[color:var(--accent)] text-white text-center text-sm font-medium hover:opacity-90"
+                className="block w-full rounded-lg px-4 py-3 bg-primary text-white text-center text-sm font-medium hover:bg-primary/90"
               >
                 Checkout
               </Link>

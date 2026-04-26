@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Geist } from "next/font/google";
+import { Instrument_Serif, Public_Sans } from "next/font/google";
 import "./globals.css";
 import { SiteShell } from "../components/site-shell";
 
-const headingSerif = Playfair_Display({
+const headingSerif = Instrument_Serif({
   variable: "--font-heading",
   subsets: ["latin"],
   weight: "400",
   display: "swap",
 });
 
-const bodySans = Geist({
+const bodySans = Public_Sans({
   variable: "--font-body",
   subsets: ["latin"],
+  weight: "400",
   display: "swap",
 });
 

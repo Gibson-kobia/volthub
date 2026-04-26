@@ -54,7 +54,7 @@ function CartButton() {
     <button
       aria-label="Cart"
       onClick={openDrawer}
-      className="relative inline-flex min-h-11 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/8"
+      className="relative inline-flex min-h-11 items-center justify-center rounded-lg border border-light-border bg-off-white px-4 text-sm font-semibold text-deep-ink transition-colors hover:bg-light-border"
     >
       <span className="inline-flex items-center gap-2">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -64,7 +64,7 @@ function CartButton() {
         <span className="hidden sm:inline">Cart</span>
       </span>
       {count > 0 ? (
-        <span className="absolute -right-1 -top-1 min-h-5 min-w-5 rounded-full bg-[color:var(--accent)] px-1 text-[11px] font-semibold text-white">
+        <span className="absolute -right-1 -top-1 min-h-5 min-w-5 rounded-full bg-primary px-1 text-[11px] font-semibold text-white">
           {count}
         </span>
       ) : null}
@@ -116,14 +116,14 @@ function Shell({ children }: { children: React.ReactNode }) {
   const hideBottomNav = pathname === "/cart" || pathname === "/checkout";
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-50 border-b border-zinc-800/50 bg-[#0a0a0a]">
+    <div className="min-h-screen bg-white text-deep-ink">
+      <header className="sticky top-0 z-50 border-b border-light-border bg-white">
 
         <div className="mx-auto flex max-w-7xl items-center justify-center px-4 py-6 sm:px-6">
           <div className="text-center">
-            <Link href="/" className="leading-none text-white">
+            <Link href="/" className="leading-none text-deep-ink">
               <div className="text-[1.75rem] font-extrabold tracking-[0.18em]">CANVUS</div>
-              <div className="mt-1 text-[10px] uppercase tracking-[0.3em] text-zinc-500">
+              <div className="mt-1 text-[10px] uppercase tracking-[0.3em] text-muted">
                 Meru wholesale
               </div>
             </Link>
@@ -133,29 +133,29 @@ function Shell({ children }: { children: React.ReactNode }) {
 
       <main>{children}</main>
 
-      <footer className="mt-16 border-t border-[color:var(--border)] bg-[#0c0f12]/92">
+      <footer className="mt-16 border-t border-light-border bg-white">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12">
           <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr]">
             <div>
-              <div className="text-[1.55rem] font-extrabold tracking-[0.18em] text-white">CANVUS</div>
-              <p className="mt-4 max-w-md text-sm leading-6 text-[color:var(--muted)]">
-                Meru's Premier B2B & Wholesale Supply Chain.
+              <div className="text-[1.55rem] font-extrabold tracking-[0.18em] text-deep-ink">CANVUS</div>
+              <p className="mt-4 max-w-md text-sm leading-6 text-muted">
+                Meru's Premier B2B & Wholesale Supply Chain. Reliable. Efficient. Local.
               </p>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-white/8 bg-white/4 p-4 text-sm text-white/88">
+                <div className="rounded-lg border border-light-border bg-off-white p-4 text-sm text-deep-ink">
                   Same-day Nairobi delivery before 6PM. Next-day outside Nairobi as coverage expands.
                 </div>
-                <div className="rounded-2xl border border-white/8 bg-white/4 p-4 text-sm text-white/88">
+                <div className="rounded-lg border border-light-border bg-off-white p-4 text-sm text-deep-ink">
                   M-Pesa, cards, cash on delivery, and pay on pickup supported where applicable.
                 </div>
               </div>
             </div>
 
             <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">Quick links</div>
-              <div className="mt-4 flex flex-col gap-3 text-sm text-[color:var(--muted)]">
+              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-deep-ink">Quick links</div>
+              <div className="mt-4 flex flex-col gap-3 text-sm text-muted">
                 {QUICK_CATEGORY_LINKS.map((link) => (
-                  <Link key={link.label} href={link.href} className="transition-colors hover:text-white">
+                  <Link key={link.label} href={link.href} className="transition-colors hover:text-primary">
                     {link.label}
                   </Link>
                 ))}
@@ -163,35 +163,35 @@ function Shell({ children }: { children: React.ReactNode }) {
             </div>
 
             <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">Support</div>
-              <div className="mt-4 flex flex-col gap-3 text-sm text-[color:var(--muted)]">
+              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-deep-ink">Support</div>
+              <div className="mt-4 flex flex-col gap-3 text-sm text-muted">
                 <span>Nairobi, Kenya</span>
-                <a href={`tel:${SUPPORT_PHONE.replace(/\s+/g, "")}`} className="transition-colors hover:text-white">
+                <a href={`tel:${SUPPORT_PHONE.replace(/\s+/g, "")}`} className="transition-colors hover:text-primary">
                   {SUPPORT_PHONE}
                 </a>
-                <a href={`mailto:${SUPPORT_EMAIL}`} className="transition-colors hover:text-white">
+                <a href={`mailto:${SUPPORT_EMAIL}`} className="transition-colors hover:text-primary">
                   {SUPPORT_EMAIL}
                 </a>
-                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white">
+                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary">
                   WhatsApp support
                 </a>
-                <Link href="/#delivery" className="transition-colors hover:text-white">
+                <Link href="/#delivery" className="transition-colors hover:text-primary">
                   Delivery information
                 </Link>
               </div>
             </div>
 
             <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">Payments and channels</div>
-              <div className="mt-4 flex flex-col gap-3 text-sm text-[color:var(--muted)]">
+              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-deep-ink">Payments and channels</div>
+              <div className="mt-4 flex flex-col gap-3 text-sm text-muted">
                 <span>M-Pesa STK push</span>
                 <span>Card payments</span>
                 <span>Cash on delivery</span>
                 <span>Pay on pickup</span>
-                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white">
+                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary">
                   WhatsApp
                 </a>
-                <a href={`mailto:${SUPPORT_EMAIL}`} className="transition-colors hover:text-white">
+                <a href={`mailto:${SUPPORT_EMAIL}`} className="transition-colors hover:text-primary">
                   Email updates
                 </a>
               </div>
@@ -200,11 +200,11 @@ function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </footer>
 
-      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-[color:var(--border)] bg-[#0b0d10]/92 px-4 py-3 backdrop-blur lg:hidden ${hideBottomNav ? 'hidden' : ''}`}>
+      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-light-border bg-white px-4 py-3 lg:hidden ${hideBottomNav ? 'hidden' : ''}`}>
         <div className="mx-auto flex max-w-7xl items-center gap-2">
           <button
             onClick={() => setSearchOpen(true)}
-            className="inline-flex min-h-11 flex-1 items-center gap-2 rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm text-white/50"
+            className="inline-flex min-h-11 flex-1 items-center gap-2 rounded-lg border border-light-border bg-off-white px-4 text-sm text-muted"
             aria-label="Search"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
@@ -213,20 +213,20 @@ function Shell({ children }: { children: React.ReactNode }) {
             </svg>
             <span className="truncate">Search products...</span>
           </button>
-          <Link href="/#categories" className="inline-flex min-h-11 w-28 flex-shrink-0 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white">
+          <Link href="/#categories" className="inline-flex min-h-11 w-28 flex-shrink-0 items-center justify-center rounded-lg border border-light-border bg-off-white px-4 text-sm font-semibold text-deep-ink">
             Categories
           </Link>
-          <button onClick={() => setMobileOpen(true)} className="inline-flex min-h-11 w-20 flex-shrink-0 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white">
+          <button onClick={() => setMobileOpen(true)} className="inline-flex min-h-11 w-20 flex-shrink-0 items-center justify-center rounded-lg border border-light-border bg-off-white px-4 text-sm font-semibold text-deep-ink">
             Menu
           </button>
         </div>
       </div>
 
       {searchOpen ? (
-        <div className="fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[70] bg-black/20 backdrop-blur-sm">
           <div className="mx-auto max-w-2xl px-4 pt-24 sm:px-6">
-            <div className="rounded-[28px] border border-[color:var(--border)] bg-[#101418] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[color:var(--glow)]">
+            <div className="rounded-lg border border-light-border bg-white p-6 shadow-sm">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-primary">
                 Search Canvus
               </div>
               <input
@@ -238,24 +238,24 @@ function Shell({ children }: { children: React.ReactNode }) {
                   }
                 }}
                 placeholder="Search wholesale products and bulk items"
-                className="mt-4 w-full rounded-[22px] border border-[color:var(--border)] bg-white/4 px-4 py-4 text-base text-white outline-none placeholder:text-white/40 focus:border-gold"
+                className="mt-4 w-full rounded-lg border border-light-border bg-off-white px-4 py-4 text-base text-deep-ink outline-none placeholder:text-muted focus:border-primary focus:ring-1 focus:ring-primary/10"
               />
               <div className="mt-4 flex flex-wrap gap-2">
                 {SEARCH_TRENDS.map((trend) => (
                   <button
                     key={trend}
                     onClick={() => setSearchQuery(trend)}
-                    className="rounded-full border border-[color:var(--border)] bg-white/4 px-3 py-1 text-sm text-white/82 transition-colors hover:bg-white/8"
+                    className="rounded-lg border border-light-border bg-off-white px-3 py-1 text-sm text-deep-ink transition-colors hover:bg-light-border"
                   >
                     {trend}
                   </button>
                 ))}
               </div>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <button onClick={() => runSearch(searchQuery)} className="inline-flex min-h-12 items-center justify-center rounded-full bg-[color:var(--accent)] px-5 text-sm font-semibold text-white">
+                <button onClick={() => runSearch(searchQuery)} className="inline-flex min-h-12 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-white">
                   Search
                 </button>
-                <button onClick={() => setSearchOpen(false)} className="inline-flex min-h-12 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-5 text-sm font-semibold text-white">
+                <button onClick={() => setSearchOpen(false)} className="inline-flex min-h-12 items-center justify-center rounded-lg border border-light-border bg-off-white px-5 text-sm font-semibold text-deep-ink">
                   Close
                 </button>
               </div>
@@ -265,36 +265,36 @@ function Shell({ children }: { children: React.ReactNode }) {
       ) : null}
 
       {mobileOpen ? (
-        <div className="fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm">
-          <div className="absolute right-0 top-0 h-full w-full max-w-sm border-l border-[color:var(--border)] bg-[#0f1317] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
+        <div className="fixed inset-0 z-[70] bg-black/20 backdrop-blur-sm">
+          <div className="absolute right-0 top-0 h-full w-full max-w-sm border-l border-light-border bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-[1.45rem] font-extrabold tracking-[0.16em] text-white">CANVUS</div>
-                <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/45">
-                  Everyday shopping first
+                <div className="text-[1.45rem] font-extrabold tracking-[0.16em] text-deep-ink">CANVUS</div>
+                <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-muted">
+                  Meru wholesale
                 </div>
               </div>
-              <button onClick={() => setMobileOpen(false)} className="inline-flex min-h-11 items-center justify-center rounded-full border border-[color:var(--border)] bg-white/4 px-4 text-sm font-semibold text-white">
+              <button onClick={() => setMobileOpen(false)} className="inline-flex min-h-11 items-center justify-center rounded-lg border border-light-border bg-off-white px-4 text-sm font-semibold text-deep-ink">
                 Close
               </button>
             </div>
 
-            <div className="mt-8 flex flex-col gap-4 text-base font-medium text-white">
+            <div className="mt-8 flex flex-col gap-4 text-base font-medium text-deep-ink">
               {HEADER_LINKS.map((link) => (
-                <Link key={link.label} href={link.href} onClick={() => setMobileOpen(false)} className="rounded-2xl border border-white/8 bg-white/4 px-4 py-3 transition-colors hover:bg-white/8">
+                <Link key={link.label} href={link.href} onClick={() => setMobileOpen(false)} className="rounded-lg border border-light-border bg-off-white px-4 py-3 transition-colors hover:bg-light-border">
                   {link.label}
                 </Link>
               ))}
-              <Link href="/account" onClick={() => setMobileOpen(false)} className="rounded-2xl border border-white/8 bg-white/4 px-4 py-3 transition-colors hover:bg-white/8">
+              <Link href="/account" onClick={() => setMobileOpen(false)} className="rounded-lg border border-light-border bg-off-white px-4 py-3 transition-colors hover:bg-light-border">
                 Account
               </Link>
             </div>
 
             <div className="mt-8 grid gap-3">
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="rounded-[22px] border border-white/8 bg-white/4 px-4 py-4 text-sm text-white/88">
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-light-border bg-off-white px-4 py-4 text-sm text-deep-ink">
                 WhatsApp support and order updates
               </a>
-              <div className="rounded-[22px] border border-white/8 bg-white/4 px-4 py-4 text-sm text-white/88">
+              <div className="rounded-lg border border-light-border bg-off-white px-4 py-4 text-sm text-deep-ink">
                 Same-day Nairobi delivery before 6PM. Next-day outside Nairobi.
               </div>
             </div>

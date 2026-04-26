@@ -9,19 +9,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: '#064e3b', // Deep Forest Green
-        background: '#0a0a0a', // Rich Onyx
-        emerald: '#10b981', // Emerald for focus
-        gold: '#d4af37', // Gold for focus
-        // Add other colors as needed
+        primary: '#004225', // Solid Forest Green
+        secondary: '#009870', // Solid Emerald Green
+        background: '#FDFDFB', // Stone White
+        'deep-ink': '#1A1A1A', // Deep Ink
+        'light-border': '#E2E8F0', // Universal border
+        'off-white': '#F8F9FA',
       },
       fontFamily: {
-        heading: ['Playfair Display', 'serif'],
-        body: ['Geist', 'sans-serif'],
+        serif: ['var(--font-heading)', 'Instrument Serif', 'serif'],
+        sans: ['var(--font-body)', 'Public Sans', 'sans-serif'],
+        heading: ['var(--font-heading)', 'Instrument Serif', 'serif'],
+        body: ['var(--font-body)', 'Public Sans', 'sans-serif'],
       },
-      ringColor: {
-        'emerald': '#10b981',
-        'gold': '#d4af37',
+      fontWeight: {
+        medium: '500',
       },
     },
   },

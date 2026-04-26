@@ -38,13 +38,13 @@ export function AddToCartButton({
       className={
         className ||
         (compact
-          ? "relative rounded-full border border-white/10 bg-white/8 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm transition-all hover:border-white/16 hover:bg-white/12 active:scale-[0.98]"
-          : "relative rounded-full px-4 py-2 bg-[color:var(--accent)] text-white hover:opacity-90 transition-transform active:scale-[0.98]")
+          ? "relative rounded-lg border border-light-border bg-off-white px-3 py-1.5 text-xs font-medium text-deep-ink transition-all hover:bg-light-border active:scale-[0.98]"
+          : "relative rounded-lg px-4 py-2 bg-primary text-white hover:bg-primary/90 transition-transform active:scale-[0.98]")
       }
     >
       <span className={`inline-flex items-center gap-1.5 transition-opacity ${added ? "opacity-0" : "opacity-100"}`}>
         {compact ? (
-          <span className="grid h-4 w-4 place-items-center rounded-full bg-white/12 text-[11px] leading-none text-white">
+          <span className="grid h-4 w-4 place-items-center rounded-lg bg-primary/10 text-[11px] leading-none text-primary">
             +
           </span>
         ) : null}

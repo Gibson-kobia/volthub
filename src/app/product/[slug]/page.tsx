@@ -124,7 +124,6 @@ export default async function Page({
                 Need help before ordering? Chat with us on WhatsApp for quick assistance.
               </p>
             </div>
-          </div>
 
           <div className="space-y-4">
             <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
