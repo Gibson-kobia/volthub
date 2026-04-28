@@ -7,7 +7,7 @@ export default function About() {
         Canvus is Meru's premier B2B and wholesale platform. We focus on institutional bulk ordering, school partnerships, and reseller support with competitive pricing and reliable service.
       </p>
       <p className="mt-4 text-zinc-700 dark:text-zinc-300">
-        We deliver in Nairobi with same‑day options and ship nationwide via
+        We deliver in Meru with same‑day options and ship nationwide via
         courier. Checkout is M‑Pesa friendly, and support is available on
         WhatsApp if you need help choosing the right item.
       </p>

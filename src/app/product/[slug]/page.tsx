@@ -102,7 +102,7 @@ export default async function Page({
           <WholesalePricing product={product} />
           <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-zinc-700 dark:text-zinc-300 md:grid-cols-1">
             <div>✅ M-Pesa payment available</div>
-            <div>✅ Nairobi same-day delivery</div>
+            <div>✅ Meru same-day delivery</div>
             <div>✅ Nationwide 1–3 working days</div>
             <div>✅ Easy return if item arrives faulty</div>
           </div>
@@ -186,36 +186,34 @@ export default async function Page({
         </div>
       </div>
 
-      {related.length > 0 && (
-        <div className="mt-12">
-          <div className="mb-3">
-            <h2 className="font-serif text-2xl text-zinc-900 dark:text-white">You may also like</h2>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">Similar picks from Canvus.</p>
-          </div>
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {related.map((p) => (
-              <div key={p.id} className="rounded-xl border p-4 bg-white dark:bg-black">
-                <Link href={`/product/${p.slug}`} className="block">
-                  <div className="relative aspect-[4/5] rounded-md overflow-hidden">
-                    <img
-                      src={p.image && p.image.startsWith("http") ? p.image : "/product-placeholder.png"}
-                      alt={p.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="mt-3 text-xs text-zinc-500">{p.brand}</div>
-                  <div className="font-medium text-sm text-zinc-900 dark:text-white">{p.name}</div>
-                  <div className="mt-1 font-semibold text-zinc-800 dark:text-zinc-100">KES {p.priceKes.toLocaleString()}</div>
-                  <div className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-                    <span aria-hidden>☆☆☆☆☆</span>
-                    <span className="ml-2">No reviews yet</span>
-                  </div>
-                </Link>
-              </div>
-            ))}
-          </div>
+      <div className="mt-12">
+        <div className="mb-3">
+          <h2 className="font-serif text-2xl text-zinc-900 dark:text-white">You may also like</h2>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">Similar picks from Canvus.</p>
         </div>
-      )}
+        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
+          {related.map((p) => (
+            <div key={p.id} className="rounded-xl border p-4 bg-white dark:bg-black">
+              <div href={`/product/${p.slug}`} className="block">
+                <div className="relative aspect-[4/5] rounded-md overflow-hidden">
+                  <img
+                    src={p.image && p.image.startsWith("http") ? p.image : "/product-placeholder.png"}
+                    alt={p.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="mt-3 text-xs text-zinc-500">{p.brand}</div>
+                <div className="font-medium text-sm text-zinc-900 dark:text-white">{p.name}</div>
+                <div className="mt-1 font-semibold text-zinc-800 dark:text-zinc-100">KES {p.priceKes.toLocaleString()}</div>
+                <div className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+                  <span aria-hidden>☆☆☆☆☆</span>
+                  <span className="ml-2">No reviews yet</span>
+                </div>
+              </Link>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

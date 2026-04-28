@@ -345,7 +345,7 @@ begin
         coalesce(
           (select email from auth.users where id = auth.uid()),
           auth.jwt() ->> 'email',
-          'admin@volthub'
+          'admin@canvus'
         ),
         now()
       );

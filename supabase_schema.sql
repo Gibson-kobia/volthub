@@ -24,7 +24,7 @@ create table public.products (
   id uuid default gen_random_uuid() primary key,
   slug text unique not null,
   name text not null,
-  brand text default 'VoltHub',
+  brand text default 'Canvus',
   description text,
   price numeric not null,
   category text not null,

@@ -1,7 +1,7 @@
 -- Account/access alignment migration
 -- Purpose:
 -- 1) Lock staff roles to: super_admin, store_admin, cashier, rider.
--- 2) Enforce known store scopes: main, volthub.
+-- 2) Enforce known store scopes: main, canvus.
 -- 3) Normalize staff email identity for reliable matching.
 -- 4) Keep changes additive and safe for existing environments.
 
@@ -57,7 +57,7 @@ alter table public.staff_profiles
 
 alter table public.staff_profiles
   add constraint staff_profiles_store_code_chk
-  check (store_code in ('main', 'volthub'));
+  check (store_code in ('main', 'canvus'));
 
 -- Case-insensitive unique identity for staff email matching.
 create unique index if not exists ux_staff_profiles_email_ci

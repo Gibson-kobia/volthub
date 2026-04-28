@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS public.staff_profiles (
   role TEXT NOT NULL CHECK (role IN ('super_admin', 'store_admin', 'cashier', 'rider')),
   
   -- Store assignment (for multi-store support)
-  store_code TEXT DEFAULT 'main' CHECK (store_code IN ('main', 'volthub')),
+  store_code TEXT DEFAULT 'main' CHECK (store_code IN ('main', 'canvus')),
   
   -- Permissions & Status
   is_active BOOLEAN DEFAULT TRUE,

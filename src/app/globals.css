@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0b;
-  --foreground: #f5f7fa;
-  --accent: #2f6bff;
-  --accent-soft: rgba(47, 107, 255, 0.14);
-  --surface: #181c20;
-  --surface-soft: #121417;
-  --border: #2a3138;
-  --muted: #a7b0ba;
-  --success: #2ed3a0;
-  --warning: #ffb84d;
-  --glow: #21d4fd;
-  --charcoal-black: #0a0a0b;
+  --background: #fdfcf8;
+  --foreground: #111827;
+  --accent: #004225;
+  --accent-soft: rgba(0, 66, 37, 0.12);
+  --surface: #ffffff;
+  --surface-soft: #f5f5ef;
+  --border: #d6d3ca;
+  --muted: #6b7280;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --glow: #22c55e;
+  --charcoal-black: #111827;
 }
 
 @theme inline {
@@ -35,13 +35,6 @@
   --breakpoint-md: 768px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0b;
-    --foreground: #f5f7fa;
-  }
-}
-
 html {
   scroll-behavior: smooth;
 }
@@ -49,12 +42,8 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), system-ui, -apple-system, Segoe UI, Roboto,
-    Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-  background-image:
-    radial-gradient(circle at top, rgba(47, 107, 255, 0.16), transparent 34%),
-    radial-gradient(circle at 20% 20%, rgba(33, 212, 253, 0.08), transparent 24%),
-    linear-gradient(180deg, #0a0a0b 0%, #121417 100%);
+  font-family: var(--font-sans), Inter, system-ui, -apple-system, "Segoe UI",
+    Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
 img,
@@ -66,23 +55,23 @@ canvas {
 }
 
 html[data-theme="dark"] {
-  --background: #0a0a0b;
-  --foreground: #f5f7fa;
+  --background: #111827;
+  --foreground: #f8fafc;
 }
 
 html[data-theme="light"] {
-  --background: #f3f6fb;
-  --foreground: #121417;
+  --background: #fdfcf8;
+  --foreground: #111827;
   --surface: #ffffff;
-  --surface-soft: #e8edf5;
-  --border: #c9d3df;
-  --muted: #57616d;
-  --accent-soft: rgba(47, 107, 255, 0.12);
+  --surface-soft: #f5f5ef;
+  --border: #d6d3ca;
+  --muted: #6b7280;
+  --accent-soft: rgba(0, 66, 37, 0.12);
 }
 
 ::selection {
-  background: rgba(47, 107, 255, 0.28);
-  color: #f5f7fa;
+  background: rgba(0, 66, 37, 0.18);
+  color: #111827;
 }
 
 .text-balance {
@@ -90,8 +79,66 @@ html[data-theme="light"] {
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(229, 231, 235, 0.8);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+}
+
+.admin-theme [class*="bg-white/"] {
+  background-color: #f8faf5 !important;
+}
+
+.admin-theme [class*="border-white/"] {
+  border-color: #e5e7eb !important;
+}
+
+.admin-theme [class*="bg-black/"] {
+  background-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+.admin-theme .shadow-\[0_40px_120px_rgba\(0,0,0,0\.45\)\] {
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.08) !important;
+}
+
+.admin-theme .shadow-\[0_12px_32px_rgba\(0,0,0,0\.32\)\] {
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08) !important;
+}
+
+.admin-theme [class*="bg-[#10161d]"] {
+  background-color: #f8faf5 !important;
+  border-color: #e5e7eb !important;
+}
+
+.admin-theme [class*="bg-white/"][class*="text-white"] {
+  color: #0f172a !important;
+}
+
+.admin-theme [class*="bg-black/"][class*="text-white"] {
+  color: #0f172a !important;
+}
+
+.admin-theme [class*="bg-[#10161d]"][class*="text-white"] {
+  color: #0f172a !important;
+}
+
+.admin-theme [class*="text-white"] {
+  color: #0f172a !important;
+}
+
+.admin-theme .bg-emerald-600[class*="text-white"],
+.admin-theme .bg-emerald-600 [class*="text-white"],
+.admin-theme .bg-green-500[class*="text-white"],
+.admin-theme .bg-green-500 [class*="text-white"],
+.admin-theme .bg-red-500[class*="text-white"],
+.admin-theme .bg-red-500 [class*="text-white"],
+.admin-theme .bg-sky-600[class*="text-white"],
+.admin-theme .bg-sky-600 [class*="text-white"],
+.admin-theme .bg-indigo-600[class*="text-white"],
+.admin-theme .bg-indigo-600 [class*="text-white"],
+.admin-theme [class*="bg-[#004225]"][class*="text-white"],
+.admin-theme [class*="bg-[#004225]"] [class*="text-white"],
+.admin-theme [class*="bg-[#003018]"][class*="text-white"],
+.admin-theme [class*="bg-[#003018]"] [class*="text-white"] {
+  color: #fff !important;
 }

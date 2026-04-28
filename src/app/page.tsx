@@ -60,7 +60,7 @@ const IMAGE_CATEGORY_CARDS: CategoryBannerCardProps[] = [
 const TRUST_STRIP = [
   {
     title: "2-4 hour express",
-    description: "Selected Nairobi zones.",
+    description: "Selected Meru zones.",
   },
   {
     title: "Secure checkout",
@@ -68,7 +68,7 @@ const TRUST_STRIP = [
   },
   {
     title: "Real local support",
-    description: "Nairobi team on WhatsApp and phone.",
+    description: "Meru team on WhatsApp and phone.",
   },
 ];
 
@@ -178,29 +178,7 @@ export default function Home() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-12 pt-4 sm:px-6 sm:pb-16 sm:pt-6">
-      {/* Premium Hero Section */}
-      <section className="relative overflow-hidden">
-        {/* Hero Image - Full Focus */}
-        <div className="relative">
-          {/* Image Container with Elegant Framing */}
-          <div className="relative overflow-hidden rounded-2xl lg:rounded-3xl aspect-square sm:aspect-auto sm:h-[500px] lg:h-[600px]">
-            {/* Soft Gradient Overlay for Depth */}
-            <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-            
-            {/* Hero Image */}
-            <Image
-              src="/images/canvushero.png"
-              alt="Nairobi skyline with everyday essentials basket"
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover"
-              priority
-            />
-          </div>
-        </div>
-      </section>
-
-      <section className="mt-10 sm:mt-12">
+      <section className="mt-0">
         <SectionHeader
           eyebrow="Popular now"
           title="Fast-moving picks"
@@ -259,7 +237,7 @@ export default function Home() {
             </p>
             <div className="mt-5 grid gap-2.5 sm:grid-cols-2">
               <div className="rounded-[20px] border border-white/6 bg-white/[0.04] p-3.5 text-xs leading-5 text-white/72">
-                Same-day Nairobi delivery before 6PM.
+                Same-day Meru delivery before 6PM.
               </div>
               <div className="rounded-[20px] border border-white/6 bg-white/[0.04] p-3.5 text-xs leading-5 text-white/72">
                 WhatsApp support with live order updates.
@@ -356,7 +334,7 @@ export default function Home() {
                 Service areas
               </div>
               <p className="mt-2.5 text-xs leading-5 text-white/64">
-                Nairobi same-day, next-day outside the city.
+                Meru same-day, next-day outside the city.
               </p>
             </div>
             <div className="rounded-[20px] border border-white/6 bg-white/[0.03] p-4 backdrop-blur-sm">

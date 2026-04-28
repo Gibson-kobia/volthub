@@ -143,7 +143,7 @@ function Shell({ children }: { children: React.ReactNode }) {
               </p>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl border border-white/8 bg-white/4 p-4 text-sm text-white/88">
-                  Same-day Nairobi delivery before 6PM. Next-day outside Nairobi as coverage expands.
+                  Same-day Meru delivery before 6PM. Next-day outside Meru as coverage expands.
                 </div>
                 <div className="rounded-2xl border border-white/8 bg-white/4 p-4 text-sm text-white/88">
                   M-Pesa, cards, cash on delivery, and pay on pickup supported where applicable.
@@ -165,7 +165,7 @@ function Shell({ children }: { children: React.ReactNode }) {
             <div>
               <div className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">Support</div>
               <div className="mt-4 flex flex-col gap-3 text-sm text-[color:var(--muted)]">
-                <span>Nairobi, Kenya</span>
+                <span>Meru, Kenya</span>
                 <a href={`tel:${SUPPORT_PHONE.replace(/\s+/g, "")}`} className="transition-colors hover:text-white">
                   {SUPPORT_PHONE}
                 </a>
@@ -295,7 +295,7 @@ function Shell({ children }: { children: React.ReactNode }) {
                 WhatsApp support and order updates
               </a>
               <div className="rounded-[22px] border border-white/8 bg-white/4 px-4 py-4 text-sm text-white/88">
-                Same-day Nairobi delivery before 6PM. Next-day outside Nairobi.
+                Same-day Meru delivery before 6PM. Next-day outside Meru.
               </div>
             </div>
           </div>

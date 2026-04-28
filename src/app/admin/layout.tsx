@@ -158,8 +158,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[color:var(--background)]">
-        <div className="h-12 w-12 animate-spin rounded-full border-2 border-white/15 border-t-[color:var(--accent)]" />
+      <div className="flex min-h-screen items-center justify-center bg-stone-50">
+        <div className="h-12 w-12 animate-spin rounded-full border-2 border-gray-200 border-t-emerald-600" />
       </div>
     );
   }
@@ -169,15 +169,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(47,107,255,0.14),transparent_28%),linear-gradient(180deg,#0a0a0b_0%,#11161b_100%)] text-white">
-      <aside className="hidden h-screen w-80 flex-col border-r border-white/8 bg-black/22 px-6 py-7 backdrop-blur lg:fixed lg:flex">
-        <div className="rounded-[28px] border border-white/10 bg-white/5 p-5">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">Store OS</div>
-          <div className="mt-3 font-serif text-3xl text-white">Canvus Control</div>
-          <div className="mt-2 text-sm text-white/56">Wholesale operations, inventory management, and order fulfillment.</div>
+    <div className="min-h-screen bg-stone-50 text-zinc-900 admin-theme">
+      <aside className="hidden h-screen w-80 flex-col border-r border-gray-200 bg-white px-6 py-7 lg:fixed lg:flex">
+        <div className="rounded-[28px] border border-gray-200 bg-white p-5">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-zinc-500">Canvus Ops</div>
+          <div className="mt-3 font-serif text-3xl text-zinc-900">Canvus Ops</div>
+          <div className="mt-2 text-sm text-zinc-600">Canvus operations, inventory management, and order fulfillment.</div>
           {role ? (
             <div className="mt-4">
-              <Badge tone="sky">{ROLE_LABELS[role]}</Badge>
+              <Badge tone="emerald">{ROLE_LABELS[role]}</Badge>
             </div>
           ) : null}
         </div>
@@ -191,30 +191,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 href={item.href}
                 className={`block rounded-[24px] border px-4 py-4 transition-colors ${
                   isActive
-                    ? "border-[color:var(--accent)]/40 bg-[color:var(--accent)]/16"
-                    : "border-white/8 bg-white/3 hover:bg-white/6"
-                }`}
+                    ? "border-emerald-600 bg-emerald-50 text-emerald-800 shadow-sm"
+                    : "border-gray-200 bg-gray-50 hover:bg-gray-100"
+                } ${isActive ? "border-l-4" : ""}`}
               >
-                <div className="text-sm font-semibold text-white">
+                <div className="text-sm font-semibold text-zinc-900">
                   {item.name === 'Partners' && partnersCount > 0 ? `${item.name} (${partnersCount})` : item.name}
                 </div>
-                <div className="mt-1 text-sm leading-6 text-white/45">{item.description}</div>
+                <div className="mt-1 text-sm leading-6 text-zinc-500">{item.description}</div>
               </Link>
             );
           })}
         </nav>
 
-        <div className="rounded-[24px] border border-amber-400/18 bg-amber-400/10 p-4 text-sm leading-6 text-amber-100/88">
+        <div className="rounded-[24px] border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800">
           Staff access is tied to active staff records. Role and store scope are enforced per route.
         </div>
 
-        <div className="mt-4 rounded-[24px] border border-white/8 bg-white/4 p-4 text-sm text-white/60">
-          <div className="font-semibold text-white">Signed in</div>
+        <div className="mt-4 rounded-[24px] border border-gray-200 bg-white p-4 text-sm text-zinc-600">
+          <div className="font-semibold text-zinc-900">Signed in</div>
           <div className="mt-1 break-all">{userEmail}</div>
           {storeCode ? <div className="mt-1">Store scope: {storeCode}</div> : null}
           <button
             onClick={handleLogout}
-            className="mt-4 rounded-full border border-white/12 px-4 py-2 font-semibold text-white hover:bg-white/8"
+            className="mt-4 rounded-full border border-gray-300 px-4 py-2 font-semibold text-zinc-700 hover:bg-gray-50"
           >
             Logout
           </button>
@@ -222,13 +222,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       <div className="lg:ml-80">
-        <header className="sticky top-0 z-20 border-b border-white/8 bg-black/22 px-4 py-4 backdrop-blur sm:px-6 lg:hidden">
+        <header className="sticky top-0 z-20 border-b border-gray-200 bg-white px-4 py-4 backdrop-blur sm:px-6 lg:hidden">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/42">Canvus Control</div>
-              <div className="mt-1 font-serif text-2xl text-white">Admin control</div>
+              <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-zinc-500">Canvus Ops</div>
+              <div className="mt-1 font-serif text-2xl text-zinc-900">Admin control</div>
             </div>
-            {role ? <Badge tone="sky">{ROLE_LABELS[role]}</Badge> : null}
+            {role ? <Badge tone="emerald">{ROLE_LABELS[role]}</Badge> : null}
           </div>
           <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
             {navItems.map((item) => {
@@ -239,8 +239,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   href={item.href}
                       className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm font-semibold ${
                     isActive
-                      ? "border-[color:var(--accent)]/40 bg-[color:var(--accent)]/18 text-white"
-                      : "border-white/10 bg-white/4 text-white/70"
+                      ? "border-emerald-600 bg-emerald-50 text-emerald-800"
+                      : "border-gray-200 bg-white text-zinc-700"
                   }`}
                 >
                   {item.name === 'Partners' && partnersCount > 0 ? `${item.name} (${partnersCount})` : item.name}

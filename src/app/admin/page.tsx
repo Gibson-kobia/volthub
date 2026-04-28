@@ -225,7 +225,7 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-2 border-white/15 border-t-[color:var(--accent)]" />
+        <div className="h-12 w-12 animate-spin rounded-full border-2 border-gray-200 border-t-emerald-600" />
       </div>
     );
   }
@@ -249,9 +249,9 @@ export default function AdminDashboard() {
       />
 
       {state.warnings.length > 0 ? (
-        <Surface className="border-amber-400/18 bg-amber-400/10 p-5">
-          <div className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-100/70">Operational notes</div>
-          <div className="mt-3 space-y-2 text-sm leading-6 text-amber-50/90">
+        <Surface className="border-amber-200 bg-amber-50 p-5">
+          <div className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-800">Operational notes</div>
+          <div className="mt-3 space-y-2 text-sm leading-6 text-amber-700">
             {state.warnings.map((warning) => (
               <p key={warning}>{warning}</p>
             ))}
@@ -295,7 +295,7 @@ export default function AdminDashboard() {
           <SurfaceHeader
             title="Sales trend"
             description="Last 7 days of recorded revenue and order count."
-            action={<Badge tone="sky">Live data</Badge>}
+            action={<Badge tone="emerald">Live data</Badge>}
           />
           <div className="px-5 py-6 sm:px-6">
             {metrics.trend.every((entry) => entry.revenue === 0) ? (

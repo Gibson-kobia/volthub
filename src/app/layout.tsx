@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Geist } from "next/font/google";
+import { Plus_Jakarta_Sans, Inter } from "next/font/google";
 import "./globals.css";
 import { SiteShell } from "../components/site-shell";
 
-const headingSerif = Playfair_Display({
+const headingSerif = Plus_Jakarta_Sans({
   variable: "--font-heading",
   subsets: ["latin"],
   weight: "400",
   display: "swap",
 });
 
-const bodySans = Geist({
+const bodySans = Inter({
   variable: "--font-body",
   subsets: ["latin"],
   display: "swap",

@@ -13,7 +13,7 @@ function buildWhatsAppOrderUrl(message: string) {
 export default function CartPage() {
   const { items: cart, setQty, removeItem } = useCart();
   const { user } = useAuth();
-  const [delivery, setDelivery] = useState<"nairobi" | "kenya">("nairobi");
+  const [delivery, setDelivery] = useState<"meru" | "kenya">("meru");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isWholesaleCustomer, setIsWholesaleCustomer] = useState(false);
@@ -80,7 +80,7 @@ export default function CartPage() {
         }`;
   const waUrl = waMessage ? buildWhatsAppOrderUrl(waMessage) : "";
   const estimate = useMemo(() => {
-    return delivery === "nairobi" ? "Same-day via bodaboda" : "1-3 days via courier";
+    return delivery === "meru" ? "Same-day via bodaboda" : "1-3 days via courier";
   }, [delivery]);
 
   if (loading) {
@@ -194,13 +194,13 @@ export default function CartPage() {
                 <div className="flex gap-2">
                   <button
                     className={`flex-1 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                      delivery === "nairobi"
+                      delivery === "meru"
                         ? "bg-[color:var(--accent)] text-white"
                         : "border border-white/20 text-zinc-400 hover:text-white"
                     }`}
-                    onClick={() => setDelivery("nairobi")}
+                    onClick={() => setDelivery("meru")}
                   >
-                    Nairobi
+                    Meru
                   </button>
                   <button
                     className={`flex-1 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
