@@ -67,6 +67,7 @@ export default async function Page({
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
+      
       <div className="mb-6 flex items-center justify-between gap-4">
         <Link href="/shop" className="text-sm underline hover:opacity-80">
           Back to shop
@@ -75,6 +76,7 @@ export default async function Page({
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
+        {/* Left Column: Image */}
         <div className="relative aspect-[4/5] rounded-xl overflow-hidden border bg-white dark:bg-black">
           <img
             src={product.image && product.image.startsWith("http") ? product.image : "/product-placeholder.png"}
@@ -83,29 +85,33 @@ export default async function Page({
           />
         </div>
 
-        <div className="space-y-5">
-          <div>
-            <div className="text-sm text-zinc-500">{product.brand}</div>
-            <h1 className="font-serif text-3xl md:text-4xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-              {product.name}
-            </h1>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className="text-xs rounded-full px-3 py-1 border border-emerald-200 text-emerald-700 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-300">
-                {inStock ? `${product.stock} in stock` : "Out of stock"}
-              </span>
-              <span className="text-xs text-zinc-600 dark:text-zinc-400">
-                {product.rating > 0 ? `${product.rating.toFixed(1)} rating` : "Ratings coming soon"}
-              </span>
+        {/* Right Column: Details & Specs */}
+        <div className="flex flex-col gap-8">
+          
+          <div className="space-y-5">
+            <div>
+              <div className="text-sm text-zinc-500">{product.brand}</div>
+              <h1 className="font-serif text-3xl md:text-4xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+                {product.name}
+              </h1>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <span className="text-xs rounded-full px-3 py-1 border border-emerald-200 text-emerald-700 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-300">
+                  {inStock ? `${product.stock} in stock` : "Out of stock"}
+                </span>
+                <span className="text-xs text-zinc-600 dark:text-zinc-400">
+                  {product.rating > 0 ? `${product.rating.toFixed(1)} rating` : "Ratings coming soon"}
+                </span>
+              </div>
             </div>
-          </div>
 
-          <WholesalePricing product={product} />
-          <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-zinc-700 dark:text-zinc-300 md:grid-cols-1">
-            <div>✅ M-Pesa payment available</div>
-            <div>✅ Meru same-day delivery</div>
-            <div>✅ Nationwide 1–3 working days</div>
-            <div>✅ Easy return if item arrives faulty</div>
-          </div>
+            <WholesalePricing product={product} />
+            
+            <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-zinc-700 dark:text-zinc-300 md:grid-cols-1">
+              <div>✅ M-Pesa payment available</div>
+              <div>✅ Meru same-day delivery</div>
+              <div>✅ Nationwide 1–3 working days</div>
+              <div>✅ Easy return if item arrives faulty</div>
+            </div>
 
             <div className="mt-4 space-y-3">
               <div className="flex flex-wrap items-center gap-3">
@@ -183,6 +189,7 @@ export default async function Page({
               </div>
             </div>
           </div>
+
         </div>
       </div>
 
@@ -194,7 +201,7 @@ export default async function Page({
         <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
           {related.map((p) => (
             <div key={p.id} className="rounded-xl border p-4 bg-white dark:bg-black">
-              <div href={`/product/${p.slug}`} className="block">
+              <Link href={`/product/${p.slug}`} className="block">
                 <div className="relative aspect-[4/5] rounded-md overflow-hidden">
                   <img
                     src={p.image && p.image.startsWith("http") ? p.image : "/product-placeholder.png"}
@@ -214,6 +221,7 @@ export default async function Page({
           ))}
         </div>
       </div>
+      
     </div>
   );
 }
