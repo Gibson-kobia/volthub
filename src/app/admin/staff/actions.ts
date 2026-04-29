@@ -30,19 +30,25 @@ export async function createStaff(
     return { success: false, error: "Authentication required to create staff for Canvus Meru." };
   }
 
-  const { data: staffProfile } = await supabase
-    .from("staff_profiles")
-    .select("role, store_code")
-    .eq("user_id", user.id)
-    .eq("is_active", true)
-    .single();
+  // Explicit Super Admin Bypass
+  if (user?.email === 'gibsonkobia@gmail.com') {
+    console.log("Super Admin Access Granted for:", user?.email);
+  } else {
+    // Run the normal database role check
+    const { data: staffProfile } = await supabase
+      .from("staff_profiles")
+      .select("role, store_code")
+      .eq("user_id", user.id)
+      .eq("is_active", true)
+      .single();
 
-  if (!staffProfile || !["super_admin", "store_admin"].includes(staffProfile.role)) {
-    return { success: false, error: "Insufficient permissions to create staff for Canvus Meru." };
-  }
+    if (!staffProfile || !["super_admin", "store_admin"].includes(staffProfile.role)) {
+      return { success: false, error: "Insufficient permissions to create staff for Canvus Meru." };
+    }
 
-  if (staffProfile.role === "store_admin" && storeCode !== staffProfile.store_code) {
-    return { success: false, error: "Store admins can only add staff within their Canvus Meru store." };
+    if (staffProfile.role === "store_admin" && storeCode !== staffProfile.store_code) {
+      return { success: false, error: "Store admins can only add staff within their Canvus Meru store." };
+    }
   }
 
   const tempPassword = Math.random().toString(36).slice(-12) + "Temp!";
@@ -118,15 +124,21 @@ export async function deactivateStaff(staffId: string): Promise<DeactivateStaffR
     return { success: false, error: "Authentication required." };
   }
 
-  const { data: staffProfile } = await supabase
-    .from("staff_profiles")
-    .select("role, store_code")
-    .eq("user_id", user.id)
-    .eq("is_active", true)
-    .single();
+  // Explicit Super Admin Bypass
+  if (user?.email === 'gibsonkobia@gmail.com') {
+    console.log("Super Admin Access Granted for:", user?.email);
+  } else {
+    // Run the normal database role check
+    const { data: staffProfile } = await supabase
+      .from("staff_profiles")
+      .select("role, store_code")
+      .eq("user_id", user.id)
+      .eq("is_active", true)
+      .single();
 
-  if (!staffProfile || !["super_admin", "store_admin"].includes(staffProfile.role)) {
-    return { success: false, error: "Insufficient permissions." };
+    if (!staffProfile || !["super_admin", "store_admin"].includes(staffProfile.role)) {
+      return { success: false, error: "Insufficient permissions." };
+    }
   }
 
   try {
@@ -140,7 +152,7 @@ export async function deactivateStaff(staffId: string): Promise<DeactivateStaffR
       return { success: false, error: "Staff not found." };
     }
 
-    if (staffProfile.role === "store_admin" && targetStaff.store_code !== staffProfile.store_code) {
+    if (staffProfile && staffProfile.role === "store_admin" && targetStaff.store_code !== staffProfile.store_code) {
       return { success: false, error: "Cannot deactivate staff from a different store." };
     }
 
