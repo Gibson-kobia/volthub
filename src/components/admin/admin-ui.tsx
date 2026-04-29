@@ -90,13 +90,15 @@ export function MetricCard({
   label,
   value,
   caption,
+  tone = "slate",
 }: {
   label: string;
   value: ReactNode;
   caption?: ReactNode;
+  tone?: string;
 }) {
   return (
-    <Surface className="p-5">
+    <Surface className={cx("p-5", TONE_STYLES[tone] ?? TONE_STYLES.slate)}>
       <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
         {label}
       </div>

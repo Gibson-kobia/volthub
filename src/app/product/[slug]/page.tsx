@@ -113,23 +113,22 @@ export default async function Page({
               <div>✅ Easy return if item arrives faulty</div>
             </div>
 
-            <div className="mt-4 space-y-3">
-              <div className="flex flex-wrap items-center gap-3">
-                <AddToCartButton productId={product.id} />
-                <AddToWishlistButton productId={product.id} />
-              </div>
-              <a
-                href={waUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex w-full items-center justify-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
-              >
-                WhatsApp order for support
-              </a>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                Need help before ordering? Chat with us on WhatsApp for quick assistance.
-              </p>
+          <div className="mt-4 space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <AddToCartButton productId={product.id} />
+              <AddToWishlistButton productId={product.id} />
             </div>
+            <a
+              href={waUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-full items-center justify-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
+            >
+              WhatsApp order for support
+            </a>
+            <p className="text-xs text-zinc-600 dark:text-zinc-400">
+              Need help before ordering? Chat with us on WhatsApp for quick assistance.
+            </p>
           </div>
 
           <div className="space-y-4">
@@ -212,10 +211,6 @@ export default async function Page({
                 <div className="mt-3 text-xs text-zinc-500">{p.brand}</div>
                 <div className="font-medium text-sm text-zinc-900 dark:text-white">{p.name}</div>
                 <div className="mt-1 font-semibold text-zinc-800 dark:text-zinc-100">KES {p.priceKes.toLocaleString()}</div>
-                <div className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-                  <span aria-hidden>☆☆☆☆☆</span>
-                  <span className="ml-2">No reviews yet</span>
-                </div>
               </Link>
             </div>
           ))}

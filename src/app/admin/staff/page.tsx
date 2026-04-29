@@ -19,6 +19,7 @@ import {
 import { resolveAccessForCurrentSession } from "@/lib/staff-session";
 import { getSupabase } from "@/lib/supabase";
 import type { StaffProfile, StaffRole } from "@/lib/types";
+import { createStaff, deactivateStaff } from "./actions";
 
 const ROLE_OPTIONS: StaffRole[] = ["super_admin", "store_admin", "cashier", "rider"];
 
@@ -131,52 +132,58 @@ export default function AdminStaffPage() {
 
     setSaving(true);
     setWarning(null);
+    setFeedback(null);
 
     try {
-      const payload: Partial<StaffProfile> = {
-        email,
-        full_name: form.full_name.trim() || null,
-        role: form.role,
-        store_code: viewerRole === "super_admin" ? form.store_code.trim() || "main" : viewerStoreCode,
-        is_active: true,
-      };
+      const storeCode = viewerRole === "super_admin" ? form.store_code.trim() || "main" : viewerStoreCode;
 
       if (viewerRole !== "super_admin" && form.role === "super_admin") {
         setWarning("Only super admins can assign the super_admin role.");
         return;
       }
 
-      const { error } = await supabase.from("staff_profiles").upsert([payload], { onConflict: "email" });
-      if (error) throw error;
+      const result = await createStaff(
+        email,
+        form.full_name.trim() || "",
+        form.role,
+        storeCode
+      );
 
-      setFeedback("Staff profile saved.");
+      if (!result.success) {
+        setWarning(result.error);
+        return;
+      }
+
+      setFeedback("Staff account created successfully.");
       setForm(DEFAULT_FORM);
       await loadProfiles();
     } catch (error) {
-      setWarning(extractSupabaseErrorMessage(error));
+      setWarning("Network timeout or unexpected error.");
     } finally {
       setSaving(false);
     }
   }
 
-  async function toggleActive(profile: StaffProfile) {
+  async function deactivateStaffProfile(profile: StaffProfile) {
     if (!tableReady) return;
-    if (viewerRole !== "super_admin" && profile.store_code !== viewerStoreCode) {
-      setWarning("You can only manage staff in your own store.");
-      return;
+    if (!profile.is_active) return; // Already inactive
+
+    setWarning(null);
+    setFeedback(null);
+
+    try {
+      const result = await deactivateStaff(profile.id);
+
+      if (!result.success) {
+        setWarning(result.error);
+        return;
+      }
+
+      setFeedback("Staff account deactivated.");
+      await loadProfiles();
+    } catch (error) {
+      setWarning("Network timeout or unexpected error.");
     }
-
-    const { error } = await supabase
-      .from("staff_profiles")
-      .update({ is_active: !profile.is_active })
-      .eq("id", profile.id);
-
-    if (error) {
-      setWarning(error.message);
-      return;
-    }
-
-    await loadProfiles();
   }
 
   if (loading) {
@@ -285,9 +292,9 @@ export default function AdminStaffPage() {
                         Store: {profile.store_code || "main"} · Added {formatCompactDate(profile.created_at || "")}
                       </div>
                     </div>
-                    {tableReady ? (
-                      <ActionButton variant="ghost" onClick={() => void toggleActive(profile)}>
-                        {profile.is_active ? "Deactivate" : "Reactivate"}
+                    {tableReady && profile.is_active ? (
+                      <ActionButton variant="ghost" onClick={() => void deactivateStaffProfile(profile)}>
+                        Deactivate
                       </ActionButton>
                     ) : null}
                   </div>
