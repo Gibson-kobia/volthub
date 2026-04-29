@@ -1,5 +1,6 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { createServerClient } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 import type { StaffRole } from "@/lib/types";
@@ -23,16 +24,22 @@ export async function createStaff(
     return { success: false, error: "Missing Service Key - Supabase service role not configured." };
   }
 
-  const supabase = createServerClient();
+  const supabase = createServerClient(cookies());
 
   const { data: { user }, error: authError } = await supabase.auth.getUser();
+  console.log("SERVER_ACTION_AUTH_DEBUG:", {
+    email: user?.email ?? null,
+    id: user?.id ?? null,
+    timestamp: new Date().toISOString(),
+  });
+
   if (authError || !user?.email) {
     return { success: false, error: "Authentication required to create staff for Canvus Meru." };
   }
 
-  // Explicit Super Admin Bypass
-  if (user?.email === 'gibsonkobia@gmail.com') {
-    console.log("Super Admin Access Granted for:", user?.email);
+  const isOwner = user.email === 'gibsonkobia@gmail.com';
+  if (isOwner) {
+    console.log("OWNER BYPASS AUTH GRANTED", user.email);
   } else {
     // Run the normal database role check
     const { data: staffProfile } = await supabase
@@ -117,24 +124,34 @@ export async function createStaff(
 }
 
 export async function deactivateStaff(staffId: string): Promise<DeactivateStaffResult> {
-  const supabase = createServerClient();
+  const supabase = createServerClient(cookies());
 
   const { data: { user }, error: authError } = await supabase.auth.getUser();
+  console.log("SERVER_ACTION_AUTH_DEBUG:", {
+    email: user?.email ?? null,
+    id: user?.id ?? null,
+    timestamp: new Date().toISOString(),
+  });
+
   if (authError || !user?.email) {
     return { success: false, error: "Authentication required." };
   }
 
-  // Explicit Super Admin Bypass
-  if (user?.email === 'gibsonkobia@gmail.com') {
-    console.log("Super Admin Access Granted for:", user?.email);
+  const isOwner = user.email === 'gibsonkobia@gmail.com';
+  let staffProfile: { role: string; store_code: string } | null = null;
+
+  if (isOwner) {
+    console.log("OWNER BYPASS AUTH GRANTED", user.email);
   } else {
     // Run the normal database role check
-    const { data: staffProfile } = await supabase
+    const { data } = await supabase
       .from("staff_profiles")
       .select("role, store_code")
       .eq("user_id", user.id)
       .eq("is_active", true)
       .single();
+
+    staffProfile = data;
 
     if (!staffProfile || !["super_admin", "store_admin"].includes(staffProfile.role)) {
       return { success: false, error: "Insufficient permissions." };

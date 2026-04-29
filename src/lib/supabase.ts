@@ -1,4 +1,4 @@
-import { createBrowserClient } from "@supabase/ssr";
+import { createBrowserClient, createServerClient as createServerClientSSR } from "@supabase/ssr";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 let client: SupabaseClient | null = null;
@@ -48,7 +48,10 @@ export function getSupabase(): SupabaseClient {
  *   const supabase = createServerClient();
  *   const { data } = await supabase.from('products').select('*');
  */
-export function createServerClient(): SupabaseClient {
+export function createServerClient(cookies?: {
+  getAll: () => Array<{ name: string; value: string }>;
+  setAll: (cookiesToSet: Array<{ name: string; value: string; options?: unknown }>) => void;
+}): SupabaseClient {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -56,12 +59,15 @@ export function createServerClient(): SupabaseClient {
     throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL environment variable");
   }
 
-  // For server-side operations without service key, fall back to anon key
   const key = supabaseServiceKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!key) {
     throw new Error(
       "Missing Supabase authentication key. Set NEXT_PUBLIC_SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY"
     );
+  }
+
+  if (cookies) {
+    return createServerClientSSR(supabaseUrl, key, { cookies });
   }
 
   return createClient(supabaseUrl, key);
