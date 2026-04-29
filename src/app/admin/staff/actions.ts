@@ -58,26 +58,32 @@ export async function createStaff(
     }
   }
 
-  const tempPassword = Math.random().toString(36).slice(-12) + "Temp!";
+  const tempPassword = 'TemporaryPassword123!';
 
+  let authData;
   try {
-    const { data: authData, error: createError } = await supabase.auth.admin.createUser({
+    const result = await supabase.auth.admin.createUser({
       email,
       password: tempPassword,
       email_confirm: true,
     });
 
-    if (createError) {
-      if (createError.message.includes("already registered")) {
-        return { success: false, error: "This email is already registered with Canvus Meru." };
-      }
-      return { success: false, error: createError.message || "Failed to create Canvus Meru staff user." };
+    if (result.error) {
+      console.error("SUPABASE_AUTH_ERROR:", result.error);
+      return { success: false, error: `Auth Error: ${result.error.message}` };
     }
+
+    authData = result.data;
 
     if (!authData.user) {
       return { success: false, error: "Failed to create Canvus Meru staff user." };
     }
+  } catch (err: any) {
+    console.error("SERVER_CRASH_ERROR:", err);
+    return { success: false, error: `Server Crash: ${err.message || 'Unknown'}` };
+  }
 
+  try {
     const { error: profileError } = await supabase
       .from("staff_profiles")
       .insert({
