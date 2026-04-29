@@ -18,6 +18,11 @@ export async function createStaff(
   role: StaffRole,
   storeCode: string
 ): Promise<CreateStaffResult> {
+  // Explicit check for service role key before proceeding
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return { success: false, error: "Missing Service Key - Supabase service role not configured." };
+  }
+
   const supabase = createServerClient();
 
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -53,7 +58,7 @@ export async function createStaff(
       if (createError.message.includes("already registered")) {
         return { success: false, error: "This email is already registered with Canvus Meru." };
       }
-      return { success: false, error: "Failed to create Canvus Meru staff user." };
+      return { success: false, error: createError.message || "Failed to create Canvus Meru staff user." };
     }
 
     if (!authData.user) {
@@ -74,7 +79,7 @@ export async function createStaff(
     if (profileError) {
       console.error("Failed to create staff profile:", profileError);
       await supabase.auth.admin.deleteUser(authData.user.id);
-      return { success: false, error: "Failed to create Canvus Meru staff profile." };
+      return { success: false, error: profileError.message || "Failed to create Canvus Meru staff profile." };
     }
 
     const { error: logError } = await supabase
@@ -99,8 +104,9 @@ export async function createStaff(
     revalidatePath("/admin/staff");
     return { success: true, userId: authData.user.id };
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Network error or timeout while creating Canvus Meru staff.";
     console.error("Error creating Canvus Meru staff:", error);
-    return { success: false, error: "Network error or timeout while creating Canvus Meru staff." };
+    return { success: false, error: errorMessage };
   }
 }
 

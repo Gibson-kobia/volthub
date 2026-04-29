@@ -113,6 +113,8 @@ export default async function Page({
               <div>✅ Easy return if item arrives faulty</div>
             </div>
 
+          </div>
+
           <div className="mt-4 space-y-3">
             <div className="flex flex-wrap items-center gap-3">
               <AddToCartButton productId={product.id} />

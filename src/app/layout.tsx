@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Inter } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 import { SiteShell } from "../components/site-shell";
 
@@ -38,6 +39,7 @@ export default function RootLayout({
         className={`${headingSerif.variable} ${bodySans.variable} antialiased`}
       >
         <SiteShell>{children}</SiteShell>
+        <Toaster />
       </body>
     </html>
   );

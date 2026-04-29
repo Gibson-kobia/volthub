@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   ActionButton,
   AdminPageHeader,
@@ -150,6 +151,7 @@ export default function AdminStaffPage() {
       );
 
       if (!result.success) {
+        toast.error(result.error);
         setWarning(result.error);
         return;
       }
@@ -158,7 +160,9 @@ export default function AdminStaffPage() {
       setForm(DEFAULT_FORM);
       await loadProfiles();
     } catch (error) {
-      setWarning("Network timeout or unexpected error.");
+      const errorMsg = "Network timeout or unexpected error.";
+      toast.error(errorMsg);
+      setWarning(errorMsg);
     } finally {
       setSaving(false);
     }
