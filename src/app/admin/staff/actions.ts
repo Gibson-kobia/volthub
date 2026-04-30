@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from "next/cache";
 import type { StaffRole } from "@/lib/types";
 
+// Bypass @supabase/ssr and Next.js Server Action header incompatibilities by using a raw service-role Supabase client.
 if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
   throw new Error("MISSING_SERVICE_KEY");
 }
@@ -170,56 +171,56 @@ export async function createStaff(
   revalidatePath("/admin/staff");
   return { success: true, userId };
 } catch (err) {
-  return { success: false, error: "Critical Engine Error: " + err.message };
+  return { success: false, error: "Critical Engine Error: " + (err instanceof Error ? err.message : String(err)) };
 }
 }
 
 export async function deactivateStaff(staffId: string): Promise<DeactivateStaffResult> {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get("sb-access-token")?.value;
-  const refreshToken = cookieStore.get("sb-refresh-token")?.value;
-  if (!accessToken) {
-    return { success: false, error: "Authentication required." };
-  }
-
-  await supabaseAdmin.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken ?? "",
-  });
-
-  const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser();
-  console.log("SERVER_ACTION_AUTH_DEBUG:", {
-    email: user?.email ?? null,
-    id: user?.id ?? null,
-    timestamp: new Date().toISOString(),
-  });
-
-  if (authError || !user?.email) {
-    return { success: false, error: "Authentication required." };
-  }
-
-  const isOwner = user.email === 'gibsonkobia@gmail.com';
-  let staffProfile: { role: string; store_code: string } | null = null;
-
-  if (isOwner) {
-    console.log("OWNER BYPASS AUTH GRANTED", user.email);
-  } else {
-    // Run the normal database role check
-    const { data } = await supabaseAdmin
-      .from("staff_profiles")
-      .select("role, store_code")
-      .eq("user_id", user.id)
-      .eq("is_active", true)
-      .single();
-
-    staffProfile = data;
-
-    if (!staffProfile || !["super_admin", "store_admin"].includes(staffProfile.role)) {
-      return { success: false, error: "Insufficient permissions." };
-    }
-  }
-
   try {
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get("sb-access-token")?.value;
+    const refreshToken = cookieStore.get("sb-refresh-token")?.value;
+    if (!accessToken) {
+      return { success: false, error: "Authentication required." };
+    }
+
+    await supabaseAdmin.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken ?? "",
+    });
+
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser();
+    console.log("SERVER_ACTION_AUTH_DEBUG:", {
+      email: user?.email ?? null,
+      id: user?.id ?? null,
+      timestamp: new Date().toISOString(),
+    });
+
+    if (authError || !user?.email) {
+      return { success: false, error: "Authentication required." };
+    }
+
+    const isOwner = user.email === 'gibsonkobia@gmail.com';
+    let staffProfile: { role: string; store_code: string } | null = null;
+
+    if (isOwner) {
+      console.log("OWNER BYPASS AUTH GRANTED", user.email);
+    } else {
+      // Run the normal database role check
+      const { data } = await supabaseAdmin
+        .from("staff_profiles")
+        .select("role, store_code")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .single();
+
+      staffProfile = data;
+
+      if (!staffProfile || !["super_admin", "store_admin"].includes(staffProfile.role)) {
+        return { success: false, error: "Insufficient permissions." };
+      }
+    }
+
     const { data: targetStaff, error: fetchError } = await supabaseAdmin
       .from("staff_profiles")
       .select("user_id, email, role, store_code")
@@ -265,7 +266,7 @@ export async function deactivateStaff(staffId: string): Promise<DeactivateStaffR
 
     revalidatePath("/admin/staff");
     return { success: true };
-} catch (err) {
-  return { success: false, error: "Critical Engine Error: " + err.message };
-}
+  } catch (err) {
+    return { success: false, error: "Critical Engine Error: " + (err instanceof Error ? err.message : String(err)) };
+  }
 }
