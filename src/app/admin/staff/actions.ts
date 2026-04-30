@@ -1,10 +1,25 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { createServerClient } from "@/lib/supabase";
 import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from "next/cache";
 import type { StaffRole } from "@/lib/types";
+
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  throw new Error("MISSING_SERVICE_KEY");
+}
+
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  throw new Error("MISSING_SUPABASE_URL");
+}
+
+console.log("[DEBUG] Client Init Success");
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  { auth: { persistSession: false } }
+);
 
 type CreateStaffResult =
   | { success: true; userId: string }
@@ -29,9 +44,19 @@ export async function createStaff(
 
   console.log("[DEBUG] Service Role Check:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-  const supabase = createServerClient(cookies());
+  const cookieStore = cookies();
+  const accessToken = cookieStore.get("sb-access-token")?.value;
+  const refreshToken = cookieStore.get("sb-refresh-token")?.value;
+  if (!accessToken) {
+    return { success: false, error: "Authentication required to create staff for Canvus Meru." };
+  }
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  await supabaseAdmin.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken ?? "",
+  });
+
+  const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser();
   console.log("SERVER_ACTION_AUTH_DEBUG:", {
     email: user?.email ?? null,
     id: user?.id ?? null,
@@ -47,7 +72,7 @@ export async function createStaff(
     console.log("OWNER BYPASS AUTH GRANTED", user.email);
   } else {
     // Run the normal database role check
-    const { data: staffProfile } = await supabase
+    const { data: staffProfile } = await supabaseAdmin
       .from("staff_profiles")
       .select("role, store_code")
       .eq("user_id", user.id)
@@ -62,24 +87,6 @@ export async function createStaff(
       return { success: false, error: "Store admins can only add staff within their Canvus Meru store." };
     }
   }
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  console.log("[INIT] Checking Env Vars...", {
-    NEXT_PUBLIC_SUPABASE_URL: !!supabaseUrl,
-    SUPABASE_SERVICE_ROLE_KEY: !!supabaseServiceKey,
-  });
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    return { success: false, error: "Server Configuration Error: Missing API Keys." };
-  }
-
-  // Create dedicated admin client
-  const supabaseAdmin = createClient(
-    supabaseUrl,
-    supabaseServiceKey,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
 
   const tempPassword = 'TemporaryPassword123!';
 
@@ -163,9 +170,19 @@ export async function createStaff(
 }
 
 export async function deactivateStaff(staffId: string): Promise<DeactivateStaffResult> {
-  const supabase = createServerClient(cookies());
+  const cookieStore = cookies();
+  const accessToken = cookieStore.get("sb-access-token")?.value;
+  const refreshToken = cookieStore.get("sb-refresh-token")?.value;
+  if (!accessToken) {
+    return { success: false, error: "Authentication required." };
+  }
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  await supabaseAdmin.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken ?? "",
+  });
+
+  const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser();
   console.log("SERVER_ACTION_AUTH_DEBUG:", {
     email: user?.email ?? null,
     id: user?.id ?? null,
@@ -183,7 +200,7 @@ export async function deactivateStaff(staffId: string): Promise<DeactivateStaffR
     console.log("OWNER BYPASS AUTH GRANTED", user.email);
   } else {
     // Run the normal database role check
-    const { data } = await supabase
+    const { data } = await supabaseAdmin
       .from("staff_profiles")
       .select("role, store_code")
       .eq("user_id", user.id)
@@ -196,24 +213,6 @@ export async function deactivateStaff(staffId: string): Promise<DeactivateStaffR
       return { success: false, error: "Insufficient permissions." };
     }
   }
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  console.log("[INIT] Checking Env Vars...", {
-    NEXT_PUBLIC_SUPABASE_URL: !!supabaseUrl,
-    SUPABASE_SERVICE_ROLE_KEY: !!supabaseServiceKey,
-  });
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    return { success: false, error: "Server Configuration Error: Missing API Keys." };
-  }
-
-  // Create dedicated admin client
-  const supabaseAdmin = createClient(
-    supabaseUrl,
-    supabaseServiceKey,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
 
   try {
     const { data: targetStaff, error: fetchError } = await supabaseAdmin
