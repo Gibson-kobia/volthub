@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { createServerClient } from "@/lib/supabase";
+import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from "next/cache";
 import type { StaffRole } from "@/lib/types";
 
@@ -19,10 +20,14 @@ export async function createStaff(
   role: StaffRole,
   storeCode: string
 ): Promise<CreateStaffResult> {
+  console.log("[DEBUG] Auth Start:", { email, timestamp: new Date().toISOString() });
+
   // Explicit check for service role key before proceeding
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return { success: false, error: "Missing Service Key - Supabase service role not configured." };
   }
+
+  console.log("[DEBUG] Service Role Check:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
 
   const supabase = createServerClient(cookies());
 
@@ -58,75 +63,92 @@ export async function createStaff(
     }
   }
 
+  // Create dedicated admin client
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+
   const tempPassword = 'TemporaryPassword123!';
 
-  let authData;
-  try {
-    const result = await supabase.auth.admin.createUser({
+  // Pre-check if user exists
+  const { data: existingUser, error: getUserError } = await supabaseAdmin.auth.admin.getUserByEmail(email);
+  console.log("[DEBUG] Existing user check:", { existingUser, error: getUserError });
+
+  if (getUserError && !existingUser?.user) {
+    console.error("SUPABASE_GET_USER_ERROR:", getUserError);
+    return { success: false, error: `Auth Error: ${getUserError.message || JSON.stringify(getUserError)}` };
+  }
+
+  let userId: string;
+  if (existingUser?.user) {
+    console.log("[DEBUG] User exists, skipping createUser");
+    userId = existingUser.user.id;
+  } else {
+    // Create new user
+    const result = await supabaseAdmin.auth.admin.createUser({
       email,
       password: tempPassword,
       email_confirm: true,
     });
 
+    console.log("[DEBUG] Supabase Response:", { data: result.data, error: result.error });
+
     if (result.error) {
       console.error("SUPABASE_AUTH_ERROR:", result.error);
-      return { success: false, error: `Auth Error: ${result.error.message}` };
+      return { success: false, error: `Auth Error: ${result.error.message || JSON.stringify(result.error)}` };
     }
 
-    authData = result.data;
-
-    if (!authData.user) {
+    if (!result.data.user) {
       return { success: false, error: "Failed to create Canvus Meru staff user." };
     }
-  } catch (err: any) {
-    console.error("SERVER_CRASH_ERROR:", err);
-    return { success: false, error: `Server Crash: ${err.message || 'Unknown'}` };
+
+    userId = result.data.user.id;
   }
 
-  try {
-    const { error: profileError } = await supabase
-      .from("staff_profiles")
-      .insert({
-        user_id: authData.user.id,
-        email: email.toLowerCase(),
-        full_name: fullName,
+  // Insert into staff_profiles
+  const { error: profileError } = await supabaseAdmin
+    .from("staff_profiles")
+    .insert({
+      user_id: userId,
+      email: email.toLowerCase(),
+      full_name: fullName,
+      role,
+      store_code: storeCode,
+      is_active: true,
+    });
+
+  if (profileError) {
+    console.error("Failed to create staff profile:", profileError);
+    if (!existingUser?.user) {
+      await supabaseAdmin.auth.admin.deleteUser(userId);
+    }
+    return { success: false, error: profileError.message || JSON.stringify(profileError) };
+  }
+
+  // Log the action
+  const { error: logError } = await supabaseAdmin
+    .from("admin_logs")
+    .insert({
+      admin_user_id: user.id,
+      admin_email: user.email,
+      action_type: "create_staff",
+      target_user_id: userId,
+      target_email: email.toLowerCase(),
+      details: {
         role,
         store_code: storeCode,
-        is_active: true,
-      });
+        full_name: fullName,
+      },
+    });
 
-    if (profileError) {
-      console.error("Failed to create staff profile:", profileError);
-      await supabase.auth.admin.deleteUser(authData.user.id);
-      return { success: false, error: profileError.message || "Failed to create Canvus Meru staff profile." };
-    }
-
-    const { error: logError } = await supabase
-      .from("admin_logs")
-      .insert({
-        admin_user_id: user.id,
-        admin_email: user.email,
-        action_type: "create_staff",
-        target_user_id: authData.user.id,
-        target_email: email.toLowerCase(),
-        details: {
-          role,
-          store_code: storeCode,
-          full_name: fullName,
-        },
-      });
-
-    if (logError) {
-      console.error("Failed to log staff creation for Canvus Meru:", logError);
-    }
-
-    revalidatePath("/admin/staff");
-    return { success: true, userId: authData.user.id };
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Network error or timeout while creating Canvus Meru staff.";
-    console.error("Error creating Canvus Meru staff:", error);
-    return { success: false, error: errorMessage };
+  if (logError) {
+    console.error("Failed to log staff creation for Canvus Meru:", logError);
   }
+
+  revalidatePath("/admin/staff");
+  return { success: true, userId };
 }
 
 export async function deactivateStaff(staffId: string): Promise<DeactivateStaffResult> {
@@ -164,8 +186,15 @@ export async function deactivateStaff(staffId: string): Promise<DeactivateStaffR
     }
   }
 
+  // Create dedicated admin client
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+
   try {
-    const { data: targetStaff, error: fetchError } = await supabase
+    const { data: targetStaff, error: fetchError } = await supabaseAdmin
       .from("staff_profiles")
       .select("user_id, email, role, store_code")
       .eq("id", staffId)
@@ -179,7 +208,7 @@ export async function deactivateStaff(staffId: string): Promise<DeactivateStaffR
       return { success: false, error: "Cannot deactivate staff from a different store." };
     }
 
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from("staff_profiles")
       .update({ is_active: false, updated_at: new Date().toISOString() })
       .eq("id", staffId);
@@ -188,9 +217,9 @@ export async function deactivateStaff(staffId: string): Promise<DeactivateStaffR
       throw updateError;
     }
 
-    await supabase.auth.admin.deleteUser(targetStaff.user_id);
+    await supabaseAdmin.auth.admin.deleteUser(targetStaff.user_id);
 
-    const { error: logError } = await supabase
+    const { error: logError } = await supabaseAdmin
       .from("admin_logs")
       .insert({
         admin_user_id: user.id,
@@ -212,6 +241,6 @@ export async function deactivateStaff(staffId: string): Promise<DeactivateStaffR
     return { success: true };
   } catch (error) {
     console.error("Error deactivating staff:", error);
-    return { success: false, error: "Network error or timeout." };
+    return { success: false, error: JSON.stringify(error) };
   }
 }
