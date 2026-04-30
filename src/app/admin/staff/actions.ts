@@ -16,9 +16,9 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
 console.log("[DEBUG] Client Init Success");
 
 const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-  { auth: { persistSession: false } }
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  { auth: { persistSession: false, autoRefreshToken: false } }
 );
 
 type CreateStaffResult =
@@ -44,7 +44,9 @@ export async function createStaff(
 
   console.log("[DEBUG] Service Role Check:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-  const cookieStore = cookies();
+  try {
+
+    const cookieStore = await cookies();
   const accessToken = cookieStore.get("sb-access-token")?.value;
   const refreshToken = cookieStore.get("sb-refresh-token")?.value;
   if (!accessToken) {
@@ -167,10 +169,13 @@ export async function createStaff(
 
   revalidatePath("/admin/staff");
   return { success: true, userId };
+} catch (err) {
+  return { success: false, error: "Critical Engine Error: " + err.message };
+}
 }
 
 export async function deactivateStaff(staffId: string): Promise<DeactivateStaffResult> {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const accessToken = cookieStore.get("sb-access-token")?.value;
   const refreshToken = cookieStore.get("sb-refresh-token")?.value;
   if (!accessToken) {
@@ -260,8 +265,7 @@ export async function deactivateStaff(staffId: string): Promise<DeactivateStaffR
 
     revalidatePath("/admin/staff");
     return { success: true };
-  } catch (error) {
-    console.error("Error deactivating staff:", error);
-    return { success: false, error: JSON.stringify(error) };
-  }
+} catch (err) {
+  return { success: false, error: "Critical Engine Error: " + err.message };
+}
 }
