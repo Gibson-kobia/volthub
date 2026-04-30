@@ -63,10 +63,21 @@ export async function createStaff(
     }
   }
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  console.log("[INIT] Checking Env Vars...", {
+    NEXT_PUBLIC_SUPABASE_URL: !!supabaseUrl,
+    SUPABASE_SERVICE_ROLE_KEY: !!supabaseServiceKey,
+  });
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    return { success: false, error: "Server Configuration Error: Missing API Keys." };
+  }
+
   // Create dedicated admin client
   const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    supabaseUrl,
+    supabaseServiceKey,
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
 
@@ -186,10 +197,21 @@ export async function deactivateStaff(staffId: string): Promise<DeactivateStaffR
     }
   }
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  console.log("[INIT] Checking Env Vars...", {
+    NEXT_PUBLIC_SUPABASE_URL: !!supabaseUrl,
+    SUPABASE_SERVICE_ROLE_KEY: !!supabaseServiceKey,
+  });
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    return { success: false, error: "Server Configuration Error: Missing API Keys." };
+  }
+
   // Create dedicated admin client
   const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    supabaseUrl,
+    supabaseServiceKey,
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
 

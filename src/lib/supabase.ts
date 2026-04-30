@@ -48,27 +48,36 @@ export function getSupabase(): SupabaseClient {
  *   const supabase = createServerClient();
  *   const { data } = await supabase.from('products').select('*');
  */
-export function createServerClient(cookies?: {
+type SupabaseCookieStore = {
   getAll: () => Array<{ name: string; value: string }>;
   setAll: (cookiesToSet: Array<{ name: string; value: string; options?: unknown }>) => void;
-}): SupabaseClient {
+};
+
+export function createServerClient(cookieStore?: SupabaseCookieStore): SupabaseClient {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+  console.log("[INIT] Checking Env Vars...", {
+    NEXT_PUBLIC_SUPABASE_URL: !!supabaseUrl,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: !!supabaseAnonKey,
+    SUPABASE_SERVICE_ROLE_KEY: !!supabaseServiceKey,
+  });
+
   if (!supabaseUrl) {
-    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL environment variable");
+    throw new Error("Server Configuration Error: Missing NEXT_PUBLIC_SUPABASE_URL");
   }
 
-  const key = supabaseServiceKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!key) {
+  if (!supabaseAnonKey) {
+    throw new Error("Server Configuration Error: Missing NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  }
+
+  if (!cookieStore) {
     throw new Error(
-      "Missing Supabase authentication key. Set NEXT_PUBLIC_SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY"
+      "Server Configuration Error: Missing cookie store. Pass `cookies()` from next/headers into createServerClient()."
     );
   }
 
-  if (cookies) {
-    return createServerClientSSR(supabaseUrl, key, { cookies });
-  }
-
-  return createClient(supabaseUrl, key);
+  const key = supabaseServiceKey || supabaseAnonKey;
+  return createServerClientSSR(supabaseUrl, key, { cookies: cookieStore });
 }
