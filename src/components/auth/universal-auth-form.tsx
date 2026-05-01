@@ -1,11 +1,17 @@
 "use client";
 import { FormEvent, useState } from "react";
 import Link from "next/link";
-import { useAuth } from "../../../components/auth/auth-provider";
-import { getSupabase } from "../../../lib/supabase";
-import { getActiveStaffByEmail, getPostLoginPath } from "../../../lib/access-control";
+import { useAuth } from "./auth-provider";
+import { getSupabase } from "../../lib/supabase";
+import { getActiveStaffByEmail } from "../../lib/access-control";
 
-export default function LoginPage() {
+type AuthType = 'retail' | 'wholesale' | 'admin';
+
+interface UniversalAuthFormProps {
+  type: AuthType;
+}
+
+export default function UniversalAuthForm({ type }: UniversalAuthFormProps) {
   const { login, refreshSession, resendConfirmation } = useAuth();
   const urlParams =
     typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
@@ -27,6 +33,43 @@ export default function LoginPage() {
     return "Could not complete email confirmation. Please request a new verification email.";
   })();
 
+  const getBranding = () => {
+    switch (type) {
+      case 'retail':
+        return {
+          title: "Canvus Retail",
+          subtitle: "Shop electronics, groceries, and more.",
+          bgClass: "bg-green-50",
+          textClass: "text-green-900",
+          buttonClass: "bg-green-600 hover:bg-green-700 text-white",
+          linkHref: "/shop",
+          linkText: "Browse our products"
+        };
+      case 'wholesale':
+        return {
+          title: "Canvus Bulk Portal",
+          subtitle: "Access wholesale pricing for businesses and institutions.",
+          bgClass: "bg-blue-50",
+          textClass: "text-blue-900",
+          buttonClass: "bg-blue-600 hover:bg-blue-700 text-white",
+          linkHref: "/wholesale/apply",
+          linkText: "Don't have a partner account? Apply for Wholesale Access"
+        };
+      case 'admin':
+        return {
+          title: "Staff Operations HQ",
+          subtitle: "Secure Access Only - Authorized Personnel",
+          bgClass: "bg-gray-100",
+          textClass: "text-gray-900",
+          buttonClass: "bg-gray-800 hover:bg-gray-900 text-white",
+          linkHref: "/admin",
+          linkText: "Return to main site"
+        };
+    }
+  };
+
+  const branding = getBranding();
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -46,8 +89,25 @@ export default function LoginPage() {
       return;
     }
     await refreshSession();
+
+    // Get user profile to determine redirect
+    const { data: user } = await getSupabase().auth.getUser();
+    const { data: profile } = await getSupabase()
+      .from('profiles')
+      .select('account_type')
+      .eq('id', user.user?.id)
+      .single();
+
     const staff = await getActiveStaffByEmail(getSupabase(), email.trim().toLowerCase());
-    window.location.href = getPostLoginPath(staff);
+
+    let redirectPath = '/';
+    if (staff) {
+      redirectPath = '/admin/dashboard';
+    } else if (profile?.account_type === 'wholesaler' || profile?.account_type === 'bulk_buyer') {
+      redirectPath = '/wholesale/dashboard';
+    }
+
+    window.location.href = redirectPath;
   };
 
   const handleResend = async (e: FormEvent) => {
@@ -70,43 +130,43 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-6">
+    <div className={`min-h-screen ${branding.bgClass} flex items-center justify-center px-6`}>
       <div className="w-full max-w-md">
-        <h1 className="font-serif text-3xl text-white mb-2 text-center">Partner Access</h1>
-        <p className="text-zinc-500 text-sm mb-8 text-center">
-          Enter your credentials to access the Canvus Bulk Portal.
+        <h1 className={`font-serif text-3xl ${branding.textClass} mb-2 text-center`}>{branding.title}</h1>
+        <p className={`text-sm mb-8 text-center ${type === 'admin' ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>
+          {branding.subtitle}
         </p>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block mb-1 text-zinc-400 text-sm">Email</label>
+            <label className={`block mb-1 text-sm ${branding.textClass}`}>Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border-b border-zinc-800 bg-transparent px-0 py-2 text-white placeholder-zinc-600 focus:border-white focus:outline-none transition-colors"
+              className={`w-full border-b border-gray-300 bg-transparent px-0 py-2 ${branding.textClass} placeholder-gray-500 focus:border-gray-500 focus:outline-none transition-colors`}
             />
           </div>
           <div>
-            <label className="block mb-1 text-zinc-400 text-sm">Password</label>
+            <label className={`block mb-1 text-sm ${branding.textClass}`}>Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border-b border-zinc-800 bg-transparent px-0 py-2 text-white placeholder-zinc-600 focus:border-white focus:outline-none transition-colors"
+              className={`w-full border-b border-gray-300 bg-transparent px-0 py-2 ${branding.textClass} placeholder-gray-500 focus:border-gray-500 focus:outline-none transition-colors`}
             />
           </div>
-          {error && <div className="text-sm text-red-400">{error}</div>}
+          {error && <div className="text-sm text-red-600">{error}</div>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-white text-black py-3 text-sm font-medium hover:bg-zinc-200 disabled:opacity-70 disabled:cursor-not-allowed rounded-none transition-colors"
+            className={`w-full py-3 text-sm font-medium disabled:opacity-70 disabled:cursor-not-allowed rounded-none transition-colors ${branding.buttonClass}`}
           >
             {loading ? "Logging in..." : "Log in"}
           </button>
         </form>
         <div className="mt-8 text-center">
-          <Link href="/wholesale/apply" className="text-white underline hover:text-zinc-200 transition-colors text-sm z-10 relative">
-            Don't have a partner account? Apply for Wholesale Access
+          <Link href={branding.linkHref} className={`${branding.textClass} underline hover:opacity-70 transition-colors text-sm`}>
+            {branding.linkText}
           </Link>
         </div>
       </div>
