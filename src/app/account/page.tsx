@@ -93,6 +93,20 @@ export default function AccountPage() {
 
   // Derived initial states set via useState initializers; storage listener updates on changes
 
+  const confirmReceipt = async (orderId: string) => {
+    try {
+      const { error } = await getSupabase()
+        .from('orders')
+        .update({ status: 'DELIVERED', updated_at: new Date().toISOString() })
+        .eq('id', orderId);
+      if (error) throw error;
+      // Refresh orders
+      await loadOrders();
+    } catch (error) {
+      console.error('Failed to confirm receipt:', error);
+    }
+  };
+
   useEffect(() => {
     let active = true;
     async function loadOrders() {
@@ -416,6 +430,14 @@ export default function AccountPage() {
                     <div className="text-right">
                       <div className="font-semibold">KES {o.total.toLocaleString()}</div>
                       <div className="text-xs text-zinc-500">{o.status}</div>
+                      {o.status === 'DISPATCHED' && (
+                        <button
+                          onClick={() => confirmReceipt(o.id)}
+                          className="ml-3 text-xs bg-green-600 text-white px-2 py-1 rounded"
+                        >
+                          Confirm Receipt
+                        </button>
+                      )}
                       <button
                         onClick={() => setSelectedOrder(open ? null : o.id)}
                         className="ml-3 text-xs underline"

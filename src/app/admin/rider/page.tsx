@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { AdminPageHeader, Badge, EmptyState, MetricCard, Surface, SurfaceHeader } from "@/components/admin/admin-ui";
 import {
   extractSupabaseErrorMessage,
@@ -18,7 +18,7 @@ type RiderOrder = Order & {
   items: ReturnType<typeof normalizeOrderItems>;
 };
 
-const ACTIVE_STATUSES = ["WITH_RIDER", "DISPATCHED"];
+const ACTIVE_STATUSES = ["PREPARING", "WITH_RIDER", "DISPATCHED"];
 
 export default function AdminRiderPage() {
   const supabase = getSupabase();
@@ -26,6 +26,7 @@ export default function AdminRiderPage() {
   const [loading, setLoading] = useState(true);
   const [warning, setWarning] = useState<string | null>(null);
   const [staffStoreCode, setStaffStoreCode] = useState<string>("main");
+  const [staff, setStaff] = useState<any>(null);
 
   useEffect(() => {
     let active = true;
@@ -41,7 +42,10 @@ export default function AdminRiderPage() {
 
         const staff = await getActiveStaffByEmail(supabase, session?.user.email || null);
         const storeCode = staff?.store_code || "main";
-        if (active) setStaffStoreCode(storeCode);
+        if (active) {
+          setStaffStoreCode(storeCode);
+          setStaff(staff);
+        }
 
         const query = supabase
           .from("orders")
@@ -76,15 +80,32 @@ export default function AdminRiderPage() {
     };
   }, [supabase]);
 
-  const summary = useMemo(() => {
-    const withRider = orders.filter((order) => order.status === "WITH_RIDER").length;
-    const dispatched = orders.filter((order) => order.status === "DISPATCHED").length;
-    return {
-      active: orders.length,
-      withRider,
-      dispatched,
-    };
-  }, [orders]);
+  const claimOrder = async (orderId: string) => {
+    try {
+      const { data, error } = await supabase.rpc('claim_delivery_order', {
+        p_order_id: orderId,
+        p_rider_id: staff?.id
+      });
+      if (error) throw error;
+      // Refresh orders
+      await loadData();
+    } catch (error) {
+      setWarning(extractSupabaseErrorMessage(error));
+    }
+  };
+
+  const updateOrderStatus = async (orderId: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq('id', orderId);
+      if (error) throw error;
+      await loadData();
+    } catch (error) {
+      setWarning(extractSupabaseErrorMessage(error));
+    }
+  };
 
   if (loading) {
     return (
@@ -102,7 +123,8 @@ export default function AdminRiderPage() {
         description="Track orders that are with riders or already dispatched. Scope is limited by the rider/store assignment."
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
+        <MetricCard label="Available deliveries" value={formatNumber(summary.preparing)} tone="blue" />
         <MetricCard label="Active deliveries" value={formatNumber(summary.active)} tone="sky" />
         <MetricCard label="With rider" value={formatNumber(summary.withRider)} tone="indigo" />
         <MetricCard label="Dispatched" value={formatNumber(summary.dispatched)} tone="emerald" />
@@ -121,10 +143,16 @@ export default function AdminRiderPage() {
           {orders.length === 0 ? (
             <EmptyState title="No active delivery orders" description="Orders in WITH_RIDER or DISPATCHED state appear here." />
           ) : (
-            orders.map((order) => {
+            orders.map((order, index) => {
               const statusMeta = getOrderStatusMeta(order.status);
               return (
-                <div key={order.id} className="rounded-2xl border border-white/8 bg-white/4 px-4 py-4">
+                <motion.div
+                  key={order.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="rounded-2xl border border-white/8 bg-white/4 px-4 py-4"
+                >
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <div className="font-semibold text-white">Order {order.id.slice(0, 8)}</div>
@@ -134,10 +162,55 @@ export default function AdminRiderPage() {
                       <div className="mt-2 text-xs text-white/55">
                         Created {formatDateTime(order.created_at)} · Updated {formatCompactDate(order.updated_at || order.created_at)}
                       </div>
+                      {order.delivery_method && (
+                        <div className="mt-1 text-xs text-white/55">
+                          {order.delivery_method} to {order.address_text}
+                        </div>
+                      )}
                     </div>
-                    <Badge tone={statusMeta.tone}>{statusMeta.label}</Badge>
+                    <div className="flex flex-col items-end gap-2">
+                      <Badge tone={statusMeta.tone}>{statusMeta.label}</Badge>
+                      {order.status === "PREPARING" && (
+                        <button
+                          onClick={() => claimOrder(order.id)}
+                          className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded"
+                        >
+                          Accept Delivery
+                        </button>
+                      )}
+                      {order.status === "WITH_RIDER" && (
+                        <div className="flex flex-col gap-1">
+                          <button
+                            onClick={() => updateOrderStatus(order.id, 'DISPATCHED')}
+                            className="px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded"
+                          >
+                            I Have Arrived
+                          </button>
+                          <button
+                            onClick={() => updateOrderStatus(order.id, 'DELIVERED')}
+                            className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded"
+                          >
+                            Order Handed Over
+                          </button>
+                          <a
+                            href={`https://wa.me/${order.customer_phone}`}
+                            target="_blank"
+                            className="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded text-center"
+                          >
+                            WhatsApp
+                          </a>
+                          <a
+                            href={`https://maps.google.com/?q=${encodeURIComponent(order.address_text || '')}`}
+                            target="_blank"
+                            className="px-2 py-1 bg-orange-600 hover:bg-orange-700 text-white text-xs rounded text-center"
+                          >
+                            Maps
+                          </a>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })
           )}
