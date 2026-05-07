@@ -13,7 +13,7 @@ export function ReviewButton({ productId }: { productId: string }) {
   const submit = async () => {
     setStatus(null);
     if (!user) {
-      window.location.href = "/auth/login";
+      window.location.href = "/login";
       return;
     }
     if (rating < 1 || rating > 5 || !text.trim()) {
@@ -43,7 +43,7 @@ export function ReviewButton({ productId }: { productId: string }) {
   if (!user) {
     return (
       <a
-        href="/auth/login"
+        href="/login"
         className="inline-block rounded-full px-4 py-2 border text-sm"
       >
         Log in to review

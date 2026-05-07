@@ -112,7 +112,7 @@ export default function WholesaleStatusPage() {
                 Please sign in to check your wholesale application status
               </p>
               <a
-                href="/auth/login"
+                href="/wholesale/login"
                 className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors"
               >
                 Go to Login

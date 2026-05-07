@@ -106,7 +106,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       if (!active) return;
 
       if (!session) {
-        router.push("/auth/login?redirect=/admin");
+        router.push("/admin/login?redirect=/admin");
         setLoading(false);
         return;
       }
@@ -153,7 +153,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   async function handleLogout() {
     await supabase.auth.signOut();
-    router.push("/auth/login");
+    router.push("/admin/login");
   }
 
   if (loading) {

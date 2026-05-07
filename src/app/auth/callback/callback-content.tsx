@@ -56,7 +56,7 @@ export default function AuthCallbackContent() {
 
     const handleConfirmedWithoutSession = () => {
       if (!active) return;
-      const nextPath = "/auth/login?confirmed=1";
+      const nextPath = "/login?confirmed=1";
       setRedirectPath(nextPath);
       setStatus("success");
       timeoutId = setTimeout(() => router.push(nextPath), 1800);
@@ -268,7 +268,7 @@ export default function AuthCallbackContent() {
               <p className="text-sm text-zinc-300 mb-4">{errorText}</p>
               <div className="grid grid-cols-1 gap-2 w-full">
                 <button
-                  onClick={() => router.push("/auth/login")}
+                  onClick={() => router.push("/login")}
                   className="rounded-full border border-white/20 bg-white/5 px-5 py-2 text-sm text-white hover:bg-white/10"
                 >
                   Sign in

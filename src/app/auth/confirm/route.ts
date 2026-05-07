@@ -35,7 +35,7 @@ export async function GET(request: Request) {
 	}
 
 	if (!tokenHash || !isVerifyType(typeParam)) {
-		const loginUrl = new URL("/auth/login", requestUrl.origin);
+		const loginUrl = new URL("/login", requestUrl.origin);
 		loginUrl.searchParams.set("confirm_error", "invalid_link");
 		return NextResponse.redirect(loginUrl);
 	}
@@ -64,7 +64,7 @@ export async function GET(request: Request) {
 	});
 
 	if (error) {
-		const loginUrl = new URL("/auth/login", requestUrl.origin);
+		const loginUrl = new URL("/login", requestUrl.origin);
 		loginUrl.searchParams.set("confirm_error", "verification_failed");
 		return NextResponse.redirect(loginUrl);
 	}
@@ -74,7 +74,7 @@ export async function GET(request: Request) {
 	} = await supabase.auth.getUser();
 
 	if (!user?.email || !user.email_confirmed_at) {
-		const loginUrl = new URL("/auth/login", requestUrl.origin);
+		const loginUrl = new URL("/login", requestUrl.origin);
 		loginUrl.searchParams.set("confirm_error", "session_missing");
 		return NextResponse.redirect(loginUrl);
 	}

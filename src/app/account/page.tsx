@@ -164,7 +164,7 @@ export default function AccountPage() {
         </p>
         <div className="mt-4 flex gap-3">
           <a
-            href="/auth/login"
+            href="/login"
             className="rounded-full px-4 py-2 border inline-block"
           >
             Log in

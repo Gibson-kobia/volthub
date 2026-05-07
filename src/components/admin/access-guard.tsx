@@ -27,7 +27,7 @@ export default function AdminAccessGuard({
             {returnLabel}
           </Link>
           <Link
-            href="/auth/login?redirect=/admin"
+            href="/admin/login?redirect=/admin"
             className="inline-flex items-center justify-center rounded-full bg-[#004225] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#003018]"
           >
             Login as staff

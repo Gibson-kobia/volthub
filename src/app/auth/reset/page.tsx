@@ -55,7 +55,7 @@ export default function ResetPage() {
         </button>
       </form>
       <div className="mt-4 text-xs text-zinc-600 dark:text-zinc-400">
-        <Link href="/auth/login" className="underline">
+        <Link href="/login" className="underline">
           Back to login
         </Link>
       </div>

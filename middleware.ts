@@ -2,9 +2,19 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { canRoleAccessPath, getHomePathForRole, isStaffRoute } from "./src/lib/access-control";
 
-function buildLoginRedirect(request: NextRequest) {
+function getLoginPath(pathname: string): string {
+  if (pathname.startsWith("/admin") || pathname.startsWith("/rider")) {
+    return "/admin/login";
+  } else if (pathname.startsWith("/wholesale")) {
+    return "/wholesale/login";
+  } else {
+    return "/login";
+  }
+}
+
+function buildLoginRedirect(request: NextRequest, loginPath?: string) {
   const loginUrl = request.nextUrl.clone();
-  loginUrl.pathname = "/auth/login";
+  loginUrl.pathname = loginPath || getLoginPath(request.nextUrl.pathname);
   loginUrl.searchParams.set("redirect", `${request.nextUrl.pathname}${request.nextUrl.search}`);
   return loginUrl;
 }
@@ -47,7 +57,7 @@ export async function middleware(request: NextRequest) {
   const isConfirmedUser = Boolean(user?.email_confirmed_at);
 
   const pathname = request.nextUrl.pathname;
-  const isAuthPage = pathname.startsWith("/auth/login") || pathname.startsWith("/auth/signup");
+  const isAuthPage = pathname === "/login" || pathname === "/admin/login" || pathname === "/wholesale/login" || pathname.startsWith("/auth/");
 
   if (isAuthPage && user?.email && isConfirmedUser) {
     const requestedRedirect = safeRedirectPath(request.nextUrl.searchParams.get("redirect"));
@@ -104,5 +114,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/rider/:path*", "/wholesale/:path*", "/auth/login", "/auth/signup"],
+  matcher: ["/admin/:path*", "/rider/:path*", "/wholesale/:path*", "/login", "/admin/login", "/wholesale/login", "/auth/:path*"],
 };
