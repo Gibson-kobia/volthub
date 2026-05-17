@@ -1,5 +1,5 @@
 import { Product, DBProduct, CategorySlug } from "./types";
-import { getSupabase } from "./supabase";
+import { getSupabase, diagnoseSupabaseConfig } from "./supabase";
 
 export type { Product };
 
@@ -54,9 +54,23 @@ export function mapDBProductToProduct(dbProduct: DBProduct): Product {
 // --- ASYNC FUNCTIONS FOR SUPABASE ---
 
 export async function fetchProducts(): Promise<Product[]> {
-  if (!isSupabaseConfigured()) return [];
+  if (!isSupabaseConfigured()) {
+    console.warn(
+      "[fetchProducts] Supabase not configured. Returning empty array. Diagnosis:",
+      diagnoseSupabaseConfig()
+    );
+    return [];
+  }
+
   try {
     const supabase = getSupabase();
+    if (!supabase) {
+      console.error(
+        "[fetchProducts] Supabase client is null. This should not happen."
+      );
+      return [];
+    }
+
     const { data, error } = await supabase
       .from("products")
       .select("*")
@@ -65,24 +79,44 @@ export async function fetchProducts(): Promise<Product[]> {
       .gt("stock", 0);
 
     if (error) {
-      console.error("fetchProducts failed:", {
+      console.error("[fetchProducts] API error:", {
         message: error.message,
         code: error.code,
         details: error.details,
         hint: error.hint,
+        timestamp: new Date().toISOString(),
       });
       return [];
     }
 
-    return (data || []).map(mapDBProductToProduct);
+    if (!data) {
+      console.warn("[fetchProducts] No data returned from query");
+      return [];
+    }
+
+    console.info(
+      `[fetchProducts] Successfully fetched ${data.length} products`
+    );
+    return data.map(mapDBProductToProduct);
   } catch (error) {
-    console.error("fetchProducts threw an exception:", error);
+    console.error("[fetchProducts] Exception thrown:", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      type: typeof error,
+      timestamp: new Date().toISOString(),
+      diagnosis: diagnoseSupabaseConfig(),
+    });
     return [];
   }
 }
 
 export async function fetchProductBySlug(slug: string): Promise<Product | null> {
-  if (!isSupabaseConfigured()) return null;
+  if (!isSupabaseConfigured()) {
+    console.warn(
+      `[fetchProductBySlug] Supabase not configured for slug: ${slug}`
+    );
+    return null;
+  }
 
   try {
     const supabase = getSupabase();
@@ -97,24 +131,30 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
       .maybeSingle();
 
     if (error) {
-      console.error("Error fetching product:", error);
+      console.error(`[fetchProductBySlug] Error fetching slug ${slug}:`, error);
       return null;
     }
 
     if (!data) {
+      console.warn(`[fetchProductBySlug] No product found for slug: ${slug}`);
       return null;
     }
 
     return mapDBProductToProduct(data);
   } catch (err) {
-    console.error("Exception fetching product:", err);
+    console.error(`[fetchProductBySlug] Exception for slug ${slug}:`, err);
     return null;
   }
 }
 
 export async function fetchProductsByCategory(category: string): Promise<Product[]> {
   const normalized = normalizeCategorySlug(category);
-  if (!isSupabaseConfigured()) return [];
+  if (!isSupabaseConfigured()) {
+    console.warn(
+      `[fetchProductsByCategory] Supabase not configured for category: ${category}`
+    );
+    return [];
+  }
   try {
     const supabase = getSupabase();
     const { data, error } = await supabase
@@ -126,7 +166,7 @@ export async function fetchProductsByCategory(category: string): Promise<Product
       .gt("stock", 0);
 
     if (error) {
-      console.error("fetchProductsByCategory failed:", {
+      console.error("[fetchProductsByCategory] failed:", {
         category: normalized,
         message: error.message,
         code: error.code,
@@ -135,9 +175,15 @@ export async function fetchProductsByCategory(category: string): Promise<Product
       });
       return [];
     }
-    return (data || []).map(mapDBProductToProduct);
+    if (!data) {
+      console.warn(
+        `[fetchProductsByCategory] No data for category: ${normalized}`
+      );
+      return [];
+    }
+    return data.map(mapDBProductToProduct);
   } catch (error) {
-    console.error("fetchProductsByCategory threw an exception:", {
+    console.error("[fetchProductsByCategory] threw an exception:", {
       category: normalized,
       error,
     });
