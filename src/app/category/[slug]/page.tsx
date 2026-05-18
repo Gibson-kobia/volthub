@@ -7,6 +7,8 @@ import { fetchProductsByCategory, type Product } from "../../../lib/products";
 import { ProductCard } from "../../../components/product-card";
 import type { CategorySlug } from "../../../lib/types";
 
+export const dynamicParams = false;
+
 const CATEGORY_LABELS: Record<CategorySlug, string> = {
   audio: "Audio",
   smartwatches: "Smartwatches",

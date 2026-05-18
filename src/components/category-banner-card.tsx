@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 export type CategoryBannerCardProps = {
   title: string;
@@ -21,21 +22,25 @@ export function CategoryBannerCard({
   gradient,
   featured,
 }: CategoryBannerCardProps) {
+  const [imageLoadFailed, setImageLoadFailed] = useState(false);
+  const showImage = Boolean(image && !imageLoadFailed);
+
   return (
     <Link
       href={href}
       className={`group relative block overflow-hidden rounded-[20px] aspect-[3/4] border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.32)] transition-all duration-300 active:scale-[0.985] hover:border-white/20 hover:-translate-y-0.5 hover:shadow-[0_16px_48px_rgba(0,0,0,0.42)]${featured ? " col-span-2 sm:col-span-1" : ""}`}
-      style={!image && gradient ? { background: gradient } : undefined}
+      style={!showImage ? { background: gradient ?? "linear-gradient(145deg,rgba(16,20,28,1) 0%,rgba(30,34,44,1) 100%)" } : undefined}
     >
       {/* Photo layer */}
-      {image ? (
+      {showImage ? (
         <Image
-          src={image}
+          src={image!}
           alt={title}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           className="object-cover transition-transform duration-500 group-hover:scale-[1.06]"
           draggable={false}
+          onError={() => setImageLoadFailed(true)}
         />
       ) : null}
 
